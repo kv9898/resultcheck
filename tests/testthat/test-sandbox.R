@@ -381,6 +381,22 @@ test_that("setup_sandbox accepts legitimate filenames with double dots", {
     expect_true(file.exists(file.path(sandbox$path, "file..txt")))
     cleanup_sandbox(sandbox)
   })
+  
+  # Test nested path with filename containing ..
+  temp_root2 <- tempfile()
+  dir.create(temp_root2)
+  dir.create(file.path(temp_root2, "subdir"))
+  test_file2 <- file.path(temp_root2, "subdir", "data..csv")
+  writeLines("csv,data", test_file2)
+  on.exit(unlink(temp_root2, recursive = TRUE), add = TRUE)
+  
+  withr::with_dir(temp_root2, {
+    # Should accept nested path with .. in filename
+    sandbox <- setup_sandbox("subdir/data..csv")
+    expect_s3_class(sandbox, "resultcheck_sandbox")
+    expect_true(file.exists(file.path(sandbox$path, "subdir", "data..csv")))
+    cleanup_sandbox(sandbox)
+  })
 })
 
 

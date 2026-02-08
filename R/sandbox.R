@@ -54,8 +54,12 @@ setup_sandbox <- function(files, temp_base = NULL) {
   })
   
   # Copy files while preserving directory structure
-  # Normalize temp_dir once before the loop
+  # Normalize temp_dir once before the loop and add trailing separator
   temp_dir_normalized <- normalizePath(temp_dir, mustWork = TRUE)
+  # Ensure temp_dir_normalized ends with a separator for proper boundary checking
+  if (!grepl("[/\\\\]$", temp_dir_normalized)) {
+    temp_dir_normalized <- paste0(temp_dir_normalized, .Platform$file.sep)
+  }
   
   for (file in files) {
     # Validate that path is relative (no absolute paths allowed)
@@ -86,18 +90,23 @@ setup_sandbox <- function(files, temp_base = NULL) {
     # Determine the target path
     target_path <- file.path(temp_dir, file)
     
-    # Normalize and verify the resolved path stays within sandbox
-    target_path_normalized <- normalizePath(target_path, mustWork = FALSE)
-    
-    # Check if target is within sandbox directory
-    if (!startsWith(target_path_normalized, temp_dir_normalized)) {
-      stop("Resolved path would be outside sandbox directory: ", file)
-    }
-    
     # Create parent directories if needed
     target_dir <- dirname(target_path)
     if (!dir.exists(target_dir)) {
       dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
+    }
+    
+    # Normalize the target path after creating the directory structure
+    # This ensures symbolic links are resolved and we can verify containment
+    target_path_normalized <- normalizePath(target_path, mustWork = FALSE)
+    # Add trailing separator if it's a potential directory path
+    if (!grepl("[/\\\\]$", target_path_normalized)) {
+      target_path_normalized <- paste0(target_path_normalized, .Platform$file.sep)
+    }
+    
+    # Check if target is within sandbox directory
+    if (!startsWith(target_path_normalized, temp_dir_normalized)) {
+      stop("Resolved path would be outside sandbox directory: ", file)
     }
     
     # Copy the file
