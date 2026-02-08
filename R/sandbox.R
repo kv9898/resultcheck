@@ -5,7 +5,7 @@
 #' scripts in isolation.
 #'
 #' @param files Character vector of file paths to copy to the sandbox.
-#'   Paths should be relative to the project root or absolute paths.
+#'   Paths should be relative to the project root.
 #' @param temp_base Optional. Custom location for the temporary directory.
 #'   If NULL (default), uses \code{tempfile()}.
 #'
