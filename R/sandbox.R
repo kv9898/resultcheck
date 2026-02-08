@@ -96,25 +96,25 @@ setup_sandbox <- function(files, temp_base = NULL) {
       dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
     }
     
-    # Normalize the target path after creating the directory structure
-    # This ensures symbolic links are resolved and we can verify containment
-    target_path_normalized <- normalizePath(target_path, mustWork = FALSE)
-    # Add trailing separator if it's a potential directory path
-    if (!grepl("[/\\\\]$", target_path_normalized)) {
-      target_path_normalized <- paste0(target_path_normalized, .Platform$file.sep)
-    }
-    
-    # Check if target is within sandbox directory
-    if (!startsWith(target_path_normalized, temp_dir_normalized)) {
-      stop("Resolved path would be outside sandbox directory: ", file)
-    }
-    
     # Copy the file
     tryCatch({
       file.copy(file, target_path, overwrite = TRUE)
     }, error = function(e) {
       warning("Failed to copy file ", file, ": ", e$message)
     })
+    
+    # After copying, normalize and verify the path is within sandbox
+    # This ensures we catch any symbolic link attacks
+    if (file.exists(target_path)) {
+      target_path_normalized <- normalizePath(target_path, mustWork = TRUE)
+      
+      # Check if target is within sandbox directory
+      if (!startsWith(target_path_normalized, temp_dir_normalized)) {
+        # If file escaped sandbox, remove it and error
+        unlink(target_path, force = TRUE)
+        stop("Resolved path would be outside sandbox directory: ", file)
+      }
+    }
   }
   
   # Create and return sandbox object
