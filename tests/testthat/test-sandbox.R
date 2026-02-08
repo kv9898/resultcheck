@@ -171,7 +171,7 @@ test_that("run_in_sandbox errors on missing script", {
 
 test_that("run_in_sandbox errors without sandbox", {
   # Clear last sandbox
-  resultcheck:::.resultcheck_env$last_sandbox <- NULL
+  resultcheck:::.reset_last_sandbox()
   
   script_file <- tempfile(fileext = ".R")
   writeLines('1 + 1', script_file)
