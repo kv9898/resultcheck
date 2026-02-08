@@ -11,7 +11,7 @@
 #'
 #' @return A list with class "resultcheck_sandbox" containing:
 #'   \item{path}{The path to the created temporary directory}
-#'   \item{id}{A unique identifier (UUID) for this sandbox}
+#'   \item{id}{A unique timestamp-based identifier for this sandbox}
 #'
 #' @export
 #'

@@ -43,7 +43,7 @@ print(sandbox$path)
 
 **Returns:** A sandbox object containing:
 - `path`: The path to the created temporary directory
-- `id`: A unique identifier for this sandbox
+- `id`: A unique timestamp-based identifier for this sandbox
 
 ### `run_in_sandbox()`
 
