@@ -61,8 +61,21 @@ setup_sandbox <- function(files, temp_base = NULL) {
     
     # Determine the target path
     # For absolute paths, use only the basename; for relative paths, preserve structure
-    if (grepl("^/|^[A-Za-z]:", file)) {
-      # Absolute path (Unix or Windows) - copy to sandbox root with basename only
+    # Use normalizePath to reliably detect absolute paths across platforms
+    is_absolute <- tryCatch({
+      # normalizePath on an absolute path won't change it (except for tilde expansion)
+      # For relative paths, it prepends the current directory
+      norm_path <- normalizePath(file, winslash = "/", mustWork = FALSE)
+      # Check if path starts with / (Unix) or drive letter (Windows) or UNC path
+      grepl("^/|^[A-Za-z]:|^//", norm_path) && 
+        !startsWith(norm_path, normalizePath(".", winslash = "/", mustWork = FALSE))
+    }, error = function(e) {
+      # Fallback: simple regex check
+      grepl("^/|^[A-Za-z]:|^~", file)
+    })
+    
+    if (is_absolute) {
+      # Absolute path - copy to sandbox root with basename only
       target_path <- file.path(temp_dir, basename(file))
     } else {
       # Relative path - preserve directory structure
@@ -177,8 +190,10 @@ run_in_sandbox <- function(script_path,
   # Execute in sandbox directory with graphics suppressed
   tryCatch({
     withr::with_dir(sandbox$path, {
-      withr::with_pdf(tempfile(fileext = ".pdf"), {
-        eval(exec_expr)
+      withr::with_tempfile("pdf_file", {
+        withr::with_pdf(pdf_file, {
+          eval(exec_expr)
+        })
       })
     })
   }, error = function(e) {
@@ -257,11 +272,10 @@ cleanup_sandbox <- function(sandbox = NULL, force = TRUE) {
 #' Clear Last Sandbox Reference (for testing)
 #'
 #' Clears the stored reference to the most recently created sandbox.
-#' This is primarily intended for testing purposes.
+#' This is primarily intended for internal testing purposes.
 #'
 #' @return NULL (invisible)
 #' @keywords internal
-#' @export
 clear_last_sandbox <- function() {
   .resultcheck_env$last_sandbox <- NULL
   invisible(NULL)
