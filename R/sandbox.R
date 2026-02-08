@@ -90,6 +90,10 @@ setup_sandbox <- function(files, temp_base = NULL) {
     }
     
     # Copy the file
+    # Note: file.copy() follows symlinks and copies the target file's content,
+    # not the symlink itself. This means even if 'file' is a symlink pointing
+    # outside the current directory, the copied content will be in the sandbox.
+    # This is the desired behavior for creating isolated test environments.
     tryCatch({
       file.copy(file, target_path, overwrite = TRUE)
     }, error = function(e) {
