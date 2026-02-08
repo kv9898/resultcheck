@@ -54,13 +54,6 @@ setup_sandbox <- function(files, temp_base = NULL) {
   })
   
   # Copy files while preserving directory structure
-  # Normalize temp_dir once before the loop and add trailing separator
-  temp_dir_normalized <- normalizePath(temp_dir, mustWork = TRUE)
-  # Ensure temp_dir_normalized ends with a separator for proper boundary checking
-  if (!grepl("[/\\\\]$", temp_dir_normalized)) {
-    temp_dir_normalized <- paste0(temp_dir_normalized, .Platform$file.sep)
-  }
-  
   for (file in files) {
     # Validate that path is relative (no absolute paths allowed)
     if (.Platform$OS.type == "windows") {
@@ -102,19 +95,6 @@ setup_sandbox <- function(files, temp_base = NULL) {
     }, error = function(e) {
       warning("Failed to copy file ", file, ": ", e$message)
     })
-    
-    # After copying, normalize and verify the path is within sandbox
-    # This ensures we catch any symbolic link attacks
-    if (file.exists(target_path)) {
-      target_path_normalized <- normalizePath(target_path, mustWork = TRUE)
-      
-      # Check if target is within sandbox directory
-      if (!startsWith(target_path_normalized, temp_dir_normalized)) {
-        # If file escaped sandbox, remove it and error
-        unlink(target_path, force = TRUE)
-        stop("Resolved path would be outside sandbox directory: ", file)
-      }
-    }
   }
   
   # Create and return sandbox object
