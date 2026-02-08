@@ -48,11 +48,11 @@ jobs:
           tinytex: true
 
       # ---------- R packages via renv ----------
-      - name: Setup renv
-        uses: r-lib/actions/setup-renv@v2
-        env:
-          RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
-          RENV_CONFIG_INSTALL_MODE: "binary"
-        with:
-          # Defaults to renv.lock at repo root; adjust if yours lives elsewhere
-          cache-version: 1
+      # - name: Setup renv
+      #   uses: r-lib/actions/setup-renv@v2
+      #   env:
+      #     RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+      #     RENV_CONFIG_INSTALL_MODE: "binary"
+      #   with:
+      #     # Defaults to renv.lock at repo root; adjust if yours lives elsewhere
+      #     cache-version: 1
