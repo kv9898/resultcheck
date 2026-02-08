@@ -357,6 +357,30 @@ test_that("setup_sandbox rejects path traversal attempts", {
     setup_sandbox("a/../b/file.txt"),
     "Path traversal"
   )
+  
+  # Test Windows-style path traversal
+  expect_error(
+    setup_sandbox("data\\..\\file.txt"),
+    "Path traversal"
+  )
+})
+
+
+test_that("setup_sandbox accepts legitimate filenames with double dots", {
+  # Create test file with .. in filename
+  temp_root <- tempfile()
+  dir.create(temp_root)
+  test_file <- file.path(temp_root, "file..txt")
+  writeLines("content", test_file)
+  on.exit(unlink(temp_root, recursive = TRUE))
+  
+  withr::with_dir(temp_root, {
+    # Should accept filename with .. that is not a path component
+    sandbox <- setup_sandbox("file..txt")
+    expect_s3_class(sandbox, "resultcheck_sandbox")
+    expect_true(file.exists(file.path(sandbox$path, "file..txt")))
+    cleanup_sandbox(sandbox)
+  })
 })
 
 

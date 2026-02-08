@@ -54,6 +54,9 @@ setup_sandbox <- function(files, temp_base = NULL) {
   })
   
   # Copy files while preserving directory structure
+  # Normalize temp_dir once before the loop
+  temp_dir_normalized <- normalizePath(temp_dir, mustWork = TRUE)
+  
   for (file in files) {
     # Validate that path is relative (no absolute paths allowed)
     if (.Platform$OS.type == "windows") {
@@ -69,7 +72,9 @@ setup_sandbox <- function(files, temp_base = NULL) {
     }
     
     # Validate that path doesn't contain path traversal attempts
-    if (grepl("\\.\\.", file)) {
+    # Split path and check each component for exactly ".."
+    path_components <- strsplit(file, "[/\\\\]")[[1]]
+    if (any(path_components == "..")) {
       stop("Path traversal (e.g., '..') is not allowed for security reasons: ", file)
     }
     
@@ -83,7 +88,6 @@ setup_sandbox <- function(files, temp_base = NULL) {
     
     # Normalize and verify the resolved path stays within sandbox
     target_path_normalized <- normalizePath(target_path, mustWork = FALSE)
-    temp_dir_normalized <- normalizePath(temp_dir, mustWork = TRUE)
     
     # Check if target is within sandbox directory
     if (!startsWith(target_path_normalized, temp_dir_normalized)) {
