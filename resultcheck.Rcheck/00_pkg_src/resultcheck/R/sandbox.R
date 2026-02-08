@@ -254,20 +254,6 @@ cleanup_sandbox <- function(sandbox = NULL, force = TRUE) {
 }
 
 
-#' Clear Last Sandbox Reference (for testing)
-#'
-#' Clears the stored reference to the most recently created sandbox.
-#' This is primarily intended for testing purposes.
-#'
-#' @return NULL (invisible)
-#' @keywords internal
-#' @export
-clear_last_sandbox <- function() {
-  .resultcheck_env$last_sandbox <- NULL
-  invisible(NULL)
-}
-
-
 # Package environment to store state
 .resultcheck_env <- new.env(parent = emptyenv())
 .resultcheck_env$last_sandbox <- NULL

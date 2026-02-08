@@ -1,0 +1,26 @@
+* using log directory ‘/home/runner/work/resultcheck/resultcheck/resultcheck.Rcheck’
+* using R version 4.5.2 (2025-10-31)
+* using platform: x86_64-pc-linux-gnu
+* R was compiled by
+    gcc (Ubuntu 11.4.0-1ubuntu1~22.04.2) 11.4.0
+    GNU Fortran (Ubuntu 11.4.0-1ubuntu1~22.04.2) 11.4.0
+* running under: Ubuntu 22.04.5 LTS
+* using session charset: UTF-8
+* using option ‘--no-manual’
+* checking for file ‘resultcheck/DESCRIPTION’ ... OK
+* this is package ‘resultcheck’ version ‘0.0.0.9000’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... ERROR
+Package required but not available: ‘withr’
+
+Package suggested but not available: ‘testthat’
+
+The suggested packages are required for a complete check.
+Checking can be attempted without them by setting the environment
+variable _R_CHECK_FORCE_SUGGESTS_ to a false value.
+
+See section ‘The DESCRIPTION file’ in the ‘Writing R Extensions’
+manual.
+* DONE
+Status: 1 ERROR
