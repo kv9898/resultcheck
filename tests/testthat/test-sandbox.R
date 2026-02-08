@@ -309,3 +309,83 @@ test_that("Full workflow: setup, run, cleanup", {
     expect_false(dir.exists(sandbox$path))
   })
 })
+
+
+test_that("setup_sandbox rejects absolute paths", {
+  # Test Unix-style absolute path
+  expect_error(
+    setup_sandbox("/etc/passwd"),
+    "Absolute paths are not allowed"
+  )
+  
+  # Test another Unix-style absolute path
+  expect_error(
+    setup_sandbox("/tmp/test.txt"),
+    "Absolute paths are not allowed"
+  )
+  
+  # On Windows, test drive letter paths (will only trigger on Windows)
+  if (.Platform$OS.type == "windows") {
+    expect_error(
+      setup_sandbox("C:/test.txt"),
+      "Absolute paths are not allowed"
+    )
+    
+    expect_error(
+      setup_sandbox("D:\\test.txt"),
+      "Absolute paths are not allowed"
+    )
+  }
+})
+
+
+test_that("setup_sandbox rejects path traversal attempts", {
+  # Test basic path traversal
+  expect_error(
+    setup_sandbox("../etc/passwd"),
+    "Path traversal"
+  )
+  
+  # Test nested path traversal
+  expect_error(
+    setup_sandbox("data/../../etc/passwd"),
+    "Path traversal"
+  )
+  
+  # Test path traversal in middle
+  expect_error(
+    setup_sandbox("a/../b/file.txt"),
+    "Path traversal"
+  )
+})
+
+
+test_that("setup_sandbox accepts valid relative paths", {
+  # Create test files
+  test_file <- tempfile(fileext = ".txt")
+  writeLines("test content", test_file)
+  on.exit(unlink(test_file))
+  
+  withr::with_dir(dirname(test_file), {
+    # Simple basename should work
+    sandbox <- setup_sandbox(basename(test_file))
+    expect_s3_class(sandbox, "resultcheck_sandbox")
+    cleanup_sandbox(sandbox)
+  })
+  
+  # Test with subdirectory
+  temp_root <- tempfile()
+  dir.create(temp_root)
+  dir.create(file.path(temp_root, "subdir"), recursive = TRUE)
+  test_file2 <- file.path(temp_root, "subdir", "test.txt")
+  writeLines("content", test_file2)
+  on.exit(unlink(temp_root, recursive = TRUE), add = TRUE)
+  
+  withr::with_dir(temp_root, {
+    # Relative path with subdirectory should work
+    sandbox <- setup_sandbox("subdir/test.txt")
+    expect_s3_class(sandbox, "resultcheck_sandbox")
+    expect_true(file.exists(file.path(sandbox$path, "subdir", "test.txt")))
+    cleanup_sandbox(sandbox)
+  })
+})

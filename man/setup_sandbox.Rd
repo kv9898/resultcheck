@@ -8,7 +8,8 @@ setup_sandbox(files, temp_base = NULL)
 }
 \arguments{
 \item{files}{Character vector of file paths to copy to the sandbox.
-Paths should be relative to the project root.}
+Paths must be relative to the current working directory. Absolute paths
+and path traversal attempts (e.g., \code{..}) are rejected for security.}
 
 \item{temp_base}{Optional. Custom location for the temporary directory.
 If NULL (default), uses \code{tempfile()}.}

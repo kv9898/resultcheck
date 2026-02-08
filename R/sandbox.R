@@ -5,7 +5,8 @@
 #' scripts in isolation.
 #'
 #' @param files Character vector of file paths to copy to the sandbox.
-#'   Paths should be relative to the project root.
+#'   Paths must be relative to the current working directory. Absolute paths
+#'   and path traversal attempts (e.g., \code{..}) are rejected for security.
 #' @param temp_base Optional. Custom location for the temporary directory.
 #'   If NULL (default), uses \code{tempfile()}.
 #'
@@ -54,6 +55,24 @@ setup_sandbox <- function(files, temp_base = NULL) {
   
   # Copy files while preserving directory structure
   for (file in files) {
+    # Validate that path is relative (no absolute paths allowed)
+    if (.Platform$OS.type == "windows") {
+      # On Windows, check for drive letters or UNC paths
+      is_absolute <- grepl("^[A-Za-z]:|^\\\\\\\\|^/", file)
+    } else {
+      # On Unix-like systems, check for leading slash
+      is_absolute <- grepl("^/", file)
+    }
+    
+    if (is_absolute) {
+      stop("Absolute paths are not allowed. Please use relative paths only: ", file)
+    }
+    
+    # Validate that path doesn't contain path traversal attempts
+    if (grepl("\\.\\.", file)) {
+      stop("Path traversal (e.g., '..') is not allowed for security reasons: ", file)
+    }
+    
     if (!file.exists(file)) {
       warning("File not found, skipping: ", file)
       next
@@ -61,6 +80,15 @@ setup_sandbox <- function(files, temp_base = NULL) {
     
     # Determine the target path
     target_path <- file.path(temp_dir, file)
+    
+    # Normalize and verify the resolved path stays within sandbox
+    target_path_normalized <- normalizePath(target_path, mustWork = FALSE)
+    temp_dir_normalized <- normalizePath(temp_dir, mustWork = TRUE)
+    
+    # Check if target is within sandbox directory
+    if (!startsWith(target_path_normalized, temp_dir_normalized)) {
+      stop("Resolved path would be outside sandbox directory: ", file)
+    }
     
     # Create parent directories if needed
     target_dir <- dirname(target_path)
