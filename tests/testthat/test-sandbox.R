@@ -3,9 +3,13 @@ test_that("setup_sandbox creates a temporary directory", {
   test_file <- tempfile(fileext = ".txt")
   writeLines("test content", test_file)
   on.exit(unlink(test_file))
+
+  old_wd <- getwd()
+  setwd(dirname(test_file))
+  on.exit(setwd(old_wd), add = TRUE)
   
   # Setup sandbox
-  sandbox <- setup_sandbox(test_file)
+  sandbox <- setup_sandbox(basename(test_file))
   
   # Check that sandbox was created
   expect_s3_class(sandbox, "resultcheck_sandbox")
@@ -55,9 +59,13 @@ test_that("setup_sandbox handles custom temp base", {
   test_file <- tempfile(fileext = ".txt")
   writeLines("test", test_file)
   on.exit(unlink(test_file), add = TRUE)
+
+  old_wd <- getwd()
+  setwd(dirname(test_file))
+  on.exit(setwd(old_wd), add = TRUE)
   
   # Setup sandbox with custom base
-  sandbox <- setup_sandbox(test_file, temp_base = custom_base)
+  sandbox <- setup_sandbox(basename(test_file), temp_base = custom_base)
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
   
   # Check that sandbox is in custom base
@@ -82,8 +90,12 @@ test_that("setup_sandbox stores last sandbox in package environment", {
   test_file <- tempfile(fileext = ".txt")
   writeLines("test", test_file)
   on.exit(unlink(test_file))
+
+  old_wd <- getwd()
+  setwd(dirname(test_file))
+  on.exit(setwd(old_wd), add = TRUE)
   
-  sandbox <- setup_sandbox(test_file)
+  sandbox <- setup_sandbox(basename(test_file))
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
   
   # Check that it's stored
@@ -188,8 +200,12 @@ test_that("cleanup_sandbox removes directory", {
   test_file <- tempfile(fileext = ".txt")
   writeLines("test", test_file)
   on.exit(unlink(test_file))
+
+  old_wd <- getwd()
+  setwd(dirname(test_file))
+  on.exit(setwd(old_wd), add = TRUE)
   
-  sandbox <- setup_sandbox(test_file)
+  sandbox <- setup_sandbox(basename(test_file))
   
   # Check directory exists
   expect_true(dir.exists(sandbox$path))
@@ -207,8 +223,12 @@ test_that("cleanup_sandbox clears last_sandbox", {
   test_file <- tempfile(fileext = ".txt")
   writeLines("test", test_file)
   on.exit(unlink(test_file))
+
+  old_wd <- getwd()
+  setwd(dirname(test_file))
+  on.exit(setwd(old_wd), add = TRUE)
   
-  sandbox <- setup_sandbox(test_file)
+  sandbox <- setup_sandbox(basename(test_file))
   
   # Verify it's stored
   expect_false(is.null(resultcheck:::.resultcheck_env$last_sandbox))
@@ -225,8 +245,12 @@ test_that("cleanup_sandbox uses last sandbox by default", {
   test_file <- tempfile(fileext = ".txt")
   writeLines("test", test_file)
   on.exit(unlink(test_file))
+
+  old_wd <- getwd()
+  setwd(dirname(test_file))
+  on.exit(setwd(old_wd), add = TRUE)
   
-  sandbox <- setup_sandbox(test_file)
+  sandbox <- setup_sandbox(basename(test_file))
   sandbox_path <- sandbox$path
   
   # Clean up without specifying sandbox
@@ -241,8 +265,12 @@ test_that("cleanup_sandbox handles nonexistent directory gracefully", {
   test_file <- tempfile(fileext = ".txt")
   writeLines("test", test_file)
   on.exit(unlink(test_file))
+
+  old_wd <- getwd()
+  setwd(dirname(test_file))
+  on.exit(setwd(old_wd), add = TRUE)
   
-  sandbox <- setup_sandbox(test_file)
+  sandbox <- setup_sandbox(basename(test_file))
   
   # Manually delete directory
   unlink(sandbox$path, recursive = TRUE)
@@ -263,6 +291,10 @@ test_that("Full workflow: setup, run, cleanup", {
   data_file <- tempfile(fileext = ".rds")
   saveRDS(data.frame(x = 1:5, y = 6:10), data_file)
   on.exit(unlink(data_file))
+
+  old_wd <- getwd()
+  setwd(dirname(data_file))
+  on.exit(setwd(old_wd), add = TRUE)
   
   # Create test script
   script_file <- tempfile(fileext = ".R")
@@ -274,7 +306,7 @@ test_that("Full workflow: setup, run, cleanup", {
   on.exit(unlink(script_file), add = TRUE)
   
   # Full workflow
-  sandbox <- setup_sandbox(data_file)
+  sandbox <- setup_sandbox(basename(data_file))
   run_in_sandbox(script_file, sandbox)
   
   # Verify output
