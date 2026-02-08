@@ -60,7 +60,14 @@ setup_sandbox <- function(files, temp_base = NULL) {
     }
     
     # Determine the target path
-    target_path <- file.path(temp_dir, file)
+    # For absolute paths, use only the basename; for relative paths, preserve structure
+    if (grepl("^/|^[A-Za-z]:", file)) {
+      # Absolute path (Unix or Windows) - copy to sandbox root with basename only
+      target_path <- file.path(temp_dir, basename(file))
+    } else {
+      # Relative path - preserve directory structure
+      target_path <- file.path(temp_dir, file)
+    }
     
     # Create parent directories if needed
     target_dir <- dirname(target_path)
@@ -170,9 +177,9 @@ run_in_sandbox <- function(script_path,
   # Execute in sandbox directory with graphics suppressed
   tryCatch({
     withr::with_dir(sandbox$path, {
-      pdf(NULL)
-      eval(exec_expr)
-      dev.off()
+      withr::with_pdf(tempfile(fileext = ".pdf"), {
+        eval(exec_expr)
+      })
     })
   }, error = function(e) {
     stop("Error executing script in sandbox: ", e$message)
