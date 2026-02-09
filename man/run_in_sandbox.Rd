@@ -35,7 +35,7 @@ analysis scripts without polluting the console or creating unwanted plots.
 \examples{
 \dontrun{
 # Setup sandbox
-sandbox <- setup_sandbox(c("data/mydata.rds"))
+sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
 
 # Run script in sandbox
 run_in_sandbox("code/analysis.R", sandbox)

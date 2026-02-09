@@ -23,7 +23,7 @@ after testing is complete to free up disk space.
 \examples{
 \dontrun{
 # Setup sandbox
-sandbox <- setup_sandbox(c("data/mydata.rds"))
+sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
 
 # ... use sandbox ...
 

@@ -135,7 +135,7 @@ setup_sandbox <- function(files, temp_base = NULL) {
 #' @examples
 #' \dontrun{
 #' # Setup sandbox
-#' sandbox <- setup_sandbox(c("data/mydata.rds"))
+#' sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
 #' 
 #' # Run script in sandbox
 #' run_in_sandbox("code/analysis.R", sandbox)
@@ -224,7 +224,7 @@ run_in_sandbox <- function(script_path,
 #' @examples
 #' \dontrun{
 #' # Setup sandbox
-#' sandbox <- setup_sandbox(c("data/mydata.rds"))
+#' sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
 #' 
 #' # ... use sandbox ...
 #' 
