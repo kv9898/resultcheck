@@ -309,3 +309,123 @@ test_that("Full workflow: setup, run, cleanup", {
     expect_false(dir.exists(sandbox$path))
   })
 })
+
+
+test_that("setup_sandbox rejects absolute paths", {
+  # Test Unix-style absolute path
+  expect_error(
+    setup_sandbox("/etc/passwd"),
+    "Absolute paths are not allowed"
+  )
+  
+  # Test another Unix-style absolute path
+  expect_error(
+    setup_sandbox("/tmp/test.txt"),
+    "Absolute paths are not allowed"
+  )
+  
+  # On Windows, test drive letter paths (will only trigger on Windows)
+  if (.Platform$OS.type == "windows") {
+    expect_error(
+      setup_sandbox("C:/test.txt"),
+      "Absolute paths are not allowed"
+    )
+    
+    expect_error(
+      setup_sandbox("D:\\test.txt"),
+      "Absolute paths are not allowed"
+    )
+  }
+})
+
+
+test_that("setup_sandbox rejects path traversal attempts", {
+  # Test basic path traversal
+  expect_error(
+    setup_sandbox("../etc/passwd"),
+    "Path traversal"
+  )
+  
+  # Test nested path traversal
+  expect_error(
+    setup_sandbox("data/../../etc/passwd"),
+    "Path traversal"
+  )
+  
+  # Test path traversal in middle
+  expect_error(
+    setup_sandbox("a/../b/file.txt"),
+    "Path traversal"
+  )
+  
+  # Test Windows-style path traversal
+  expect_error(
+    setup_sandbox("data\\..\\file.txt"),
+    "Path traversal"
+  )
+})
+
+
+test_that("setup_sandbox accepts legitimate filenames with double dots", {
+  # Create test file with .. in filename
+  temp_root <- tempfile()
+  dir.create(temp_root)
+  test_file <- file.path(temp_root, "file..txt")
+  writeLines("content", test_file)
+  on.exit(unlink(temp_root, recursive = TRUE))
+  
+  withr::with_dir(temp_root, {
+    # Should accept filename with .. that is not a path component
+    sandbox <- setup_sandbox("file..txt")
+    expect_s3_class(sandbox, "resultcheck_sandbox")
+    expect_true(file.exists(file.path(sandbox$path, "file..txt")))
+    cleanup_sandbox(sandbox)
+  })
+  
+  # Test nested path with filename containing ..
+  temp_root2 <- tempfile()
+  dir.create(temp_root2)
+  dir.create(file.path(temp_root2, "subdir"))
+  test_file2 <- file.path(temp_root2, "subdir", "data..csv")
+  writeLines("csv,data", test_file2)
+  on.exit(unlink(temp_root2, recursive = TRUE), add = TRUE)
+  
+  withr::with_dir(temp_root2, {
+    # Should accept nested path with .. in filename
+    sandbox <- setup_sandbox("subdir/data..csv")
+    expect_s3_class(sandbox, "resultcheck_sandbox")
+    expect_true(file.exists(file.path(sandbox$path, "subdir", "data..csv")))
+    cleanup_sandbox(sandbox)
+  })
+})
+
+
+test_that("setup_sandbox accepts valid relative paths", {
+  # Create test files
+  test_file <- tempfile(fileext = ".txt")
+  writeLines("test content", test_file)
+  on.exit(unlink(test_file))
+  
+  withr::with_dir(dirname(test_file), {
+    # Simple basename should work
+    sandbox <- setup_sandbox(basename(test_file))
+    expect_s3_class(sandbox, "resultcheck_sandbox")
+    cleanup_sandbox(sandbox)
+  })
+  
+  # Test with subdirectory
+  temp_root <- tempfile()
+  dir.create(temp_root)
+  dir.create(file.path(temp_root, "subdir"), recursive = TRUE)
+  test_file2 <- file.path(temp_root, "subdir", "test.txt")
+  writeLines("content", test_file2)
+  on.exit(unlink(temp_root, recursive = TRUE), add = TRUE)
+  
+  withr::with_dir(temp_root, {
+    # Relative path with subdirectory should work
+    sandbox <- setup_sandbox("subdir/test.txt")
+    expect_s3_class(sandbox, "resultcheck_sandbox")
+    expect_true(file.exists(file.path(sandbox$path, "subdir", "test.txt")))
+    cleanup_sandbox(sandbox)
+  })
+})
