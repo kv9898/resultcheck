@@ -123,57 +123,62 @@ The package provides interactive snapshotting functionality for empirical resear
 
 ### `snapshot()`
 
-Creates or updates a snapshot of an R object during interactive analysis. On first use, it saves the object. On subsequent uses, it compares the current object to the saved snapshot and prompts you to update if differences are found.
+Creates or updates a snapshot of an R object during interactive analysis. Snapshots are saved as human-readable `.md` files (git-friendly). The function behaves differently depending on context:
+
+- **Interactive mode**: Warns and prompts to update when differences are found
+- **Testing mode** (inside `run_in_sandbox()`): Errors if snapshot is missing or doesn't match
 
 ```r
-# In your analysis script:
+# In your analysis script (analysis.R):
 model <- lm(mpg ~ wt + hp, data = mtcars)
 
 # First time: saves the snapshot
 snapshot(model, "mtcars_regression")
-# Message: New snapshot saved: interactive/mtcars_regression.rds
+# ✓ New snapshot saved: analysis/mtcars_regression.md
 
 # Later, if the model changes:
 model <- lm(mpg ~ wt + hp + cyl, data = mtcars)
 snapshot(model, "mtcars_regression")
-# Shows differences and prompts: Update snapshot? (y/n):
+# Warning: Snapshot differences found...
+# Shows differences, prompts: Update snapshot? (y/n):
 ```
 
 **How it works:**
 
 1. Snapshots are stored in `_resultcheck_snapshots/` directory at your project root
 2. Files are organized by script name (auto-detected or specified)
-3. On first call, the snapshot is saved
-4. On subsequent calls, differences are shown using human-readable comparisons
-5. You're prompted to update the snapshot if changes are detected
+3. Objects are serialized to human-readable text (using `str()`, `print()`, `summary()`)
+4. Saved as `.md` files for easy version control with git
+5. In interactive mode: warns and prompts to update
+6. In testing mode (inside sandbox): errors on mismatch
 
 **Parameters:**
 - `value`: The R object to snapshot (data frame, model, list, etc.)
 - `name`: A descriptive name for the snapshot
 - `script_name`: Optional script name (auto-detected if not provided)
-- `interactive`: Whether to prompt for updates (default: TRUE)
 
-### `expect_snapshot_value()`
-
-Use snapshots in automated tests with testthat:
+### Workflow: Interactive → Testing
 
 ```r
-library(testthat)
-library(resultcheck)
+# Step 1: Run interactively to create snapshots
+source("analysis.R")  # Contains snapshot() calls
+# ✓ New snapshot saved: analysis/regression_model.md
+# ✓ New snapshot saved: analysis/coefficients.md
 
-test_that("regression model is stable", {
-  model <- lm(mpg ~ wt + hp, data = mtcars)
+# Step 2: Use in automated tests
+library(testthat)
+
+test_that("analysis produces stable results", {
+  sandbox <- setup_sandbox(c("data/mydata.rds"))
   
-  # Compare against saved snapshot
-  expect_snapshot_value(model, "mtcars_regression", script_name = "test-models")
+  # This will ERROR if snapshots don't match
+  run_in_sandbox("analysis.R", sandbox)
+  
+  cleanup_sandbox(sandbox)
 })
 ```
 
-**Workflow:**
-
-1. Run your analysis script interactively and use `snapshot()` to save outputs
-2. In tests, use `expect_snapshot_value()` to verify outputs match the snapshots
-3. If outputs change, re-run interactively to review and update snapshots
+If your analysis changes, re-run interactively to review differences and update snapshots. The testing mode will then verify against the updated snapshots.
 
 ### `find_root()`
 
@@ -202,7 +207,7 @@ library(resultcheck)
 data <- readRDS("data/survey_data.rds")
 model <- lm(satisfaction ~ age + income, data = data)
 
-# Save snapshot interactively
+# Save snapshots interactively
 snapshot(model, "satisfaction_model")
 snapshot(summary(model)$coefficients, "model_coefficients")
 
@@ -215,15 +220,8 @@ test_that("satisfaction model produces consistent results", {
   sandbox <- setup_sandbox(c("data/survey_data.rds"))
   
   # Run analysis in sandbox
+  # This contains snapshot() calls that will ERROR if outputs don't match
   run_in_sandbox("analysis.R", sandbox)
-  
-  # Load results from sandbox
-  # (assuming analysis.R saves the model)
-  model_path <- file.path(sandbox$path, "model.rds")
-  model <- readRDS(model_path)
-  
-  # Compare against snapshot
-  expect_snapshot_value(model, "satisfaction_model", script_name = "analysis")
   
   # Cleanup
   cleanup_sandbox(sandbox)
