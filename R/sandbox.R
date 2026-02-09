@@ -192,9 +192,18 @@ run_in_sandbox <- function(script_path,
     exec_expr <- bquote(suppressMessages(.(exec_expr)))
   }
   
+  # Store original working directory for snapshot functions
+  original_wd <- getwd()
+  
   # Execute in sandbox directory with graphics suppressed
   tryCatch({
     withr::with_dir(sandbox$path, {
+      # Store original WD in package environment so snapshot() can find project root
+      .resultcheck_env$.resultcheck_original_wd <- original_wd
+      on.exit({
+        .resultcheck_env$.resultcheck_original_wd <- NULL
+      }, add = TRUE)
+      
       pdf(NULL)
       eval(exec_expr)
       dev.off()

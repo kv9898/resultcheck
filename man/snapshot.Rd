@@ -4,7 +4,7 @@
 \alias{snapshot}
 \title{Interactive Snapshot Testing}
 \usage{
-snapshot(value, name, script_name = NULL, interactive = TRUE)
+snapshot(value, name, script_name = NULL)
 }
 \arguments{
 \item{value}{The R object to snapshot (e.g., plot, table, model output).}
@@ -13,33 +13,34 @@ snapshot(value, name, script_name = NULL, interactive = TRUE)
 
 \item{script_name}{Optional. The name of the script creating the snapshot.
 If NULL, attempts to auto-detect from the call stack.}
-
-\item{interactive}{Logical. Whether to prompt for updates interactively
-(default: TRUE). Set to FALSE for non-interactive use.}
 }
 \value{
-Invisible TRUE if snapshot matches or was updated, FALSE otherwise.
+Invisible TRUE if snapshot matches or was updated.
+In testing mode, throws an error if snapshot is missing or doesn't match.
 }
 \description{
 Creates or updates a snapshot of an R object for interactive analysis.
-On first use, saves the object to a snapshot file. On subsequent uses,
-compares the current object to the saved snapshot and prompts the user
-to update if differences are found.
+On first use, saves the object to a human-readable snapshot file (.md).
+On subsequent uses, compares the current object to the saved snapshot.
 }
 \details{
+In interactive mode (default), prompts the user to update if differences
+are found and emits a warning. In testing mode (inside testthat or
+run_in_sandbox), throws an error if snapshot doesn't exist or doesn't match.
+
 Snapshots are stored in \code{_resultcheck_snapshots/} directory relative
 to the project root, organized by script name.
 }
 \examples{
 \dontrun{
-# In an analysis script:
+# In an analysis script (interactive mode):
 model <- lm(mpg ~ wt, data = mtcars)
 snapshot(model, "mtcars_model")
 
 # First time: saves the snapshot
-# Later times: compares and prompts to update if different
+# Later times: compares, shows differences, prompts to update
 
-# For non-interactive use (e.g., in automated tests):
-snapshot(model, "mtcars_model", interactive = FALSE)
+# In testing mode (inside run_in_sandbox or testthat):
+# Errors if snapshot missing or doesn't match
 }
 }

@@ -4,7 +4,7 @@
 \alias{get_snapshot_path}
 \title{Get Snapshot File Path}
 \usage{
-get_snapshot_path(name, script_name = NULL, ext = "rds")
+get_snapshot_path(name, script_name = NULL, ext = "md")
 }
 \arguments{
 \item{name}{Character. The name of the snapshot (without extension).}
@@ -12,7 +12,7 @@ get_snapshot_path(name, script_name = NULL, ext = "rds")
 \item{script_name}{Optional. The name of the script file creating the snapshot.
 If NULL, attempts to detect from the call stack.}
 
-\item{ext}{Character. The file extension for the snapshot file (default: "rds").}
+\item{ext}{Character. The file extension for the snapshot file (default: "md").}
 }
 \value{
 The full path to the snapshot file.

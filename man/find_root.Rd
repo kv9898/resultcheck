@@ -8,7 +8,8 @@ find_root(start_path = NULL)
 }
 \arguments{
 \item{start_path}{Optional. The directory to start searching from.
-If NULL (default), uses the current working directory.}
+If NULL (default), uses the current working directory or the stored
+original working directory if in a sandbox.}
 }
 \value{
 The path to the project root directory.
@@ -16,7 +17,8 @@ The path to the project root directory.
 \description{
 Finds the root directory of the current R project using various heuristics.
 The function searches for markers like \code{resultcheck.yml}, \code{.Rproj} files,
-or a \code{.git} directory.
+or a \code{.git} directory. When running inside a sandbox created by
+\code{setup_sandbox()}, it will search from the original working directory.
 }
 \examples{
 \dontrun{
