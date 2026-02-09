@@ -5,7 +5,8 @@
 #' scripts in isolation.
 #'
 #' @param files Character vector of file paths to copy to the sandbox.
-#'   Paths should be relative to the project root or absolute paths.
+#'   Paths must be relative to the current working directory. Absolute paths
+#'   and path traversal attempts (e.g., \code{..}) are rejected for security.
 #' @param temp_base Optional. Custom location for the temporary directory.
 #'   If NULL (default), uses \code{tempfile()}.
 #'
@@ -54,6 +55,26 @@ setup_sandbox <- function(files, temp_base = NULL) {
   
   # Copy files while preserving directory structure
   for (file in files) {
+    # Validate that path is relative (no absolute paths allowed)
+    if (.Platform$OS.type == "windows") {
+      # On Windows, check for drive letters or UNC paths
+      is_absolute <- grepl("^[A-Za-z]:|^\\\\\\\\|^/", file)
+    } else {
+      # On Unix-like systems, check for leading slash
+      is_absolute <- grepl("^/", file)
+    }
+    
+    if (is_absolute) {
+      stop("Absolute paths are not allowed. Please use relative paths only: ", file)
+    }
+    
+    # Validate that path doesn't contain path traversal attempts
+    # Split path and check each component for exactly ".."
+    path_components <- strsplit(file, "[/\\\\]")[[1]]
+    if (any(path_components == "..")) {
+      stop("Path traversal (e.g., '..') is not allowed for security reasons: ", file)
+    }
+    
     if (!file.exists(file)) {
       warning("File not found, skipping: ", file)
       next
@@ -69,6 +90,10 @@ setup_sandbox <- function(files, temp_base = NULL) {
     }
     
     # Copy the file
+    # Note: file.copy() follows symlinks and copies the target file's content,
+    # not the symlink itself. This means even if 'file' is a symlink pointing
+    # outside the current directory, the copied content will be in the sandbox.
+    # This is the desired behavior for creating isolated test environments.
     tryCatch({
       file.copy(file, target_path, overwrite = TRUE)
     }, error = function(e) {
@@ -110,7 +135,7 @@ setup_sandbox <- function(files, temp_base = NULL) {
 #' @examples
 #' \dontrun{
 #' # Setup sandbox
-#' sandbox <- setup_sandbox(c("data/mydata.rds"))
+#' sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
 #' 
 #' # Run script in sandbox
 #' run_in_sandbox("code/analysis.R", sandbox)
@@ -199,7 +224,7 @@ run_in_sandbox <- function(script_path,
 #' @examples
 #' \dontrun{
 #' # Setup sandbox
-#' sandbox <- setup_sandbox(c("data/mydata.rds"))
+#' sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
 #' 
 #' # ... use sandbox ...
 #' 
