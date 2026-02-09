@@ -51,12 +51,12 @@ find_root <- function(start_path = NULL) {
 #' @param name Character. The name of the snapshot (without extension).
 #' @param script_name Optional. The name of the script file creating the snapshot.
 #'   If NULL, attempts to detect from the call stack.
-#' @param ext Character. The file extension for the snapshot file (default: "md").
+#' @param ext Character. The file extension for the snapshot file (default: "rds").
 #'
 #' @return The full path to the snapshot file.
 #'
 #' @keywords internal
-get_snapshot_path <- function(name, script_name = NULL, ext = "md") {
+get_snapshot_path <- function(name, script_name = NULL, ext = "rds") {
   root <- find_root()
   
   # If script_name not provided, try to detect from call stack

@@ -282,7 +282,7 @@ test_that("get_snapshot_path creates snapshot directory", {
     
     # Check path format
     expect_match(path, "my_script")
-    expect_match(path, "test.md")
+    expect_match(path, "test.rds")
   })
 })
 
