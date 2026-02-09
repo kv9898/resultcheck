@@ -117,6 +117,119 @@ test_that("fiscal script produces reproducible results", {
 })
 ```
 
+## Interactive Snapshotting
+
+The package provides interactive snapshotting functionality for empirical researchers who want to track changes in their analysis outputs without manually saving and comparing files.
+
+### `snapshot()`
+
+Creates or updates a snapshot of an R object during interactive analysis. On first use, it saves the object. On subsequent uses, it compares the current object to the saved snapshot and prompts you to update if differences are found.
+
+```r
+# In your analysis script:
+model <- lm(mpg ~ wt + hp, data = mtcars)
+
+# First time: saves the snapshot
+snapshot(model, "mtcars_regression")
+# Message: New snapshot saved: interactive/mtcars_regression.rds
+
+# Later, if the model changes:
+model <- lm(mpg ~ wt + hp + cyl, data = mtcars)
+snapshot(model, "mtcars_regression")
+# Shows differences and prompts: Update snapshot? (y/n):
+```
+
+**How it works:**
+
+1. Snapshots are stored in `_resultcheck_snapshots/` directory at your project root
+2. Files are organized by script name (auto-detected or specified)
+3. On first call, the snapshot is saved
+4. On subsequent calls, differences are shown using human-readable comparisons
+5. You're prompted to update the snapshot if changes are detected
+
+**Parameters:**
+- `value`: The R object to snapshot (data frame, model, list, etc.)
+- `name`: A descriptive name for the snapshot
+- `script_name`: Optional script name (auto-detected if not provided)
+- `interactive`: Whether to prompt for updates (default: TRUE)
+
+### `expect_snapshot_value()`
+
+Use snapshots in automated tests with testthat:
+
+```r
+library(testthat)
+library(resultcheck)
+
+test_that("regression model is stable", {
+  model <- lm(mpg ~ wt + hp, data = mtcars)
+  
+  # Compare against saved snapshot
+  expect_snapshot_value(model, "mtcars_regression", script_name = "test-models")
+})
+```
+
+**Workflow:**
+
+1. Run your analysis script interactively and use `snapshot()` to save outputs
+2. In tests, use `expect_snapshot_value()` to verify outputs match the snapshots
+3. If outputs change, re-run interactively to review and update snapshots
+
+### `find_root()`
+
+Finds your project root directory using these markers (in order):
+- `resultcheck.yml` configuration file
+- `.Rproj` file
+- `.git` directory
+
+```r
+root <- find_root()
+print(root)
+# [1] "/path/to/your/project"
+```
+
+This ensures snapshots are stored consistently regardless of your current working directory.
+
+## Complete Example with Snapshots
+
+Here's a complete workflow combining sandboxing and snapshotting:
+
+```r
+library(resultcheck)
+
+# Interactive analysis (analysis.R)
+# ----------------------------------
+data <- readRDS("data/survey_data.rds")
+model <- lm(satisfaction ~ age + income, data = data)
+
+# Save snapshot interactively
+snapshot(model, "satisfaction_model")
+snapshot(summary(model)$coefficients, "model_coefficients")
+
+# Automated test (test-analysis.R)
+# ---------------------------------
+library(testthat)
+
+test_that("satisfaction model produces consistent results", {
+  # Setup sandbox
+  sandbox <- setup_sandbox(c("data/survey_data.rds"))
+  
+  # Run analysis in sandbox
+  run_in_sandbox("analysis.R", sandbox)
+  
+  # Load results from sandbox
+  # (assuming analysis.R saves the model)
+  model_path <- file.path(sandbox$path, "model.rds")
+  model <- readRDS(model_path)
+  
+  # Compare against snapshot
+  expect_snapshot_value(model, "satisfaction_model", script_name = "analysis")
+  
+  # Cleanup
+  cleanup_sandbox(sandbox)
+})
+```
+
 ## Using with testthat
 
 The sandboxing functions integrate seamlessly with `testthat`. The most recently created sandbox is automatically tracked, so you can omit the `sandbox` parameter in `run_in_sandbox()` and `cleanup_sandbox()`:
