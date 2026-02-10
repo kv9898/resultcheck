@@ -14,7 +14,7 @@ test_that("find_root finds project root with .git", {
   writeLines('root <- find_root(); saveRDS(root, "root.rds")', script)
   
   withr::with_dir(temp_project, {
-    source("test.R")
+    source("test.R", keep.source = TRUE)
     root <- readRDS("root.rds")
     expect_equal(normalizePath(root), normalizePath(temp_project))
   })
@@ -37,7 +37,7 @@ test_that("snapshot creates .md file when run interactively", {
   
   withr::with_dir(temp_project, {
     # Source the script (simulates interactive use, not testing mode)
-    source("analysis.R")
+    source("analysis.R", keep.source = TRUE)
     
     snapshot_path <- file.path(temp_project, "_resultcheck_snapshots", "analysis", "test_snapshot.md")
     expect_true(file.exists(snapshot_path))
@@ -66,11 +66,11 @@ test_that("snapshot matches when run with same data", {
   
   withr::with_dir(temp_project, {
     # First run
-    source("analysis.R")
+    source("analysis.R", keep.source = TRUE)
     
     # Second run - should match
     expect_message(
-      source("analysis.R"),
+      source("analysis.R", keep.source = TRUE),
       "Snapshot matches"
     )
   })
@@ -95,7 +95,7 @@ test_that("snapshot works with different object types", {
   ), script)
   
   withr::with_dir(temp_project, {
-    source("analysis.R")
+    source("analysis.R", keep.source = TRUE)
     
     expect_true(file.exists(file.path(temp_project, "_resultcheck_snapshots", "analysis", "list_snap.md")))
     expect_true(file.exists(file.path(temp_project, "_resultcheck_snapshots", "analysis", "model_snap.md")))
@@ -118,8 +118,8 @@ test_that("snapshot organizes by script name when specified", {
   writeLines('snapshot(data.frame(b = 2), "snap2", script_name = "custom2")', script2)
   
   withr::with_dir(temp_project, {
-    source("script1.R")
-    source("script2.R")
+    source("script1.R", keep.source = TRUE)
+    source("script2.R", keep.source = TRUE)
     
     expect_true(dir.exists(file.path(temp_project, "_resultcheck_snapshots", "custom1")))
     expect_true(dir.exists(file.path(temp_project, "_resultcheck_snapshots", "custom2")))

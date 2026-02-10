@@ -29,7 +29,7 @@ saveRDS(model, "model.rds")
   setwd(temp_project)
   
   # Step 1: Run interactively to create snapshot
-  source("analysis.R")
+  source("analysis.R", keep.source = TRUE)
   
   snapshot_file <- file.path(temp_project, "_resultcheck_snapshots", "analysis", "test_model.md")
   expect_true(file.exists(snapshot_file))
