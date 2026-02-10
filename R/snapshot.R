@@ -24,33 +24,9 @@ find_root <- function(start_path = NULL) {
          "Please install it with: install.packages('rprojroot')")
   }
   
+  # Determine start_path if not provided
   if (is.null(start_path)) {
-    # Check if we have a stored original working directory from sandbox
-    if (exists(".resultcheck_original_wd", envir = .resultcheck_env)) {
-      start_path <- .resultcheck_env$.resultcheck_original_wd
-      # DEBUG: Check if this path is valid
-      if (!is.null(start_path) && !dir.exists(start_path)) {
-        warning("Stored original WD no longer exists: ", start_path, 
-                ". Falling back to getwd().", immediate. = TRUE)
-        start_path <- NULL
-      }
-    }
-    
-    if (is.null(start_path)) {
-      # Try to get current working directory
-      start_path <- tryCatch(getwd(), error = function(e) NULL)
-      
-      # If getwd() fails or returns NULL (can happen in R CMD check with deleted directories),
-      # try to use the R session's temp directory as a fallback
-      if (is.null(start_path) || length(start_path) == 0 || start_path == "" || is.na(start_path)) {
-        # This can happen during R CMD check when in a deleted temp directory
-        # In this case, we can't reliably find a project root
-        stop("Could not determine current working directory. ",
-             "This may happen if the current directory has been deleted. ",
-             "Please ensure you are in a valid directory.",
-             call. = FALSE)
-      }
-    }
+    start_path <- get_start_path_for_find_root()
   }
   
   # Validate and normalize start_path
@@ -76,6 +52,41 @@ find_root <- function(start_path = NULL) {
          "with either a resultcheck.yml, .Rproj file, or .git directory. ",
          "Original error: ", e$message, call. = FALSE)
   })
+}
+
+
+#' Get start path for find_root
+#' 
+#' Helper function to determine the starting path for find_root().
+#' Checks for stored sandbox WD first, then falls back to getwd().
+#' 
+#' @return Character path to start searching from
+#' @keywords internal
+get_start_path_for_find_root <- function() {
+  # Check if we have a stored original working directory from sandbox
+  if (exists(".resultcheck_original_wd", envir = .resultcheck_env)) {
+    start_path <- .resultcheck_env$.resultcheck_original_wd
+    # Validate the stored path still exists
+    if (!is.null(start_path) && dir.exists(start_path)) {
+      return(start_path)
+    } else if (!is.null(start_path)) {
+      warning("Stored original WD no longer exists: ", start_path, 
+              ". Falling back to getwd().", immediate. = TRUE)
+    }
+  }
+  
+  # Try to get current working directory
+  start_path <- tryCatch(getwd(), error = function(e) NULL)
+  
+  # If getwd() fails or returns NULL
+  if (is.null(start_path) || length(start_path) == 0 || start_path == "" || is.na(start_path)) {
+    stop("Could not determine current working directory. ",
+         "This may happen if the current directory has been deleted. ",
+         "Please ensure you are in a valid directory.",
+         call. = FALSE)
+  }
+  
+  return(start_path)
 }
 
 

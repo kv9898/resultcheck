@@ -25,8 +25,8 @@ saveRDS(model, "model.rds")
   
   # Change to project directory
   old_wd <- getwd()
-  setwd(temp_project)
   on.exit(setwd(old_wd), add = TRUE)
+  setwd(temp_project)
   
   # Step 1: Run interactively to create snapshot
   data <- readRDS("data/input.rds")
