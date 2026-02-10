@@ -41,9 +41,6 @@ jobs:
         with:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::rcmdcheck, survival=?ignore-before-r=3.5.0
-          needs: check
 
       # ---------- Quarto + TinyTeX ----------
       - name: Setup Quarto (with TinyTeX for PDF)
