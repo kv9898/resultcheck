@@ -28,10 +28,38 @@ find_root <- function(start_path = NULL) {
     # Check if we have a stored original working directory from sandbox
     if (exists(".resultcheck_original_wd", envir = .resultcheck_env)) {
       start_path <- .resultcheck_env$.resultcheck_original_wd
-    } else {
-      start_path <- getwd()
+      # DEBUG: Check if this path is valid
+      if (!is.null(start_path) && !dir.exists(start_path)) {
+        warning("Stored original WD no longer exists: ", start_path, 
+                ". Falling back to getwd().", immediate. = TRUE)
+        start_path <- NULL
+      }
+    }
+    
+    if (is.null(start_path)) {
+      # Try to get current working directory
+      start_path <- tryCatch(getwd(), error = function(e) NULL)
+      
+      # If getwd() fails or returns NULL (can happen in R CMD check with deleted directories),
+      # try to use the R session's temp directory as a fallback
+      if (is.null(start_path) || length(start_path) == 0 || start_path == "" || is.na(start_path)) {
+        # This can happen during R CMD check when in a deleted temp directory
+        # In this case, we can't reliably find a project root
+        stop("Could not determine current working directory. ",
+             "This may happen if the current directory has been deleted. ",
+             "Please ensure you are in a valid directory.",
+             call. = FALSE)
+      }
     }
   }
+  
+  # Validate and normalize start_path
+  if (!dir.exists(start_path)) {
+    stop("Start path does not exist: ", start_path, call. = FALSE)
+  }
+  
+  # Normalize the path to avoid issues with rprojroot
+  start_path <- normalizePath(start_path, winslash = "/", mustWork = TRUE)
   
   # Define criteria for finding project root
   # Try multiple criteria in order of preference
@@ -43,8 +71,10 @@ find_root <- function(start_path = NULL) {
     root <- rprojroot::find_root(criteria, path = start_path)
     return(root)
   }, error = function(e) {
-    stop("Could not find project root. Please ensure you are in a project directory ",
-         "with either a resultcheck.yml, .Rproj file, or .git directory.")
+    stop("Could not find project root from path: ", start_path, ". ",
+         "Please ensure you are in a project directory ",
+         "with either a resultcheck.yml, .Rproj file, or .git directory. ",
+         "Original error: ", e$message, call. = FALSE)
   })
 }
 

@@ -209,8 +209,13 @@ run_in_sandbox <- function(script_path,
       dev.off()
     })
   }, error = function(e) {
+    # Ensure cleanup happens even on error
+    .resultcheck_env$.resultcheck_original_wd <- NULL
     stop("Error executing script in sandbox: ", e$message)
   })
+  
+  # Ensure cleanup (redundant but safe)
+  .resultcheck_env$.resultcheck_original_wd <- NULL
   
   invisible(NULL)
 }
