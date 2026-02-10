@@ -273,7 +273,7 @@ snapshot <- function(value, name, script_name = NULL) {
     
     # First time: save the snapshot
     writeLines(new_text, snapshot_file)
-    message("✓ New snapshot saved: ", basename(dirname(snapshot_file)), "/", basename(snapshot_file))
+    message("\u2713 New snapshot saved: ", basename(dirname(snapshot_file)), "/", basename(snapshot_file))
     return(invisible(TRUE))
   }
   
@@ -286,7 +286,7 @@ snapshot <- function(value, name, script_name = NULL) {
   if (is.null(differences)) {
     # No differences - snapshot matches
     if (!testing_mode) {
-      message("✓ Snapshot matches: ", name)
+      message("\u2713 Snapshot matches: ", name)
     }
     return(invisible(TRUE))
   }
@@ -314,15 +314,15 @@ snapshot <- function(value, name, script_name = NULL) {
     
     if (tolower(trimws(response)) == "y") {
       writeLines(new_text, snapshot_file)
-      message("✓ Snapshot updated.")
+      message("\u2713 Snapshot updated.")
       return(invisible(TRUE))
     } else {
-      message("✗ Snapshot not updated.")
+      message("\u2717 Snapshot not updated.")
       return(invisible(FALSE))
     }
   } else {
     # Non-interactive but not testing - just warn
-    message("\n⚠ Run interactively to update snapshot.")
+    message("\n\u26a0 Run interactively to update snapshot.")
     return(invisible(FALSE))
   }
 }

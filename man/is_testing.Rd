@@ -10,6 +10,8 @@ is_testing()
 Logical indicating if in testing mode.
 }
 \description{
-Determines if code is running in a testing context (testthat or sandbox).
+Determines if code is running in a testing context (sandbox via run_in_sandbox).
+This is used to change snapshot() behavior: interactive mode prompts for updates,
+while testing mode throws errors on mismatch.
 }
 \keyword{internal}
