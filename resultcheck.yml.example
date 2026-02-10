@@ -1,0 +1,27 @@
+# resultcheck Configuration
+#
+# This file marks the root of your project and allows you to configure
+# resultcheck behavior. Place this in your project root directory.
+#
+# The presence of this file helps resultcheck::find_root() locate your
+# project root, ensuring snapshots are stored consistently.
+
+# Snapshot settings
+snapshots:
+  # Directory where snapshots are stored (relative to project root)
+  # Default: _resultcheck_snapshots
+  directory: "_resultcheck_snapshots"
+  
+  # Whether to automatically organize snapshots by script name
+  # Default: true
+  organize_by_script: true
+
+# Sandbox settings (optional)
+sandbox:
+  # Default files to copy to sandbox (can be overridden per test)
+  # Example:
+  # default_files:
+  #   - "data/*.rds"
+  #   - "helper/*.R"
+
+# Future configuration options can be added here
