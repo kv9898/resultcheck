@@ -47,6 +47,13 @@ jobs:
         with:
           tinytex: true
 
+      # ---------- R package dependencies ----------
+      - name: Install R package dependencies
+        run: |
+          install.packages(c("remotes", "devtools"))
+          remotes::install_deps(dependencies = TRUE)
+        shell: Rscript {0}
+
       # ---------- R packages via renv ----------
       # - name: Setup renv
       #   uses: r-lib/actions/setup-renv@v2
