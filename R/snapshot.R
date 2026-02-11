@@ -24,14 +24,18 @@ find_root <- function(start_path = NULL) {
          "Please install it with: install.packages('rprojroot')")
   }
   
+  # Determine start_path if not provided
   if (is.null(start_path)) {
-    # Check if we have a stored original working directory from sandbox
-    if (exists(".resultcheck_original_wd", envir = .resultcheck_env)) {
-      start_path <- .resultcheck_env$.resultcheck_original_wd
-    } else {
-      start_path <- getwd()
-    }
+    start_path <- get_start_path_for_find_root()
   }
+  
+  # Validate and normalize start_path
+  if (!dir.exists(start_path)) {
+    stop("Start path does not exist: ", start_path, call. = FALSE)
+  }
+  
+  # Normalize the path to avoid issues with rprojroot
+  start_path <- normalizePath(start_path, winslash = "/", mustWork = TRUE)
   
   # Define criteria for finding project root
   # Try multiple criteria in order of preference
@@ -43,9 +47,46 @@ find_root <- function(start_path = NULL) {
     root <- rprojroot::find_root(criteria, path = start_path)
     return(root)
   }, error = function(e) {
-    stop("Could not find project root. Please ensure you are in a project directory ",
-         "with either a resultcheck.yml, .Rproj file, or .git directory.")
+    stop("Could not find project root from path: ", start_path, ". ",
+         "Please ensure you are in a project directory ",
+         "with either a resultcheck.yml, .Rproj file, or .git directory. ",
+         "Original error: ", e$message, call. = FALSE)
   })
+}
+
+
+#' Get start path for find_root
+#' 
+#' Helper function to determine the starting path for find_root().
+#' Checks for stored sandbox WD first, then falls back to getwd().
+#' 
+#' @return Character path to start searching from
+#' @keywords internal
+get_start_path_for_find_root <- function() {
+  # Check if we have a stored original working directory from sandbox
+  if (exists(".resultcheck_original_wd", envir = .resultcheck_env)) {
+    start_path <- .resultcheck_env$.resultcheck_original_wd
+    # Validate the stored path still exists
+    if (!is.null(start_path) && dir.exists(start_path)) {
+      return(start_path)
+    } else if (!is.null(start_path)) {
+      warning("Stored original WD no longer exists: ", start_path, 
+              ". Falling back to getwd().", immediate. = TRUE)
+    }
+  }
+  
+  # Try to get current working directory
+  start_path <- tryCatch(getwd(), error = function(e) NULL)
+  
+  # If getwd() fails or returns NULL
+  if (is.null(start_path) || length(start_path) == 0 || start_path == "" || is.na(start_path)) {
+    stop("Could not determine current working directory. ",
+         "This may happen if the current directory has been deleted. ",
+         "Please ensure you are in a valid directory.",
+         call. = FALSE)
+  }
+  
+  return(start_path)
 }
 
 
@@ -273,7 +314,7 @@ snapshot <- function(value, name, script_name = NULL) {
     
     # First time: save the snapshot
     writeLines(new_text, snapshot_file)
-    message("✓ New snapshot saved: ", basename(dirname(snapshot_file)), "/", basename(snapshot_file))
+    message("\u2713 New snapshot saved: ", basename(dirname(snapshot_file)), "/", basename(snapshot_file))
     return(invisible(TRUE))
   }
   
@@ -286,7 +327,7 @@ snapshot <- function(value, name, script_name = NULL) {
   if (is.null(differences)) {
     # No differences - snapshot matches
     if (!testing_mode) {
-      message("✓ Snapshot matches: ", name)
+      message("\u2713 Snapshot matches: ", name)
     }
     return(invisible(TRUE))
   }
@@ -314,15 +355,15 @@ snapshot <- function(value, name, script_name = NULL) {
     
     if (tolower(trimws(response)) == "y") {
       writeLines(new_text, snapshot_file)
-      message("✓ Snapshot updated.")
+      message("\u2713 Snapshot updated.")
       return(invisible(TRUE))
     } else {
-      message("✗ Snapshot not updated.")
+      message("\u2717 Snapshot not updated.")
       return(invisible(FALSE))
     }
   } else {
     # Non-interactive but not testing - just warn
-    message("\n⚠ Run interactively to update snapshot.")
+    message("\n\u26a0 Run interactively to update snapshot.")
     return(invisible(FALSE))
   }
 }

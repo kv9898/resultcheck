@@ -178,7 +178,7 @@ run_in_sandbox <- function(script_path,
   }
   
   # Build the execution expression
-  exec_expr <- quote(source(script_path))
+  exec_expr <- quote(source(script_path, keep.source = TRUE))
   
   if (capture_output) {
     exec_expr <- bquote(capture.output(.(exec_expr)))
@@ -209,8 +209,13 @@ run_in_sandbox <- function(script_path,
       dev.off()
     })
   }, error = function(e) {
+    # Ensure cleanup happens even on error
+    .resultcheck_env$.resultcheck_original_wd <- NULL
     stop("Error executing script in sandbox: ", e$message)
   })
+  
+  # Ensure cleanup (redundant but safe)
+  .resultcheck_env$.resultcheck_original_wd <- NULL
   
   invisible(NULL)
 }

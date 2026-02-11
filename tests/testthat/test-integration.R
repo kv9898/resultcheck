@@ -15,13 +15,13 @@ test_that("snapshot works in sandbox (testing mode)", {
   script_content <- '
 data <- readRDS("data/input.rds")
 model <- lm(y ~ x, data = data)
-snapshot(model, "test_model")
+snapshot(model, "test_model", script_name = "analysis")
 saveRDS(model, "model.rds")
 '
   script_path <- file.path(temp_project, "analysis.R")
   writeLines(script_content, script_path)
   
-  on.exit(unlink(temp_project, recursive = TRUE))
+  on.exit(unlink(temp_project, recursive = TRUE), add = TRUE)
   
   # Change to project directory
   old_wd <- getwd()
@@ -29,7 +29,9 @@ saveRDS(model, "model.rds")
   setwd(temp_project)
   
   # Step 1: Run interactively to create snapshot
-  source("analysis.R")
+  data <- readRDS("data/input.rds")
+  model <- lm(y ~ x, data = data)
+  snapshot(model, "test_model", script_name = "analysis")
   
   snapshot_file <- file.path(temp_project, "_resultcheck_snapshots", "analysis", "test_model.md")
   expect_true(file.exists(snapshot_file))
