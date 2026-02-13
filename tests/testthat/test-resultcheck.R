@@ -5,12 +5,11 @@ library(resultcheck)
 # 2. Then run this test, which uses run_in_sandbox() to verify the script produces
 #    the same results as the saved snapshots
 
-sandbox <- setup_sandbox("resultcheck-test.R")
-
 test_that("resultcheck-test script runs without errors in sandbox", {
+    sandbox <- setup_sandbox("resultcheck-test.R")
+    on.exit(cleanup_sandbox(sandbox), add = TRUE)
+    
     expect_no_error(
         run_in_sandbox("resultcheck-test.R", suppress_messages = FALSE, suppress_warnings = FALSE)
     )
 })
-
-cleanup_sandbox()

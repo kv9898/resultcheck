@@ -1,3 +1,19 @@
+#' Get project root for sandbox operations
+#' 
+#' Internal helper to get project root, falling back to current directory
+#' if root cannot be determined.
+#' 
+#' @return Character path to project root or current working directory
+#' @keywords internal
+.get_project_root <- function() {
+  tryCatch({
+    find_root()
+  }, error = function(e) {
+    getwd()
+  })
+}
+
+
 #' Setup a Sandbox Environment for Testing
 #'
 #' Creates a temporary directory and copies specified files while preserving
@@ -55,12 +71,7 @@ setup_sandbox <- function(files, temp_base = NULL) {
   })
   
   # Find project root to resolve file paths relative to it
-  project_root <- tryCatch({
-    find_root()
-  }, error = function(e) {
-    # If we can't find root, use current directory
-    getwd()
-  })
+  project_root <- .get_project_root()
   
   # Copy files while preserving directory structure
   for (file in files) {
@@ -191,7 +202,7 @@ run_in_sandbox <- function(script_path,
     script_to_run <- script_path
   } else {
     # Try to find script in project root
-    project_root <- tryCatch(find_root(), error = function(e) getwd())
+    project_root <- .get_project_root()
     script_in_root <- file.path(project_root, script_path)
     
     if (file.exists(script_in_root)) {
@@ -204,8 +215,8 @@ run_in_sandbox <- function(script_path,
       file.copy(script_in_root, target_path, overwrite = TRUE)
       script_to_run <- script_path
     } else if (file.exists(script_path)) {
-      # Script exists at absolute path, copy it to sandbox preserving structure
-      # This handles cases where script_path is a full path but not under project root
+      # Fallback: script exists at a path relative to current directory
+      # Copy it to sandbox preserving structure
       target_path <- file.path(sandbox$path, script_path)
       target_dir <- dirname(target_path)
       if (!dir.exists(target_dir)) {
