@@ -7,7 +7,7 @@ library(resultcheck)
 
 sandbox <- setup_sandbox("resultcheck-test.R")
 
-test_that("run_tested_script", {
+test_that("resultcheck-test script runs without errors in sandbox", {
     expect_no_error(
         run_in_sandbox("resultcheck-test.R", suppress_messages = FALSE, suppress_warnings = FALSE)
     )

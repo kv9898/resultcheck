@@ -6,6 +6,7 @@
 #'
 #' @param files Character vector of file paths to copy to the sandbox.
 #'   Paths must be relative to the project root (found using \code{find_root()}).
+#'   If the project root cannot be determined, falls back to the current working directory.
 #'   Absolute paths and path traversal attempts (e.g., \code{..}) are rejected for security.
 #' @param temp_base Optional. Custom location for the temporary directory.
 #'   If NULL (default), uses \code{tempfile()}.
@@ -194,7 +195,7 @@ run_in_sandbox <- function(script_path,
     script_in_root <- file.path(project_root, script_path)
     
     if (file.exists(script_in_root)) {
-      # Copy script to sandbox before running
+      # Copy script to sandbox before running, preserving directory structure
       target_path <- file.path(sandbox$path, script_path)
       target_dir <- dirname(target_path)
       if (!dir.exists(target_dir)) {
@@ -203,10 +204,15 @@ run_in_sandbox <- function(script_path,
       file.copy(script_in_root, target_path, overwrite = TRUE)
       script_to_run <- script_path
     } else if (file.exists(script_path)) {
-      # Script exists at current path, copy it to sandbox
-      target_path <- file.path(sandbox$path, basename(script_path))
+      # Script exists at absolute path, copy it to sandbox preserving structure
+      # This handles cases where script_path is a full path but not under project root
+      target_path <- file.path(sandbox$path, script_path)
+      target_dir <- dirname(target_path)
+      if (!dir.exists(target_dir)) {
+        dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
+      }
       file.copy(script_path, target_path, overwrite = TRUE)
-      script_to_run <- basename(script_path)
+      script_to_run <- script_path
     } else {
       stop("Script file not found: ", script_path)
     }
