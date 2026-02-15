@@ -215,15 +215,29 @@ run_in_sandbox <- function(script_path,
       file.copy(script_in_root, target_path, overwrite = TRUE)
       script_to_run <- script_path
     } else if (file.exists(script_path)) {
-      # Fallback: script exists at a path relative to current directory
-      # Copy it to sandbox preserving structure
-      target_path <- file.path(sandbox$path, script_path)
-      target_dir <- dirname(target_path)
-      if (!dir.exists(target_dir)) {
-        dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
+      # Fallback: script exists at an absolute path or relative to current directory
+      # Check if it's an absolute path
+      is_absolute <- if (.Platform$OS.type == "windows") {
+        grepl("^[A-Za-z]:|^\\\\\\\\|^/", script_path)
+      } else {
+        grepl("^/", script_path)
       }
-      file.copy(script_path, target_path, overwrite = TRUE)
-      script_to_run <- script_path
+      
+      if (is_absolute) {
+        # For absolute paths, copy to sandbox root with basename only
+        target_path <- file.path(sandbox$path, basename(script_path))
+        file.copy(script_path, target_path, overwrite = TRUE)
+        script_to_run <- basename(script_path)
+      } else {
+        # For relative paths, preserve directory structure
+        target_path <- file.path(sandbox$path, script_path)
+        target_dir <- dirname(target_path)
+        if (!dir.exists(target_dir)) {
+          dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
+        }
+        file.copy(script_path, target_path, overwrite = TRUE)
+        script_to_run <- script_path
+      }
     } else {
       stop("Script file not found: ", script_path)
     }
