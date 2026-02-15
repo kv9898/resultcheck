@@ -180,9 +180,27 @@ serialize_value <- function(value) {
     output <- c(output, "", "### Call")
     output <- c(output, deparse(value$call))
     
-    # Add coefficients as a data structure (not formatted text)
+    # Add coefficients as a data structure with controlled precision
+    # Serialize each value with sprintf to avoid platform-specific formatting
     output <- c(output, "", "### Coefficients")
-    output <- c(output, utils::capture.output(print(summ$coefficients, digits = 7)))
+    coef_mat <- summ$coefficients
+    
+    # Create header
+    coef_header <- sprintf("%-15s", "")  # Empty column for row names
+    for (col_name in colnames(coef_mat)) {
+      coef_header <- paste0(coef_header, sprintf("%15s", col_name))
+    }
+    output <- c(output, coef_header)
+    
+    # Add each coefficient row with controlled formatting
+    for (i in seq_len(nrow(coef_mat))) {
+      row_name <- rownames(coef_mat)[i]
+      row_str <- sprintf("%-15s", row_name)
+      for (j in seq_len(ncol(coef_mat))) {
+        row_str <- paste0(row_str, sprintf("%15.10g", coef_mat[i, j]))
+      }
+      output <- c(output, row_str)
+    }
     
     # Add statistical measures with controlled precision
     output <- c(output, "", "### Model Statistics")
