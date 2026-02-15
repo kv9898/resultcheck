@@ -169,9 +169,81 @@ serialize_value <- function(value) {
     output <- c(output, "", "## Data")
     output <- c(output, utils::capture.output(print(value)))
   } else if (inherits(value, "lm") || inherits(value, "glm")) {
-    # For models, show summary
-    output <- c(output, "## Model Summary")
-    output <- c(output, utils::capture.output(summary(value)))
+    # For models, extract stable data structures instead of formatted summary
+    # This avoids formatting differences (quotation marks, symbols, etc.)
+    output <- c(output, "## Model Information")
+    
+    # Get summary for extracting key components
+    summ <- summary(value)
+    
+    # Add call
+    output <- c(output, "", "### Call")
+    output <- c(output, deparse(value$call))
+    
+    # Add coefficients as a data structure with controlled precision
+    # Serialize each value with sprintf to avoid platform-specific formatting
+    output <- c(output, "", "### Coefficients")
+    coef_mat <- summ$coefficients
+    
+    # Create header
+    coef_header <- sprintf("%-15s", "")  # Empty column for row names
+    for (col_name in colnames(coef_mat)) {
+      coef_header <- paste0(coef_header, sprintf("%15s", col_name))
+    }
+    output <- c(output, coef_header)
+    
+    # Add each coefficient row with controlled formatting
+    for (i in seq_len(nrow(coef_mat))) {
+      row_name <- rownames(coef_mat)[i]
+      row_str <- sprintf("%-15s", row_name)
+      for (j in seq_len(ncol(coef_mat))) {
+        row_str <- paste0(row_str, sprintf("%15.10g", coef_mat[i, j]))
+      }
+      output <- c(output, row_str)
+    }
+    
+    # Add statistical measures with controlled precision
+    output <- c(output, "", "### Model Statistics")
+    
+    # R-squared (if available)
+    if (!is.null(summ$r.squared)) {
+      output <- c(output, sprintf("R-squared: %.10g", summ$r.squared))
+    }
+    if (!is.null(summ$adj.r.squared)) {
+      output <- c(output, sprintf("Adjusted R-squared: %.10g", summ$adj.r.squared))
+    }
+    
+    # Residual standard error
+    if (!is.null(summ$sigma)) {
+      output <- c(output, sprintf("Residual standard error: %.10g", summ$sigma))
+    }
+    
+    # Degrees of freedom
+    if (!is.null(summ$df)) {
+      output <- c(output, sprintf("Degrees of freedom: %s", paste(summ$df, collapse = ", ")))
+    }
+    
+    # F-statistic (for lm)
+    if (!is.null(summ$fstatistic)) {
+      output <- c(output, sprintf("F-statistic: %.10g on %d and %d DF", 
+                                  summ$fstatistic[1], summ$fstatistic[2], summ$fstatistic[3]))
+      # Calculate p-value for F-statistic
+      p_value <- pf(summ$fstatistic[1], summ$fstatistic[2], summ$fstatistic[3], lower.tail = FALSE)
+      output <- c(output, sprintf("p-value: %.10g", p_value))
+    }
+    
+    # For glm, add deviance and AIC
+    if (inherits(value, "glm")) {
+      if (!is.null(summ$deviance)) {
+        output <- c(output, sprintf("Deviance: %.10g", summ$deviance))
+      }
+      if (!is.null(summ$aic)) {
+        output <- c(output, sprintf("AIC: %.10g", summ$aic))
+      }
+      if (!is.null(summ$null.deviance)) {
+        output <- c(output, sprintf("Null deviance: %.10g", summ$null.deviance))
+      }
+    }
   } else if (is.list(value)) {
     # For lists, use str() for structure
     output <- c(output, "## List Structure")
