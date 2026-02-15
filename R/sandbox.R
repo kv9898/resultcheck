@@ -1,3 +1,19 @@
+#' Get project root for sandbox operations
+#' 
+#' Internal helper to get project root, falling back to current directory
+#' if root cannot be determined.
+#' 
+#' @return Character path to project root or current working directory
+#' @keywords internal
+.get_project_root <- function() {
+  tryCatch({
+    find_root()
+  }, error = function(e) {
+    getwd()
+  })
+}
+
+
 #' Setup a Sandbox Environment for Testing
 #'
 #' Creates a temporary directory and copies specified files while preserving
@@ -5,8 +21,9 @@
 #' scripts in isolation.
 #'
 #' @param files Character vector of file paths to copy to the sandbox.
-#'   Paths must be relative to the current working directory. Absolute paths
-#'   and path traversal attempts (e.g., \code{..}) are rejected for security.
+#'   Paths must be relative to the project root (found using \code{find_root()}).
+#'   If the project root cannot be determined, falls back to the current working directory.
+#'   Absolute paths and path traversal attempts (e.g., \code{..}) are rejected for security.
 #' @param temp_base Optional. Custom location for the temporary directory.
 #'   If NULL (default), uses \code{tempfile()}.
 #'
@@ -53,6 +70,9 @@ setup_sandbox <- function(files, temp_base = NULL) {
     stop("Failed to create sandbox directory: ", e$message)
   })
   
+  # Find project root to resolve file paths relative to it
+  project_root <- .get_project_root()
+  
   # Copy files while preserving directory structure
   for (file in files) {
     # Validate that path is relative (no absolute paths allowed)
@@ -75,7 +95,10 @@ setup_sandbox <- function(files, temp_base = NULL) {
       stop("Path traversal (e.g., '..') is not allowed for security reasons: ", file)
     }
     
-    if (!file.exists(file)) {
+    # Resolve file path relative to project root
+    full_file_path <- file.path(project_root, file)
+    
+    if (!file.exists(full_file_path)) {
       warning("File not found, skipping: ", file)
       next
     }
@@ -95,7 +118,7 @@ setup_sandbox <- function(files, temp_base = NULL) {
     # outside the current directory, the copied content will be in the sandbox.
     # This is the desired behavior for creating isolated test environments.
     tryCatch({
-      file.copy(file, target_path, overwrite = TRUE)
+      file.copy(full_file_path, target_path, overwrite = TRUE)
     }, error = function(e) {
       warning("Failed to copy file ", file, ": ", e$message)
     })
@@ -166,19 +189,62 @@ run_in_sandbox <- function(script_path,
     stop("Sandbox directory does not exist: ", sandbox$path)
   }
   
-  # Check if script exists
-  if (!file.exists(script_path)) {
-    stop("Script file not found: ", script_path)
-  }
-  
   # Check if withr is available
   if (!requireNamespace("withr", quietly = TRUE)) {
     stop("Package 'withr' is required but not installed. ",
          "Please install it with: install.packages('withr')")
   }
   
+  # Check if script exists in sandbox (preferred) or in project root
+  script_in_sandbox <- file.path(sandbox$path, script_path)
+  if (file.exists(script_in_sandbox)) {
+    # Script was copied to sandbox, use it from there
+    script_to_run <- script_path
+  } else {
+    # Try to find script in project root
+    project_root <- .get_project_root()
+    script_in_root <- file.path(project_root, script_path)
+    
+    if (file.exists(script_in_root)) {
+      # Copy script to sandbox before running, preserving directory structure
+      target_path <- file.path(sandbox$path, script_path)
+      target_dir <- dirname(target_path)
+      if (!dir.exists(target_dir)) {
+        dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
+      }
+      file.copy(script_in_root, target_path, overwrite = TRUE)
+      script_to_run <- script_path
+    } else if (file.exists(script_path)) {
+      # Fallback: script exists at an absolute path or relative to current directory
+      # Check if it's an absolute path
+      is_absolute <- if (.Platform$OS.type == "windows") {
+        grepl("^[A-Za-z]:|^\\\\\\\\|^/", script_path)
+      } else {
+        grepl("^/", script_path)
+      }
+      
+      if (is_absolute) {
+        # For absolute paths, copy to sandbox root with basename only
+        target_path <- file.path(sandbox$path, basename(script_path))
+        file.copy(script_path, target_path, overwrite = TRUE)
+        script_to_run <- basename(script_path)
+      } else {
+        # For relative paths, preserve directory structure
+        target_path <- file.path(sandbox$path, script_path)
+        target_dir <- dirname(target_path)
+        if (!dir.exists(target_dir)) {
+          dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
+        }
+        file.copy(script_path, target_path, overwrite = TRUE)
+        script_to_run <- script_path
+      }
+    } else {
+      stop("Script file not found: ", script_path)
+    }
+  }
+  
   # Build the execution expression
-  exec_expr <- quote(source(script_path, keep.source = TRUE))
+  exec_expr <- quote(source(script_to_run, keep.source = TRUE))
   
   if (capture_output) {
     exec_expr <- bquote(capture.output(.(exec_expr)))
