@@ -3,5 +3,5 @@
 library(resultcheck)
 
 # Explicitly specify script_name to ensure snapshot is saved in the correct location
-result <- data.frame(mean_mpg = mean(mtcars$mpg), n = nrow(mtcars))
-snapshot(result, "result", script_name = "resultcheck-test")
+model <- lm(mpg ~ wt, data = mtcars)
+snapshot(coef(model), "model", script_name = "resultcheck-test")

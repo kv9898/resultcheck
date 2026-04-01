@@ -6,8 +6,8 @@ library(resultcheck)
 
 test_that("resultcheck-test script runs without errors in sandbox", {
     # Step 1: Create the snapshot first (simulating interactive workflow)
-    result <- data.frame(mean_mpg = mean(mtcars$mpg), n = nrow(mtcars))
-    snapshot(result, "result", script_name = "resultcheck-test")
+    model <- lm(mpg ~ wt, data = mtcars)
+    snapshot(coef(model), "model", script_name = "resultcheck-test")
     
     # Step 2: Run the script in sandbox (should match the snapshot)
     sandbox <- setup_sandbox("resultcheck-test.R")
