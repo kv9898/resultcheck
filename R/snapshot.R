@@ -249,7 +249,7 @@ compare_snapshot_text <- function(old_text, new_text) {
 #' @keywords internal
 normalize_snapshot_text <- function(text) {
   gsub(
-    '(<environment: )[^>]+(>\\s*)$',
+    '(<environment: )[^>]+(>[[:space:]]*)$',
     '\\1<normalized>\\2',
     text
   )
