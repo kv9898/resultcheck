@@ -25,9 +25,7 @@ test_that("example project: analysis produces stable results", {
     file.path(temp_project, "analysis.R")
   )
 
-  old_wd <- getwd()
-  on.exit(setwd(old_wd), add = TRUE)
-  setwd(temp_project)
+  withr::local_dir(temp_project)
 
   # ----- Step 1: simulate interactive run to create reference snapshot -------
   data <- read.csv("data/income.csv")
@@ -74,9 +72,7 @@ test_that("example project: passing a whole directory to setup_sandbox works", {
     file.path(temp_project, "analysis.R")
   )
 
-  old_wd <- getwd()
-  on.exit(setwd(old_wd), add = TRUE)
-  setwd(temp_project)
+  withr::local_dir(temp_project)
 
   # Create reference snapshot
   data <- read.csv("data/income.csv")
