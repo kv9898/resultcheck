@@ -16,14 +16,18 @@
 
 #' Setup a Sandbox Environment for Testing
 #'
-#' Creates a temporary directory and copies specified files while preserving
-#' their directory structure. This is useful for testing empirical analysis
-#' scripts in isolation.
+#' Creates a temporary directory and copies specified files and/or directories
+#' into it while preserving their path structure. This is useful for testing
+#' empirical analysis scripts in isolation.
 #'
-#' @param files Character vector of file paths to copy to the sandbox.
-#'   Paths must be relative to the project root (found using \code{find_root()}).
-#'   If the project root cannot be determined, falls back to the current working directory.
-#'   Absolute paths and path traversal attempts (e.g., \code{..}) are rejected for security.
+#' @param files Character vector of relative file or directory paths to copy
+#'   to the sandbox.  Paths are resolved relative to the project root (found
+#'   using \code{find_root()}); if the project root cannot be determined the
+#'   current working directory is used.  When a path refers to a directory,
+#'   the entire directory is copied recursively.  Absolute paths and path
+#'   traversal attempts (e.g., \code{..}) are rejected for security.
+#'   Snapshot files do \emph{not} need to be listed here: \code{snapshot()}
+#'   always reads snapshots from the project root, not from the sandbox.
 #' @param temp_base Optional. Custom location for the temporary directory.
 #'   If NULL (default), uses \code{tempfile()}.
 #'
@@ -73,7 +77,7 @@ setup_sandbox <- function(files, temp_base = NULL) {
   # Find project root to resolve file paths relative to it
   project_root <- .get_project_root()
   
-  # Copy files while preserving directory structure
+  # Copy files/directories while preserving path structure
   for (file in files) {
     # Validate that path is relative (no absolute paths allowed)
     if (.Platform$OS.type == "windows") {
@@ -95,33 +99,49 @@ setup_sandbox <- function(files, temp_base = NULL) {
       stop("Path traversal (e.g., '..') is not allowed for security reasons: ", file)
     }
     
-    # Resolve file path relative to project root
+    # Resolve path relative to project root
     full_file_path <- file.path(project_root, file)
     
-    if (!file.exists(full_file_path)) {
+    if (dir.exists(full_file_path)) {
+      # Copy directory recursively, preserving the relative path structure
+      all_sub_files <- list.files(full_file_path, recursive = TRUE,
+                                  all.files = TRUE, full.names = FALSE)
+      for (subfile in all_sub_files) {
+        src <- file.path(full_file_path, subfile)
+        if (isTRUE(file.info(src)$isdir)) next  # skip directory entries
+        dst <- file.path(temp_dir, file, subfile)
+        if (!dir.exists(dirname(dst))) {
+          dir.create(dirname(dst), recursive = TRUE, showWarnings = FALSE)
+        }
+        tryCatch({
+          file.copy(src, dst, overwrite = TRUE)
+        }, error = function(e) {
+          warning("Failed to copy file ", file.path(file, subfile), ": ", e$message)
+        })
+      }
+    } else if (file.exists(full_file_path)) {
+      # Determine the target path
+      target_path <- file.path(temp_dir, file)
+      
+      # Create parent directories if needed
+      target_dir <- dirname(target_path)
+      if (!dir.exists(target_dir)) {
+        dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
+      }
+      
+      # Copy the file
+      # Note: file.copy() follows symlinks and copies the target file's content,
+      # not the symlink itself. This means even if 'file' is a symlink pointing
+      # outside the current directory, the copied content will be in the sandbox.
+      # This is the desired behavior for creating isolated test environments.
+      tryCatch({
+        file.copy(full_file_path, target_path, overwrite = TRUE)
+      }, error = function(e) {
+        warning("Failed to copy file ", file, ": ", e$message)
+      })
+    } else {
       warning("File not found, skipping: ", file)
-      next
     }
-    
-    # Determine the target path
-    target_path <- file.path(temp_dir, file)
-    
-    # Create parent directories if needed
-    target_dir <- dirname(target_path)
-    if (!dir.exists(target_dir)) {
-      dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
-    }
-    
-    # Copy the file
-    # Note: file.copy() follows symlinks and copies the target file's content,
-    # not the symlink itself. This means even if 'file' is a symlink pointing
-    # outside the current directory, the copied content will be in the sandbox.
-    # This is the desired behavior for creating isolated test environments.
-    tryCatch({
-      file.copy(full_file_path, target_path, overwrite = TRUE)
-    }, error = function(e) {
-      warning("Failed to copy file ", file, ": ", e$message)
-    })
   }
   
   # Create and return sandbox object

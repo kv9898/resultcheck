@@ -2,3 +2,6 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^_resultcheck_snapshots$
+^\.github$
+^resultcheck\.yml$
+^cran-comments\.md$
