@@ -130,7 +130,7 @@ test_that("compare_snapshot_text ignores .Environment differences", {
     "  .. ..- attr(*, \".Environment\")=<environment: R_GlobalEnv> "
   )
 
-  differences <- compare_snapshot_text(old_text, new_text)
+  differences <- resultcheck:::compare_snapshot_text(old_text, new_text)
 
   expect_null(differences)
 })
