@@ -14,9 +14,9 @@ test_that("snapshot works in sandbox (testing mode)", {
   # Create analysis script with snapshot
   script_content <- '
 data <- readRDS("data/input.rds")
-model <- lm(y ~ x, data = data)
-snapshot(model, "test_model", script_name = "analysis")
-saveRDS(model, "model.rds")
+result <- data.frame(mean_y = mean(data$y), n = nrow(data))
+snapshot(result, "test_result", script_name = "analysis")
+saveRDS(result, "result.rds")
 '
   script_path <- file.path(temp_project, "analysis.R")
   writeLines(script_content, script_path)
@@ -30,10 +30,10 @@ saveRDS(model, "model.rds")
   
   # Step 1: Run interactively to create snapshot
   data <- readRDS("data/input.rds")
-  model <- lm(y ~ x, data = data)
-  snapshot(model, "test_model", script_name = "analysis")
+  result <- data.frame(mean_y = mean(data$y), n = nrow(data))
+  snapshot(result, "test_result", script_name = "analysis")
   
-  snapshot_file <- file.path(temp_project, "_resultcheck_snapshots", "analysis", "test_model.md")
+  snapshot_file <- file.path(temp_project, "_resultcheck_snapshots", "analysis", "test_result.md")
   expect_true(file.exists(snapshot_file))
   expect_equal(tools::file_ext(snapshot_file), "md")
   

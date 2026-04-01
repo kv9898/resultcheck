@@ -168,10 +168,6 @@ serialize_value <- function(value) {
     output <- c(output, utils::capture.output(str(value)))
     output <- c(output, "", "## Data")
     output <- c(output, utils::capture.output(print(value)))
-  } else if (inherits(value, "lm") || inherits(value, "glm")) {
-    # For models, show summary
-    output <- c(output, "## Model Summary")
-    output <- c(output, utils::capture.output(summary(value)))
   } else if (is.list(value)) {
     # For lists, use str() for structure
     output <- c(output, "## List Structure")
