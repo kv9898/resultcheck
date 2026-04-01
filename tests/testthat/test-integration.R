@@ -15,7 +15,7 @@ test_that("snapshot works in sandbox (testing mode)", {
   script_content <- '
 data <- readRDS("data/input.rds")
 model <- lm(y ~ x, data = data)
-snapshot(coef(model), "test_model", script_name = "analysis")
+snapshot(model, "test_model", script_name = "analysis")
 saveRDS(model, "model.rds")
 '
   script_path <- file.path(temp_project, "analysis.R")

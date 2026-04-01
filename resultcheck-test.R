@@ -4,4 +4,4 @@ library(resultcheck)
 
 # Explicitly specify script_name to ensure snapshot is saved in the correct location
 model <- lm(mpg ~ wt, data = mtcars)
-snapshot(coef(model), "model", script_name = "resultcheck-test")
+snapshot(model, "model", script_name = "resultcheck-test")
