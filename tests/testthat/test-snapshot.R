@@ -84,10 +84,16 @@ test_that("snapshot works with different object types", {
     
     vec <- c(1, 2, 3)
     snapshot(vec, "vec_snap", script_name = "analysis")
+
+    model_snapshot <- readLines(
+      file.path(temp_project, "_resultcheck_snapshots", "analysis", "model_snap.md"),
+      warn = FALSE
+    )
     
     expect_true(file.exists(file.path(temp_project, "_resultcheck_snapshots", "analysis", "list_snap.md")))
     expect_true(file.exists(file.path(temp_project, "_resultcheck_snapshots", "analysis", "model_snap.md")))
     expect_true(file.exists(file.path(temp_project, "_resultcheck_snapshots", "analysis", "vec_snap.md")))
+    expect_true(any(grepl('<environment: <normalized>>', model_snapshot, fixed = TRUE)))
   })
 })
 
@@ -106,4 +112,25 @@ test_that("snapshot organizes by script name when specified", {
     expect_true(dir.exists(file.path(temp_project, "_resultcheck_snapshots", "custom1")))
     expect_true(dir.exists(file.path(temp_project, "_resultcheck_snapshots", "custom2")))
   })
+})
+
+
+test_that("compare_snapshot_text ignores .Environment differences", {
+  old_text <- c(
+    "# Snapshot: lm",
+    "",
+    "## List Structure",
+    "  .. ..- attr(*, \".Environment\")=<environment: 0x000001eb76e707a8> "
+  )
+
+  new_text <- c(
+    "# Snapshot: lm",
+    "",
+    "## List Structure",
+    "  .. ..- attr(*, \".Environment\")=<environment: R_GlobalEnv> "
+  )
+
+  differences <- resultcheck:::compare_snapshot_text(old_text, new_text)
+
+  expect_null(differences)
 })

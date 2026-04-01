@@ -147,7 +147,7 @@ snapshot(model, "mtcars_regression")
 
 1. Snapshots are stored in `_resultcheck_snapshots/` directory at your project root
 2. Files are organized by script name (auto-detected or specified)
-3. Objects are serialized to human-readable text (using `str()`, `print()`, `summary()`)
+3. Objects are serialized to human-readable text (using `str()` and `print()`)
 4. Saved as `.md` files for easy version control with git
 5. In interactive mode: warns and prompts to update
 6. In testing mode (inside sandbox): errors on mismatch

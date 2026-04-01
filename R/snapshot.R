@@ -168,10 +168,6 @@ serialize_value <- function(value) {
     output <- c(output, utils::capture.output(str(value)))
     output <- c(output, "", "## Data")
     output <- c(output, utils::capture.output(print(value)))
-  } else if (inherits(value, "lm") || inherits(value, "glm")) {
-    # For models, show summary
-    output <- c(output, "## Model Summary")
-    output <- c(output, utils::capture.output(summary(value)))
   } else if (is.list(value)) {
     # For lists, use str() for structure
     output <- c(output, "## List Structure")
@@ -203,6 +199,9 @@ serialize_value <- function(value) {
 #'
 #' @keywords internal
 compare_snapshot_text <- function(old_text, new_text) {
+  old_text <- normalize_snapshot_text(old_text)
+  new_text <- normalize_snapshot_text(new_text)
+
   if (identical(old_text, new_text)) {
     return(NULL)
   }
@@ -234,6 +233,26 @@ compare_snapshot_text <- function(old_text, new_text) {
   }
   
   return(output)
+}
+
+
+#' Normalize Snapshot Text Before Comparison
+#'
+#' Replaces volatile environment representations (for example memory addresses
+#' in `.Environment` attributes) with a stable placeholder so snapshots remain
+#' comparable across different execution contexts.
+#'
+#' @param text Character vector with serialized snapshot lines.
+#'
+#' @return Character vector with normalized snapshot lines.
+#'
+#' @keywords internal
+normalize_snapshot_text <- function(text) {
+  gsub(
+    '(<environment: )[^>]+(>[[:space:]]*)$',
+    '\\1<normalized>\\2',
+    text
+  )
 }
 
 
@@ -296,6 +315,7 @@ snapshot <- function(value, name, script_name = NULL) {
   
   # Serialize the value to text
   new_text <- serialize_value(value)
+  new_text <- normalize_snapshot_text(new_text)
   
   # Detect if we're in testing mode
   testing_mode <- is_testing()
