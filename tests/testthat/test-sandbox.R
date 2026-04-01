@@ -429,3 +429,28 @@ test_that("setup_sandbox accepts valid relative paths", {
     cleanup_sandbox(sandbox)
   })
 })
+
+
+test_that("setup_sandbox copies entire directory recursively", {
+  temp_root <- tempfile()
+  dir.create(temp_root)
+  dir.create(file.path(temp_root, "data"), recursive = TRUE)
+  dir.create(file.path(temp_root, "data", "raw"), recursive = TRUE)
+  writeLines("a,b\n1,2", file.path(temp_root, "data", "input.csv"))
+  writeLines("x,y\n3,4", file.path(temp_root, "data", "raw", "other.csv"))
+  on.exit(unlink(temp_root, recursive = TRUE))
+
+  withr::with_dir(temp_root, {
+    # Pass the directory name rather than individual file paths
+    sandbox <- setup_sandbox("data")
+    on.exit(cleanup_sandbox(sandbox), add = TRUE)
+
+    expect_s3_class(sandbox, "resultcheck_sandbox")
+    expect_true(file.exists(file.path(sandbox$path, "data", "input.csv")))
+    expect_true(file.exists(file.path(sandbox$path, "data", "raw", "other.csv")))
+
+    # Verify file contents were preserved
+    copied <- readLines(file.path(sandbox$path, "data", "input.csv"))
+    expect_equal(copied, c("a,b", "1,2"))
+  })
+})
