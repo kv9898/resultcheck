@@ -27,6 +27,7 @@ Consider a project with this layout:
 
 ```
 myproject/
+├── resultcheck.yml       # marks the project root
 ├── data/
 │   └── income.csv        # input data
 ├── analysis.R            # analysis script
@@ -62,13 +63,7 @@ library(resultcheck)
 
 test_that("analysis produces stable results", {
 
-  # Step 1: create the reference snapshot (simulates the first interactive run).
-  # Do this once; re-run interactively whenever results legitimately change.
-  data <- read.csv("data/income.csv")
-  model <- lm(income ~ age + education, data = data)
-  snapshot(model, "income_model", script_name = "analysis")
-
-  # Step 2: run the script in an isolated sandbox.
+  # Run the script in an isolated sandbox.
   # Only input data is copied — snapshot files live at the project root and
   # are located automatically by find_root(); you do not need to list them.
   # You may pass an entire directory instead of individual file paths.
@@ -78,7 +73,7 @@ test_that("analysis produces stable results", {
   # Errors immediately if any snapshot inside analysis.R doesn't match.
   run_in_sandbox("analysis.R", sandbox)
 
-  # Step 3: verify output files were written.
+  # Verify output files were written.
   expect_true(
     file.exists(file.path(sandbox$path, "output", "model_summary.csv"))
   )
