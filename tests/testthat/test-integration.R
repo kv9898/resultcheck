@@ -31,7 +31,7 @@ saveRDS(model, "model.rds")
   # Step 1: Run interactively to create snapshot
   data <- readRDS("data/input.rds")
   model <- lm(y ~ x, data = data)
-  snapshot(coef(model), "test_model", script_name = "analysis")
+  snapshot(model, "test_model", script_name = "analysis")
   
   snapshot_file <- file.path(temp_project, "_resultcheck_snapshots", "analysis", "test_model.md")
   expect_true(file.exists(snapshot_file))
