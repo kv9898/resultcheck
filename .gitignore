@@ -4,3 +4,4 @@ _resultcheck_snapshots/
 *.tar.gz
 check/
 docs
+inst/doc

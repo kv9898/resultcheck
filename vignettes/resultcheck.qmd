@@ -1,0 +1,9 @@
+---
+title: "Introduction to resultcheck"
+vignette: >
+  %\VignetteIndexEntry{Introduction to resultcheck}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+---
+
+test
