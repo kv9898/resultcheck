@@ -2,4 +2,6 @@ url: https://kv9898.github.io/resultcheck/
 template:
   bootstrap: 5
   light-switch: yes
-
+authors:
+  Dianyi Yang:
+    href: https://rubuky.com
