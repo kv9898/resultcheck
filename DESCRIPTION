@@ -20,3 +20,4 @@ Imports:
 Suggests:
     testthat (>= 3.0.0),
     waldo
+URL: https://kv9898.github.io/resultcheck/
