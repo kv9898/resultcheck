@@ -171,7 +171,7 @@ serialize_value <- function(value) {
   # Handle different types of objects
   # Use a fixed large width so that snapshot output is consistent regardless
   # of the R session's console width setting.
-  withr::with_options(list(width = SNAPSHOT_OUTPUT_WIDTH), {
+  withr::with_options(list(width = SNAPSHOT_OUTPUT_WIDTH, pillar.advice = TRUE), {
     if (is.data.frame(value)) {
       # For data frames, show structure and content
       output <- c(output, "## Structure")
