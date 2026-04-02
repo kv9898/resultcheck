@@ -144,8 +144,11 @@ get_snapshot_path <- function(name, script_name = NULL, ext = "md") {
 }
 
 
-# Fixed console width used when capturing snapshot output to ensure consistent
-# line lengths regardless of the R session's current width setting.
+# Fixed console width used when capturing snapshot output to ensure consistent,
+# fully-untruncated output regardless of the R session's current width setting.
+# The value is intentionally very large so that str() and print() never wrap
+# or abbreviate values mid-line, keeping snapshot text deterministic across
+# machines and environments.
 SNAPSHOT_OUTPUT_WIDTH <- 10000L
 
 #' Serialize Value to Human-Readable Text
