@@ -1,8 +1,6 @@
-# NEWS.md
+# resultcheck 0.1.0
 
-## resultcheck 0.1.0
-
-### Initial release
+## Initial release
 
 * `snapshot()` — create and verify human-readable snapshots of R objects
   (models, data frames, tables, vectors, etc.).  Interactive mode warns and
