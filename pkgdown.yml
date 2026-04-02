@@ -1,0 +1,8 @@
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles: {}
+last_built: 2026-04-02T12:23Z
+urls:
+  reference: https://kv9898.github.io/resultcheck/reference
+  article: https://kv9898.github.io/resultcheck/articles
