@@ -144,6 +144,10 @@ get_snapshot_path <- function(name, script_name = NULL, ext = "md") {
 }
 
 
+# Fixed console width used when capturing snapshot output to ensure consistent
+# line lengths regardless of the R session's current width setting.
+SNAPSHOT_OUTPUT_WIDTH <- 10000L
+
 #' Serialize Value to Human-Readable Text
 #'
 #' Converts an R object to a human-readable text representation for snapshots.
@@ -162,27 +166,31 @@ serialize_value <- function(value) {
   output <- c(output, "")
   
   # Handle different types of objects
-  if (is.data.frame(value)) {
-    # For data frames, show structure and content
-    output <- c(output, "## Structure")
-    output <- c(output, utils::capture.output(str(value)))
-    output <- c(output, "", "## Data")
-    output <- c(output, utils::capture.output(print(value)))
-  } else if (is.list(value)) {
-    # For lists, use str() for structure
-    output <- c(output, "## List Structure")
-    output <- c(output, utils::capture.output(str(value)))
-  } else if (is.atomic(value)) {
-    # For vectors and atomic types
-    output <- c(output, "## Value")
-    output <- c(output, utils::capture.output(print(value)))
-  } else {
-    # Default: use print and str
-    output <- c(output, "## Object")
-    output <- c(output, utils::capture.output(print(value)))
-    output <- c(output, "", "## Structure")
-    output <- c(output, utils::capture.output(str(value)))
-  }
+  # Use a fixed large width so that snapshot output is consistent regardless
+  # of the R session's console width setting.
+  withr::with_options(list(width = SNAPSHOT_OUTPUT_WIDTH), {
+    if (is.data.frame(value)) {
+      # For data frames, show structure and content
+      output <- c(output, "## Structure")
+      output <- c(output, utils::capture.output(str(value)))
+      output <- c(output, "", "## Data")
+      output <- c(output, utils::capture.output(print(value)))
+    } else if (is.list(value)) {
+      # For lists, use str() for structure
+      output <- c(output, "## List Structure")
+      output <- c(output, utils::capture.output(str(value)))
+    } else if (is.atomic(value)) {
+      # For vectors and atomic types
+      output <- c(output, "## Value")
+      output <- c(output, utils::capture.output(print(value)))
+    } else {
+      # Default: use print and str
+      output <- c(output, "## Object")
+      output <- c(output, utils::capture.output(print(value)))
+      output <- c(output, "", "## Structure")
+      output <- c(output, utils::capture.output(str(value)))
+    }
+  })
   
   return(output)
 }
