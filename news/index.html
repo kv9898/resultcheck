@@ -37,7 +37,24 @@
 
     </div>
 
-  </main></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0" id="resultcheck-010">resultcheck 0.1.0<a class="anchor" aria-label="anchor" href="#resultcheck-010"></a></h2>
+<div class="section level3">
+<h3 id="initial-release-0-1-0">Initial release<a class="anchor" aria-label="anchor" href="#initial-release-0-1-0"></a></h3>
+<ul><li>
+<code><a href="../reference/snapshot.html">snapshot()</a></code> — create and verify human-readable snapshots of R objects (models, data frames, tables, vectors, etc.). Interactive mode warns and prompts; testing mode (inside <code><a href="../reference/run_in_sandbox.html">run_in_sandbox()</a></code>) errors on mismatch.</li>
+<li>
+<code><a href="../reference/setup_sandbox.html">setup_sandbox()</a></code> — copy project files and/or directories into a temporary directory for isolated testing. Accepts individual file paths or entire subdirectories.</li>
+<li>
+<code><a href="../reference/run_in_sandbox.html">run_in_sandbox()</a></code> — execute an R script inside the sandbox with the working directory set to the sandbox root, while <code><a href="../reference/find_root.html">find_root()</a></code> and <code><a href="../reference/snapshot.html">snapshot()</a></code> transparently resolve back to the original project root.</li>
+<li>
+<code><a href="../reference/cleanup_sandbox.html">cleanup_sandbox()</a></code> — remove the sandbox directory after testing.</li>
+<li>
+<code><a href="../reference/find_root.html">find_root()</a></code> — locate the project root using <code>resultcheck.yml</code>, <code>.Rproj</code>, or <code>.git</code> as markers.</li>
+</ul></div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
