@@ -2,7 +2,8 @@
 
 ## Authors
 
-- **Dianyi Yang**. Author, maintainer.
+- **[Dianyi Yang](https://rubuky.com)**. Author, maintainer.
+  [](https://orcid.org/0009-0004-4652-3429)
 
 ## Citation
 
