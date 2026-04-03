@@ -108,7 +108,7 @@ setup_sandbox <- function(files, temp_base = NULL) {
                                   all.files = TRUE, full.names = FALSE)
       for (subfile in all_sub_files) {
         src <- file.path(full_file_path, subfile)
-        if (isTRUE(file.info(src)$isdir)) next  # skip directory entries
+        if (dir.exists(src)) next  # skip directory entries
         dst <- file.path(temp_dir, file, subfile)
         if (!dir.exists(dirname(dst))) {
           dir.create(dirname(dst), recursive = TRUE, showWarnings = FALSE)
