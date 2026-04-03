@@ -4,7 +4,7 @@
 \alias{snapshot}
 \title{Interactive Snapshot Testing}
 \usage{
-snapshot(value, name, script_name = NULL)
+snapshot(value, name, script_name = NULL, method = c("both", "print", "str"))
 }
 \arguments{
 \item{value}{The R object to snapshot (e.g., plot, table, model output).}
@@ -13,6 +13,15 @@ snapshot(value, name, script_name = NULL)
 
 \item{script_name}{Optional. The name of the script creating the snapshot.
 If NULL, attempts to auto-detect from the call stack.}
+
+\item{method}{Character. Controls which serialization method(s) are used
+when capturing the snapshot. \code{"both"} (default) applies
+type-specific logic that uses both \code{print()} and \code{str()}.
+\code{"print"} uses only \code{print()}, and \code{"str"} uses only
+\code{str()}. Use \code{"print"} or \code{"str"} when one of the
+methods produces volatile output that should be excluded from the
+snapshot (e.g. objects that embed session-specific paths or IDs in
+their \code{str()} representation).}
 }
 \value{
 Invisible TRUE if snapshot matches or was updated.
@@ -39,6 +48,12 @@ snapshot(model, "mtcars_model")
 
 # First time: saves the snapshot
 # Later times: compares, shows differences, prompts to update
+
+# Use only print() output (skip str() which may contain volatile fields):
+snapshot(model, "mtcars_model_print", method = "print")
+
+# Use only str() output:
+snapshot(model, "mtcars_model_str", method = "str")
 
 # In testing mode (inside run_in_sandbox or testthat):
 # Errors if snapshot missing or doesn't match

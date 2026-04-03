@@ -134,3 +134,61 @@ test_that("compare_snapshot_text ignores .Environment differences", {
 
   expect_null(differences)
 })
+
+
+test_that("serialize_value respects method = 'print'", {
+  val <- list(a = 1:3, b = "hello")
+
+  out_both  <- resultcheck:::serialize_value(val, method = "both")
+  out_print <- resultcheck:::serialize_value(val, method = "print")
+  out_str   <- resultcheck:::serialize_value(val, method = "str")
+
+  # "print" output contains the "## Object" header but not "## Structure"
+  expect_true(any(grepl("## Object", out_print)))
+  expect_false(any(grepl("## Structure", out_print)))
+  expect_false(any(grepl("## List Structure", out_print)))
+
+  # "str" output contains the "## Structure" header but not "## Object"
+  expect_true(any(grepl("## Structure", out_str)))
+  expect_false(any(grepl("## Object", out_str)))
+
+  # "both" (default for list) uses List Structure only (type-specific logic)
+  expect_true(any(grepl("## List Structure", out_both)))
+  expect_false(any(grepl("## Object", out_both)))
+  expect_false(any(grepl("^## Structure$", out_both)))
+})
+
+
+test_that("snapshot respects method parameter", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  withr::with_dir(temp_project, {
+    val <- list(a = 1:3, id = "volatile_abc123")
+
+    snapshot(val, "snap_print", script_name = "analysis", method = "print")
+    snapshot(val, "snap_str",   script_name = "analysis", method = "str")
+
+    content_print <- readLines(
+      file.path(temp_project, "_resultcheck_snapshots", "analysis", "snap_print.md"),
+      warn = FALSE
+    )
+    content_str <- readLines(
+      file.path(temp_project, "_resultcheck_snapshots", "analysis", "snap_str.md"),
+      warn = FALSE
+    )
+
+    # print-only snapshot has "## Object" header
+    expect_true(any(grepl("## Object", content_print)))
+    # str-only snapshot has "## Structure" header
+    expect_true(any(grepl("## Structure", content_str)))
+
+    # Neither should contain headers belonging to the other method
+    expect_false(any(grepl("## Structure", content_print)))
+    expect_false(any(grepl("## Object", content_str)))
+  })
+})
+

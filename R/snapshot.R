@@ -156,11 +156,17 @@ SNAPSHOT_OUTPUT_WIDTH <- 110L
 #' Converts an R object to a human-readable text representation for snapshots.
 #'
 #' @param value The R object to serialize.
+#' @param method Character. Controls which serialization method(s) are used.
+#'   \code{"both"} (default) uses both \code{print()} and \code{str()}.
+#'   \code{"print"} uses only \code{print()}.
+#'   \code{"str"} uses only \code{str()}.
 #'
 #' @return A character vector with the text representation.
 #'
 #' @keywords internal
-serialize_value <- function(value) {
+serialize_value <- function(value, method = c("both", "print", "str")) {
+  method <- match.arg(method)
+
   # Create a text representation using various methods
   output <- character()
   
@@ -168,30 +174,38 @@ serialize_value <- function(value) {
   output <- c(output, paste0("# Snapshot: ", class(value)[1]))
   output <- c(output, "")
   
-  # Handle different types of objects
   # Use a fixed large width so that snapshot output is consistent regardless
   # of the R session's console width setting.
   withr::with_options(list(width = SNAPSHOT_OUTPUT_WIDTH, pillar.advice = TRUE), {
-    if (is.data.frame(value)) {
-      # For data frames, show structure and content
-      output <- c(output, "## Structure")
-      output <- c(output, utils::capture.output(str(value)))
-      output <- c(output, "", "## Data")
-      output <- c(output, utils::capture.output(print(value)))
-    } else if (is.list(value)) {
-      # For lists, use str() for structure
-      output <- c(output, "## List Structure")
-      output <- c(output, utils::capture.output(str(value)))
-    } else if (is.atomic(value)) {
-      # For vectors and atomic types
-      output <- c(output, "## Value")
-      output <- c(output, utils::capture.output(print(value)))
-    } else {
-      # Default: use print and str
+    if (method == "print") {
       output <- c(output, "## Object")
       output <- c(output, utils::capture.output(print(value)))
-      output <- c(output, "", "## Structure")
+    } else if (method == "str") {
+      output <- c(output, "## Structure")
       output <- c(output, utils::capture.output(str(value)))
+    } else {
+      # method == "both": apply type-specific defaults
+      if (is.data.frame(value)) {
+        # For data frames, show structure and content
+        output <- c(output, "## Structure")
+        output <- c(output, utils::capture.output(str(value)))
+        output <- c(output, "", "## Data")
+        output <- c(output, utils::capture.output(print(value)))
+      } else if (is.list(value)) {
+        # For lists, use str() for structure
+        output <- c(output, "## List Structure")
+        output <- c(output, utils::capture.output(str(value)))
+      } else if (is.atomic(value)) {
+        # For vectors and atomic types
+        output <- c(output, "## Value")
+        output <- c(output, utils::capture.output(print(value)))
+      } else {
+        # Default: use print and str
+        output <- c(output, "## Object")
+        output <- c(output, utils::capture.output(print(value)))
+        output <- c(output, "", "## Structure")
+        output <- c(output, utils::capture.output(str(value)))
+      }
     }
   })
   
@@ -302,6 +316,14 @@ is_testing <- function() {
 #' @param name Character. A descriptive name for this snapshot.
 #' @param script_name Optional. The name of the script creating the snapshot.
 #'   If NULL, attempts to auto-detect from the call stack.
+#' @param method Character. Controls which serialization method(s) are used
+#'   when capturing the snapshot. \code{"both"} (default) applies
+#'   type-specific logic that uses both \code{print()} and \code{str()}.
+#'   \code{"print"} uses only \code{print()}, and \code{"str"} uses only
+#'   \code{str()}. Use \code{"print"} or \code{"str"} when one of the
+#'   methods produces volatile output that should be excluded from the
+#'   snapshot (e.g. objects that embed session-specific paths or IDs in
+#'   their \code{str()} representation).
 #'
 #' @return Invisible TRUE if snapshot matches or was updated.
 #'   In testing mode, throws an error if snapshot is missing or doesn't match.
@@ -317,15 +339,23 @@ is_testing <- function() {
 #' # First time: saves the snapshot
 #' # Later times: compares, shows differences, prompts to update
 #' 
+#' # Use only print() output (skip str() which may contain volatile fields):
+#' snapshot(model, "mtcars_model_print", method = "print")
+#' 
+#' # Use only str() output:
+#' snapshot(model, "mtcars_model_str", method = "str")
+#' 
 #' # In testing mode (inside run_in_sandbox or testthat):
 #' # Errors if snapshot missing or doesn't match
 #' }
-snapshot <- function(value, name, script_name = NULL) {
+snapshot <- function(value, name, script_name = NULL, method = c("both", "print", "str")) {
+  method <- match.arg(method)
+
   # Get snapshot file path (.md extension)
   snapshot_file <- get_snapshot_path(name, script_name, ext = "md")
   
   # Serialize the value to text
-  new_text <- serialize_value(value)
+  new_text <- serialize_value(value, method = method)
   new_text <- normalize_snapshot_text(new_text)
   
   # Detect if we're in testing mode
