@@ -1,3 +1,8 @@
+# resultcheck 0.1.1
+
+* Fixed snapshot inconsistencies caused by variable serialization width and directory checks, improving reliability of result comparisons.
+
+
 # resultcheck 0.1.0
 
 ## Initial release
