@@ -50,7 +50,7 @@ On subsequent uses, compares the current object to the saved snapshot.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">snapshot</span><span class="op">(</span><span class="va">value</span>, <span class="va">name</span>, script_name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">snapshot</span><span class="op">(</span><span class="va">value</span>, <span class="va">name</span>, script_name <span class="op">=</span> <span class="cn">NULL</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"both"</span>, <span class="st">"print"</span>, <span class="st">"str"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -68,6 +68,17 @@ On subsequent uses, compares the current object to the saved snapshot.</p>
 <dt id="arg-script-name">script_name<a class="anchor" aria-label="anchor" href="#arg-script-name"></a></dt>
 <dd><p>Optional. The name of the script creating the snapshot.
 If NULL, attempts to auto-detect from the call stack.</p></dd>
+
+
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
+<dd><p>Character. Controls which serialization method(s) are used
+when capturing the snapshot. <code>"both"</code> (default) applies
+type-specific logic that uses both <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> and <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code>.
+<code>"print"</code> uses only <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code>, and <code>"str"</code> uses only
+<code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code>. Use <code>"print"</code> or <code>"str"</code> when one of the
+methods produces volatile output that should be excluded from the
+snapshot (e.g. objects that embed session-specific paths or IDs in
+their <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code> representation).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -93,6 +104,12 @@ to the project root, organized by script name.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># First time: saves the snapshot</span></span></span>
 <span class="r-in"><span><span class="co"># Later times: compares, shows differences, prompts to update</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Use only print() output (skip str() which may contain volatile fields):</span></span></span>
+<span class="r-in"><span><span class="fu">snapshot</span><span class="op">(</span><span class="va">model</span>, <span class="st">"mtcars_model_print"</span>, method <span class="op">=</span> <span class="st">"print"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Use only str() output:</span></span></span>
+<span class="r-in"><span><span class="fu">snapshot</span><span class="op">(</span><span class="va">model</span>, <span class="st">"mtcars_model_str"</span>, method <span class="op">=</span> <span class="st">"str"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># In testing mode (inside run_in_sandbox or testthat):</span></span></span>
 <span class="r-in"><span><span class="co"># Errors if snapshot missing or doesn't match</span></span></span>

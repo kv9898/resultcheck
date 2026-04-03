@@ -107,7 +107,7 @@ interactively, review the diff, and confirm the update.
 
 ## Function Reference
 
-### `snapshot(value, name, script_name = NULL)`
+### `snapshot(value, name, script_name = NULL, method = c("both", "print", "str"))`
 
 Creates or verifies a snapshot of any R object.
 
@@ -117,6 +117,19 @@ Creates or verifies a snapshot of any R object.
 - **Inside
   [`run_in_sandbox()`](https://kv9898.github.io/resultcheck/reference/run_in_sandbox.md)**:
   errors if the snapshot is missing or doesn’t match.
+
+The `method` argument controls how the object is serialized:
+
+| Value              | Behavior                                                                                                                      |
+|--------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| `"both"` (default) | Type-specific logic using both [`print()`](https://rdrr.io/r/base/print.html) and [`str()`](https://rdrr.io/r/utils/str.html) |
+| `"print"`          | Only [`print()`](https://rdrr.io/r/base/print.html) output is captured                                                        |
+| `"str"`            | Only [`str()`](https://rdrr.io/r/utils/str.html) output is captured                                                           |
+
+Use `"print"` or `"str"` when one serialization method produces volatile
+output that should be excluded from the snapshot (e.g. objects that
+embed session-specific file paths or random IDs in their
+[`str()`](https://rdrr.io/r/utils/str.html) representation).
 
 Snapshots are plain text and intended to be committed to version
 control.

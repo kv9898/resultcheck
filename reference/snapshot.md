@@ -7,7 +7,7 @@ On subsequent uses, compares the current object to the saved snapshot.
 ## Usage
 
 ``` r
-snapshot(value, name, script_name = NULL)
+snapshot(value, name, script_name = NULL, method = c("both", "print", "str"))
 ```
 
 ## Arguments
@@ -24,6 +24,19 @@ snapshot(value, name, script_name = NULL)
 
   Optional. The name of the script creating the snapshot. If NULL,
   attempts to auto-detect from the call stack.
+
+- method:
+
+  Character. Controls which serialization method(s) are used when
+  capturing the snapshot. `"both"` (default) applies type-specific logic
+  that uses both [`print()`](https://rdrr.io/r/base/print.html) and
+  [`str()`](https://rdrr.io/r/utils/str.html). `"print"` uses only
+  [`print()`](https://rdrr.io/r/base/print.html), and `"str"` uses only
+  [`str()`](https://rdrr.io/r/utils/str.html). Use `"print"` or `"str"`
+  when one of the methods produces volatile output that should be
+  excluded from the snapshot (e.g. objects that embed session-specific
+  paths or IDs in their [`str()`](https://rdrr.io/r/utils/str.html)
+  representation).
 
 ## Value
 
@@ -50,6 +63,12 @@ snapshot(model, "mtcars_model")
 
 # First time: saves the snapshot
 # Later times: compares, shows differences, prompts to update
+
+# Use only print() output (skip str() which may contain volatile fields):
+snapshot(model, "mtcars_model_print", method = "print")
+
+# Use only str() output:
+snapshot(model, "mtcars_model_str", method = "str")
 
 # In testing mode (inside run_in_sandbox or testthat):
 # Errors if snapshot missing or doesn't match

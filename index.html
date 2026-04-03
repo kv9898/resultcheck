@@ -143,8 +143,8 @@
 <h2 id="function-reference">Function Reference<a class="anchor" aria-label="anchor" href="#function-reference"></a>
 </h2>
 <div class="section level3">
-<h3 id="snapshotvalue-name-script_name--null">
-<code>snapshot(value, name, script_name = NULL)</code><a class="anchor" aria-label="anchor" href="#snapshotvalue-name-script_name--null"></a>
+<h3 id="snapshotvalue-name-script_name--null-method--cboth-print-str">
+<code>snapshot(value, name, script_name = NULL, method = c("both", "print", "str"))</code><a class="anchor" aria-label="anchor" href="#snapshotvalue-name-script_name--null-method--cboth-print-str"></a>
 </h3>
 <p>Creates or verifies a snapshot of any R object.</p>
 <ul>
@@ -155,6 +155,34 @@
 <li>
 <strong>Inside <code><a href="reference/run_in_sandbox.html">run_in_sandbox()</a></code></strong>: errors if the snapshot is missing or doesn’t match.</li>
 </ul>
+<p>The <code>method</code> argument controls how the object is serialized:</p>
+<table class="table">
+<colgroup>
+<col width="38%">
+<col width="61%">
+</colgroup>
+<thead><tr class="header">
+<th>Value</th>
+<th>Behavior</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>
+<code>"both"</code> (default)</td>
+<td>Type-specific logic using both <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> and <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code>
+</td>
+</tr>
+<tr class="even">
+<td><code>"print"</code></td>
+<td>Only <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> output is captured</td>
+</tr>
+<tr class="odd">
+<td><code>"str"</code></td>
+<td>Only <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code> output is captured</td>
+</tr>
+</tbody>
+</table>
+<p>Use <code>"print"</code> or <code>"str"</code> when one serialization method produces volatile output that should be excluded from the snapshot (e.g. objects that embed session-specific file paths or random IDs in their <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code> representation).</p>
 <p>Snapshots are plain text and intended to be committed to version control.</p>
 </div>
 <div class="section level3">
