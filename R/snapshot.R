@@ -149,7 +149,7 @@ get_snapshot_path <- function(name, script_name = NULL, ext = "md") {
 # The value is intentionally very large so that str() and print() never wrap
 # or abbreviate values mid-line, keeping snapshot text deterministic across
 # machines and environments.
-SNAPSHOT_OUTPUT_WIDTH <- 10000L
+SNAPSHOT_OUTPUT_WIDTH <- 110L
 
 #' Serialize Value to Human-Readable Text
 #'
