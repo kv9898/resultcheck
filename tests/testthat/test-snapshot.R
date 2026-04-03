@@ -154,6 +154,8 @@ test_that("serialize_value respects method = 'print'", {
 
   # "both" (default for list) uses List Structure only (type-specific logic)
   expect_true(any(grepl("## List Structure", out_both)))
+  expect_false(any(grepl("## Object", out_both)))
+  expect_false(any(grepl("^## Structure$", out_both)))
 })
 
 

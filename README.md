@@ -96,7 +96,7 @@ Creates or verifies a snapshot of any R object.
 
 The `method` argument controls how the object is serialized:
 
-| Value | Behaviour |
+| Value | Behavior |
 |-------|-----------|
 | `"both"` (default) | Type-specific logic using both `print()` and `str()` |
 | `"print"` | Only `print()` output is captured |
