@@ -86,13 +86,23 @@ When `analysis.R` changes in a way that alters the model, `run_in_sandbox()` err
 
 ## Function Reference
 
-### `snapshot(value, name, script_name = NULL)`
+### `snapshot(value, name, script_name = NULL, method = c("both", "print", "str"))`
 
 Creates or verifies a snapshot of any R object.
 
 - **First interactive run**: saves the object as a human-readable `.md` file under `_resultcheck_snapshots/<script>/` at the project root.
 - **Subsequent interactive runs**: shows a diff and prompts to update.
 - **Inside `run_in_sandbox()`**: errors if the snapshot is missing or doesn't match.
+
+The `method` argument controls how the object is serialized:
+
+| Value | Behaviour |
+|-------|-----------|
+| `"both"` (default) | Type-specific logic using both `print()` and `str()` |
+| `"print"` | Only `print()` output is captured |
+| `"str"` | Only `str()` output is captured |
+
+Use `"print"` or `"str"` when one serialization method produces volatile output that should be excluded from the snapshot (e.g. objects that embed session-specific file paths or random IDs in their `str()` representation).
 
 Snapshots are plain text and intended to be committed to version control.
 
