@@ -1,7 +1,7 @@
 # resultcheck 0.1.1
 
 * Fixed snapshot inconsistencies caused by variable serialization width and directory checks, improving reliability of result comparisons.
-
+* Added method parameter to snapshot() for print/str/both serialization
 
 # resultcheck 0.1.0
 
