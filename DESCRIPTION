@@ -1,6 +1,6 @@
 Package: resultcheck
 Title: Result Stability Checks for Empirical R Projects
-Version: 0.1.0.9000
+Version: 0.1.1
 Authors@R: 
     person("Dianyi", "Yang", , "dianyi.yang@politics.ox.ac.uk", role = c("aut", "cre"), comment = c(ORCID = "0009-0004-4652-3429"))
 Description:
