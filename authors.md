@@ -7,14 +7,17 @@
 
 ## Citation
 
+Source:
+[`DESCRIPTION`](https://github.com/kv9898/resultcheck/blob/main/DESCRIPTION)
+
 Yang D (2026). *resultcheck: Result Stability Checks for Empirical R
 Projects*. R package version 0.1.1.9000,
-<https://kv9898.github.io/resultcheck/>.
+<https://github.com/kv9898/resultcheck/>.
 
     @Manual{,
       title = {resultcheck: Result Stability Checks for Empirical R Projects},
       author = {Dianyi Yang},
       year = {2026},
       note = {R package version 0.1.1.9000},
-      url = {https://kv9898.github.io/resultcheck/},
+      url = {https://github.com/kv9898/resultcheck/},
     }

@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   snapshot-tolerance: snapshot-tolerance.html
-last_built: 2026-04-04T11:31Z
+last_built: 2026-04-04T23:16Z
 urls:
   reference: https://kv9898.github.io/resultcheck/reference
   article: https://kv9898.github.io/resultcheck/articles
