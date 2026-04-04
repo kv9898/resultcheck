@@ -8,6 +8,7 @@ authors:
 
 articles:
   - title: Vignettes
+    navbar:
     contents:
       - snapshot-tolerance
       - renv-github-actions
