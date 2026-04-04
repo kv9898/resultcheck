@@ -23,5 +23,6 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     waldo
-URL: https://kv9898.github.io/resultcheck/
+URL: https://github.com/kv9898/resultcheck/, https://kv9898.github.io/resultcheck/
+BugReports: https://github.com/kv9898/resultcheck/issues
 VignetteBuilder: knitr
