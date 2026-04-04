@@ -178,16 +178,23 @@ read_resultcheck_config <- function() {
 #' point and no exponent are left untouched, so index ranges such as
 #' \code{[1:1071]} are never modified.
 #'
+#' \code{digits} is passed directly to \code{\link[base]{round}}: 0 rounds to
+#' the nearest integer, negative values round to the left of the decimal point.
+#'
 #' @param text   Character vector of snapshot text lines.
-#' @param digits Non-negative integer; number of decimal places to keep.
+#' @param digits Integer; number of decimal places to keep (passed to
+#'   \code{round()}).  Must be a finite integer.
 #'
 #' @return Character vector with floating-point numbers rounded.
 #'
 #' @keywords internal
 round_snapshot_numbers <- function(text, digits) {
-  # Matches: numbers with a decimal point (e.g. 1.22, -0.423, 2.41e-17)
-  # OR integers written in scientific notation (e.g. 1e+07).
-  # Pure integers such as 1071 are intentionally excluded.
+  # Two alternatives, both require a decimal point or exponent so that pure
+  # integers (e.g. index ranges like 1071) are never matched:
+  #   1. A number WITH a decimal point, optionally followed by an exponent.
+  #      Examples: 1.22   -0.423   2.41e-17   +1.0E+3
+  #   2. An integer written in scientific notation (no decimal point required).
+  #      Examples: 1e+07   -2E4
   pattern <- "[-+]?[0-9]*\\.[0-9]+([eE][-+]?[0-9]+)?|[-+]?[0-9]+[eE][-+]?[0-9]+"
 
   vapply(text, function(line) {
@@ -207,6 +214,9 @@ round_snapshot_numbers <- function(text, digits) {
       j <- j + 1L
 
       num_str <- substr(line, start, end)
+      # The regex guarantees the matched string looks like a number; any failure
+      # to parse (e.g. an NA) is treated as a non-match and the original token
+      # is kept.  suppressWarnings avoids noisy NAs-introduced messages.
       num_val <- suppressWarnings(as.numeric(num_str))
       parts[j] <- if (!is.na(num_val)) {
         as.character(round(num_val, digits))
