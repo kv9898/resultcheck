@@ -1,8 +1,8 @@
 ---
-title: "Automated Testing with renv and GitHub Actions"
+title: "Automated Testing with GitHub Actions"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Automated Testing with renv and GitHub Actions}
+  %\VignetteIndexEntry{Automated Testing with GitHub Actions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
