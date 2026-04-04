@@ -144,6 +144,113 @@ get_snapshot_path <- function(name, script_name = NULL, ext = "md") {
 }
 
 
+# Marker string that users can place on any line of a snapshot file to indicate
+# that the line's value is known to vary across platforms and should be ignored
+# during comparison.  The entire line must consist of exactly this string.
+IGNORED_MARKER <- "[ignored]"
+
+
+#' Read resultcheck Configuration
+#'
+#' Reads configuration settings from the \code{resultcheck.yml} file located
+#' at the project root.  Returns an empty list if the file does not exist or
+#' cannot be parsed.
+#'
+#' @return A named list of configuration values, or an empty list.
+#'
+#' @keywords internal
+read_resultcheck_config <- function() {
+  tryCatch({
+    root <- find_root()
+    config_path <- file.path(root, "resultcheck.yml")
+    if (!file.exists(config_path)) return(list())
+    config <- yaml::read_yaml(config_path)
+    if (is.null(config)) list() else config
+  }, error = function(e) list())
+}
+
+
+#' Round Floating-Point Numbers in Snapshot Text
+#'
+#' Replaces every floating-point literal (decimal or scientific notation) found
+#' in a character vector of snapshot lines with its value rounded to
+#' \code{digits} decimal places.  Integer literals that contain no decimal
+#' point and no exponent are left untouched, so index ranges such as
+#' \code{[1:1071]} are never modified.
+#'
+#' @param text   Character vector of snapshot text lines.
+#' @param digits Non-negative integer; number of decimal places to keep.
+#'
+#' @return Character vector with floating-point numbers rounded.
+#'
+#' @keywords internal
+round_snapshot_numbers <- function(text, digits) {
+  # Matches: numbers with a decimal point (e.g. 1.22, -0.423, 2.41e-17)
+  # OR integers written in scientific notation (e.g. 1e+07).
+  # Pure integers such as 1071 are intentionally excluded.
+  pattern <- "[-+]?[0-9]*\\.[0-9]+([eE][-+]?[0-9]+)?|[-+]?[0-9]+[eE][-+]?[0-9]+"
+
+  vapply(text, function(line) {
+    m <- gregexpr(pattern, line, perl = TRUE)[[1]]
+    if (m[1] == -1L) return(line)
+
+    match_lengths <- attr(m, "match.length")
+    parts <- character(length(m) * 2L + 1L)
+    pos   <- 1L
+    j     <- 1L
+
+    for (i in seq_along(m)) {
+      start <- m[i]
+      end   <- start + match_lengths[i] - 1L
+
+      parts[j] <- substr(line, pos, start - 1L)
+      j <- j + 1L
+
+      num_str <- substr(line, start, end)
+      num_val <- suppressWarnings(as.numeric(num_str))
+      parts[j] <- if (!is.na(num_val)) {
+        as.character(round(num_val, digits))
+      } else {
+        num_str
+      }
+      j   <- j + 1L
+      pos <- end + 1L
+    }
+
+    parts[j] <- substr(line, pos, nchar(line))
+    paste(parts[seq_len(j)], collapse = "")
+  }, character(1L), USE.NAMES = FALSE)
+}
+
+
+#' Mask \code{[ignored]} Lines in New Snapshot Text
+#'
+#' Any line in \code{old_text} that equals \code{"[ignored]"} (after trimming
+#' whitespace) causes the corresponding line in \code{new_text} to be replaced
+#' with \code{"[ignored]"}, so that known-volatile lines never trigger a
+#' snapshot failure.  Lines beyond the shorter vector are left unchanged.
+#'
+#' This helper is used both during comparison (so the lines are skipped) and
+#' when writing an updated snapshot (so the markers are preserved).
+#'
+#' @param old_text Character vector of the stored snapshot lines.
+#' @param new_text Character vector of the freshly generated snapshot lines.
+#'
+#' @return \code{new_text} with \code{[ignored]} substituted at matching
+#'   positions.
+#'
+#' @keywords internal
+mask_ignored_lines <- function(old_text, new_text) {
+  min_len <- min(length(old_text), length(new_text))
+  for (i in seq_len(min_len)) {
+    if (trimws(old_text[i]) == IGNORED_MARKER) {
+      new_text[i] <- IGNORED_MARKER
+    }
+  }
+  new_text
+}
+
+
 # Fixed console width used when capturing snapshot output to ensure consistent,
 # fully-untruncated output regardless of the R session's current width setting.
 # The value is intentionally very large so that str() and print() never wrap
@@ -217,15 +324,28 @@ serialize_value <- function(value, method = c("both", "print", "str")) {
 #'
 #' Compares two serialized snapshots and returns differences.
 #'
-#' @param old_text Character vector with old snapshot text.
-#' @param new_text Character vector with new snapshot text.
+#' @param old_text  Character vector with old snapshot text.
+#' @param new_text  Character vector with new snapshot text.
+#' @param precision Optional integer.  When non-\code{NULL}, both texts are
+#'   rounded to this many decimal places before comparison (see
+#'   \code{\link{round_snapshot_numbers}}).  Useful for ignoring
+#'   floating-point noise introduced by platform differences.
 #'
 #' @return A character vector of differences, or NULL if identical.
 #'
 #' @keywords internal
-compare_snapshot_text <- function(old_text, new_text) {
+compare_snapshot_text <- function(old_text, new_text, precision = NULL) {
   old_text <- normalize_snapshot_text(old_text)
   new_text <- normalize_snapshot_text(new_text)
+
+  # Apply numeric precision rounding when configured
+  if (!is.null(precision)) {
+    old_text <- round_snapshot_numbers(old_text, as.integer(precision))
+    new_text <- round_snapshot_numbers(new_text, as.integer(precision))
+  }
+
+  # Mask lines that the user has marked as [ignored] in the stored snapshot
+  new_text <- mask_ignored_lines(old_text, new_text)
 
   if (identical(old_text, new_text)) {
     return(NULL)
@@ -357,6 +477,13 @@ snapshot <- function(value, name, script_name = NULL, method = c("both", "print"
   # Serialize the value to text
   new_text <- serialize_value(value, method = method)
   new_text <- normalize_snapshot_text(new_text)
+
+  # Read project configuration for optional precision rounding
+  config    <- read_resultcheck_config()
+  precision <- config[["snapshot"]][["precision"]]
+  if (!is.null(precision)) {
+    new_text <- round_snapshot_numbers(new_text, as.integer(precision))
+  }
   
   # Detect if we're in testing mode
   testing_mode <- is_testing()
@@ -382,8 +509,10 @@ snapshot <- function(value, name, script_name = NULL, method = c("both", "print"
   # Load existing snapshot
   old_text <- readLines(snapshot_file, warn = FALSE)
   
-  # Compare snapshots
-  differences <- compare_snapshot_text(old_text, new_text)
+  # Compare snapshots (precision already applied to new_text above; also
+  # applied to old_text inside compare_snapshot_text for backward compatibility
+  # with snapshots stored before precision was configured).
+  differences <- compare_snapshot_text(old_text, new_text, precision = precision)
   
   if (is.null(differences)) {
     # No differences - snapshot matches
@@ -415,7 +544,8 @@ snapshot <- function(value, name, script_name = NULL, method = c("both", "print"
     response <- readline(prompt = "Update snapshot? (y/n): ")
     
     if (tolower(trimws(response)) == "y") {
-      writeLines(new_text, snapshot_file)
+      # Preserve any [ignored] markers from the stored snapshot
+      writeLines(mask_ignored_lines(old_text, new_text), snapshot_file)
       message("\u2713 Snapshot updated.")
       return(invisible(TRUE))
     } else {
