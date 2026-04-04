@@ -192,3 +192,187 @@ test_that("snapshot respects method parameter", {
   })
 })
 
+
+# ── [ignored] marker tests ────────────────────────────────────────────────────
+
+test_that("mask_ignored_lines replaces new lines at [ignored] positions", {
+  old_text <- c("line 1", "[ignored]", "line 3")
+  new_text <- c("line 1", "different value", "line 3")
+
+  result <- resultcheck:::mask_ignored_lines(old_text, new_text)
+  expect_equal(result, c("line 1", "[ignored]", "line 3"))
+})
+
+
+test_that("mask_ignored_lines handles [ignored] with surrounding whitespace", {
+  old_text <- c("  [ignored]  ", "normal line")
+  new_text <- c("some value",    "normal line")
+
+  result <- resultcheck:::mask_ignored_lines(old_text, new_text)
+  expect_equal(result, c("[ignored]", "normal line"))
+})
+
+
+test_that("compare_snapshot_text returns NULL when only [ignored] lines differ", {
+  old_text <- c(
+    "# Snapshot: numeric",
+    "",
+    "## Value",
+    "[ignored]",
+    "[ignored]"
+  )
+  new_text <- c(
+    "# Snapshot: numeric",
+    "",
+    "## Value",
+    "  ..- attr(*, \"scaled:center\")= num 2.41e-17",
+    "  ..- attr(*, \"scaled:center\")= num 2.98e-17"
+  )
+
+  result <- resultcheck:::compare_snapshot_text(old_text, new_text)
+  expect_null(result)
+})
+
+
+test_that("snapshot in testing mode passes when differing lines are [ignored]", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  withr::with_dir(temp_project, {
+    val1 <- c(1.0, 2.0, 3.0)
+    snapshot(val1, "snap_ignored_mode", script_name = "analysis")
+
+    snap_file <- file.path(temp_project, "_resultcheck_snapshots",
+                           "analysis", "snap_ignored_mode.md")
+
+    lines <- readLines(snap_file)
+    value_line <- which(grepl("^\\[1\\]", lines))[1]
+    lines[value_line] <- "[ignored]"
+    writeLines(lines, snap_file)
+
+    # Simulate testing mode by writing a script and running it in a sandbox
+    script_content <- paste0(
+      'val2 <- c(99.0, 2.0, 3.0)\n',
+      'resultcheck::snapshot(val2, "snap_ignored_mode", script_name = "analysis")\n'
+    )
+    writeLines(script_content, file.path(temp_project, "test_script.R"))
+
+    sandbox <- setup_sandbox(character(0))
+    expect_no_error(run_in_sandbox("test_script.R", sandbox))
+    cleanup_sandbox(sandbox)
+  })
+})
+
+
+test_that("mask_ignored_lines preserves [ignored] marker in masked new_text", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  withr::with_dir(temp_project, {
+    val <- c(1.0, 2.0, 3.0)
+    snapshot(val, "ignored_preserve_test", script_name = "analysis")
+
+    snap_file <- file.path(temp_project, "_resultcheck_snapshots",
+                           "analysis", "ignored_preserve_test.md")
+
+    lines <- readLines(snap_file)
+    value_line <- which(grepl("^\\[1\\]", lines))[1]
+    lines[value_line] <- "[ignored]"
+    writeLines(lines, snap_file)
+
+    old_text <- readLines(snap_file)
+    val2 <- c(99.0, 2.0, 3.0)
+    new_text <- resultcheck:::serialize_value(val2, method = "both")
+    new_text <- resultcheck:::normalize_snapshot_text(new_text)
+
+    masked <- resultcheck:::mask_ignored_lines(old_text, new_text)
+    expect_equal(masked[value_line], "[ignored]")
+  })
+})
+
+
+# ── precision rounding tests ──────────────────────────────────────────────────
+
+test_that("round_snapshot_numbers rounds decimal numbers", {
+  text <- c("num 2.41e-17", "num 1.22", "int 5")
+
+  result <- resultcheck:::round_snapshot_numbers(text, digits = 10L)
+
+  expect_equal(result[1], "num 0")
+  expect_equal(result[2], "num 1.22")
+  expect_equal(result[3], "int 5")
+})
+
+
+test_that("round_snapshot_numbers leaves non-numeric text unchanged", {
+  text <- c("# Snapshot: data.frame", "## Structure", "chr \"hello\"")
+  result <- resultcheck:::round_snapshot_numbers(text, digits = 5L)
+  expect_equal(result, text)
+})
+
+
+test_that("compare_snapshot_text returns NULL with precision when tiny diffs exist", {
+  old_text <- c(
+    "# Snapshot: numeric",
+    "",
+    "## Value",
+    "  ..- attr(*, \"scaled:center\")= num 2.41e-17"
+  )
+  new_text <- c(
+    "# Snapshot: numeric",
+    "",
+    "## Value",
+    "  ..- attr(*, \"scaled:center\")= num 1.63e-17"
+  )
+
+  expect_false(is.null(
+    resultcheck:::compare_snapshot_text(old_text, new_text)
+  ))
+  expect_null(
+    resultcheck:::compare_snapshot_text(old_text, new_text, precision = 10L)
+  )
+})
+
+
+test_that("snapshot reads precision from resultcheck.yml and stores rounded values", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  writeLines(c("snapshot:", "  precision: 5"),
+             file.path(temp_project, "resultcheck.yml"))
+
+  withr::with_dir(temp_project, {
+    val <- 1.123456789
+    snapshot(val, "precision_test", script_name = "analysis")
+
+    snap_file <- file.path(temp_project, "_resultcheck_snapshots",
+                           "analysis", "precision_test.md")
+    content <- readLines(snap_file)
+    expect_true(any(grepl("1.12346", content, fixed = TRUE)))
+    expect_false(any(grepl("1.123456789", content, fixed = TRUE)))
+  })
+})
+
+
+test_that("read_resultcheck_config returns empty list when no yml exists", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  withr::with_dir(temp_project, {
+    cfg <- resultcheck:::read_resultcheck_config()
+    expect_type(cfg, "list")
+    expect_length(cfg, 0L)
+  })
+})

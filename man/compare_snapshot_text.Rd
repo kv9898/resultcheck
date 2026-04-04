@@ -4,12 +4,16 @@
 \alias{compare_snapshot_text}
 \title{Compare Two Snapshot Values}
 \usage{
-compare_snapshot_text(old_text, new_text)
+compare_snapshot_text(old_text, new_text, precision = NULL)
 }
 \arguments{
 \item{old_text}{Character vector with old snapshot text.}
 
 \item{new_text}{Character vector with new snapshot text.}
+
+\item{precision}{Optional integer.  When non-\code{NULL}, both texts are
+rounded to this many decimal places before comparison.  Useful for ignoring
+floating-point noise introduced by platform differences.}
 }
 \value{
 A character vector of differences, or NULL if identical.
