@@ -1,0 +1,158 @@
+# Handling Platform Differences in Snapshots
+
+``` r
+library(resultcheck)
+```
+
+## The problem: floating-point noise across platforms
+
+Numerical computations in R can produce results that differ at very high
+decimal places depending on the platform, compiler, or the version of
+libraries like BLAS/LAPACK. For example, a centering attribute from
+[`scale()`](https://rdrr.io/r/base/scale.html) might be `2.41e-17` on
+one machine and `1.63e-17` on another — both are effectively zero, but a
+naïve snapshot comparison treats them as different.
+
+`resultcheck` provides two complementary mechanisms to handle this:
+
+1.  **`[ignored]` line markers** — mark specific lines in a snapshot
+    file as known discrepancies that should always be skipped.
+2.  **`snapshot.precision` in `resultcheck.yml`** — round all
+    floating-point numbers to a fixed number of decimal places before
+    comparing or storing snapshots.
+
+------------------------------------------------------------------------
+
+## Feature 1: `[ignored]` line markers
+
+### How it works
+
+Open any `.md` snapshot file under `_resultcheck_snapshots/` and replace
+the entire content of a volatile line with the literal text `[ignored]`.
+On every subsequent run, that line position is masked before the
+comparison takes place, so differences there will never trigger a
+failure. When you update a snapshot interactively, the `[ignored]`
+markers are automatically preserved in the new file.
+
+### Step-by-step example
+
+Suppose your `PCA.R` script produces a snapshot that includes lines
+like:
+
+      ..- attr(*, "scaled:center")= num 2.41e-17
+      ..- attr(*, "scaled:center")= num 2.98e-17
+
+and these values fluctuate slightly between platforms. Open the snapshot
+file at `_resultcheck_snapshots/PCA/panel_data_pca.md` and change those
+specific lines to:
+
+    [ignored]
+    [ignored]
+
+Save the file. The snapshot now looks like this (abbreviated):
+
+``` markdown
+# Snapshot: data.frame
+
+## Structure
+'data.frame':  1071 obs. of  30 variables:
+ ...
+ $ us : num [1:1071, 1] NA -0.423 -0.697 ...
+[ignored]
+  ..- attr(*, "scaled:scale")= num 1.22
+ $ eu : num [1:1071, 1] NA -0.783 -0.711 ...
+[ignored]
+  ..- attr(*, "scaled:scale")= num 1.37
+```
+
+From now on, `run_in_sandbox("code/PCA.R", sandbox)` will not raise an
+error regardless of what those two lines contain in any new run, while
+every other line continues to be verified.
+
+### Rules
+
+- The **entire line** must be `[ignored]` (leading/trailing whitespace
+  is stripped before the check, so indentation does not matter).
+- Lines are matched by **position** within the snapshot file, so adding
+  or removing other lines shifts the positions. If the overall structure
+  of the output changes materially, update the snapshot interactively
+  first, then re-apply the `[ignored]` markers to the new file.
+- `[ignored]` markers are **preserved automatically** when you update a
+  snapshot: `resultcheck` copies each `[ignored]` line from the stored
+  snapshot into the freshly generated one before writing it to disk.
+
+------------------------------------------------------------------------
+
+## Feature 2: Numeric precision in `resultcheck.yml`
+
+### How it works
+
+Add a `snapshot.precision` key to the `resultcheck.yml` file at the root
+of your project. Before storing or comparing a snapshot, every
+floating-point number in the text representation is rounded to that many
+decimal places. Integer-like tokens (e.g. index ranges such as
+`[1:1071]`) are left unchanged.
+
+``` yaml
+# resultcheck.yml
+snapshot:
+  precision: 10
+```
+
+With `precision: 10`, both `2.41e-17` and `1.63e-17` round to `0`, so
+the snapshots compare as equal.
+
+### Step-by-step example
+
+1.  Add `precision` to `resultcheck.yml`:
+
+    ``` yaml
+    snapshot:
+      precision: 10
+    ```
+
+2.  Delete the outdated snapshot (or run interactively and accept the
+    update when prompted) so that the stored file is regenerated with
+    rounded values.
+
+3.  Re-run the script via
+    [`run_in_sandbox()`](https://kv9898.github.io/resultcheck/reference/run_in_sandbox.md).
+    The comparison will now succeed whenever the effective difference is
+    smaller than `0.5 × 10^{-precision}`.
+
+### Choosing a precision value
+
+| Situation                                  | Suggested precision |
+|--------------------------------------------|---------------------|
+| Machine-epsilon noise (`1e-15` to `1e-17`) | 10                  |
+| Monte-Carlo / bootstrap variance           | 4–6                 |
+| Monetary amounts (cents)                   | 2                   |
+
+A higher value is more sensitive (closer to exact comparison); a lower
+value is more forgiving.
+
+### Backward compatibility
+
+If your project already has snapshot files stored before `precision` was
+configured, `resultcheck` also rounds the **stored** snapshot numbers
+during comparison. This means setting `precision` will immediately
+suppress floating-point noise in existing snapshots without needing to
+regenerate them.
+
+------------------------------------------------------------------------
+
+## Using both features together
+
+The two features are independent and compose naturally:
+
+- Use **`[ignored]`** when a line’s value is entirely unreliable across
+  runs (e.g. a random seed, a memory address, or a platform-specific
+  constant that carries no scientific meaning).
+- Use **`precision`** when values are meaningful but may differ in the
+  last few decimal places due to floating-point arithmetic.
+
+For the PCA example in the problem statement, either approach resolves
+the failure. Using `precision: 10` is the lower-maintenance option
+because it requires no manual edits to snapshot files; `[ignored]`
+offers surgical control when only a handful of lines are volatile while
+the rest must be exact.

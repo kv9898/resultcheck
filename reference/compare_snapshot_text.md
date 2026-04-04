@@ -5,7 +5,7 @@ Compares two serialized snapshots and returns differences.
 ## Usage
 
 ``` r
-compare_snapshot_text(old_text, new_text)
+compare_snapshot_text(old_text, new_text, precision = NULL)
 ```
 
 ## Arguments
@@ -17,6 +17,12 @@ compare_snapshot_text(old_text, new_text)
 - new_text:
 
   Character vector with new snapshot text.
+
+- precision:
+
+  Optional integer. When non-`NULL`, both texts are rounded to this many
+  decimal places before comparison. Useful for ignoring floating-point
+  noise introduced by platform differences.
 
 ## Value
 
