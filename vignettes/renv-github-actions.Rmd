@@ -83,7 +83,7 @@ renv::init()
 Install the packages your project needs, then snapshot the environment:
 
 ```r
-install.packages(c("resultcheck", "testthat"))
+renv::install(c("resultcheck", "testthat"))
 # ... install any other packages your analysis uses ...
 renv::snapshot()
 ```
