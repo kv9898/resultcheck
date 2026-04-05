@@ -12,7 +12,8 @@ compare_snapshot_text(old_text, new_text, precision = NULL)
 \item{new_text}{Character vector with new snapshot text.}
 
 \item{precision}{Optional integer.  When non-\code{NULL}, both texts are
-rounded to this many decimal places before comparison.  Useful for ignoring
+rounded to this many decimal places before comparison (see
+\code{\link{round_snapshot_numbers}}).  Useful for ignoring
 floating-point noise introduced by platform differences.}
 }
 \value{
