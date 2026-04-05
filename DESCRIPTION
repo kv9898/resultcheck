@@ -2,7 +2,7 @@ Package: resultcheck
 Title: Result Stability Checks for Empirical R Projects
 Version: 0.1.3
 Authors@R: 
-    person("Dianyi", "Yang", , "dianyi.yang@politics.ox.ac.uk", role = c("aut", "cre"), comment = c(ORCID = "0009-0004-4652-3429"))
+    person("Dianyi", "Yang", , "dianyi.yang@politics.ox.ac.uk", role = c("aut", "cre", "ctb"), comment = c(ORCID = "0009-0004-4652-3429"))
 Description:
     Lightweight helpers for checking whether empirical results remain 
     substantively unchanged across code revisions, platform differences, 
