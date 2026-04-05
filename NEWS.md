@@ -1,3 +1,5 @@
+# resultcheck 0.1.3
+
 # resultcheck 0.1.2
 
 * Add precision rounding option in `resultcheck.yml` to stabilise snapshot comparisons across runs.
