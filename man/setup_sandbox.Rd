@@ -31,20 +31,10 @@ empirical analysis scripts in isolation.
 }
 \examples{
 \donttest{
-# Set up a temporary project root so all file I/O stays in tempdir
-tmp <- tempfile()
-dir.create(tmp)
-writeLines("", file.path(tmp, "resultcheck.yml"))
-dir.create(file.path(tmp, "data"))
-write.csv(data.frame(x = 1:3), file.path(tmp, "data", "mydata.csv"),
-          row.names = FALSE)
-
-withr::with_dir(tmp, {
-  sandbox <- setup_sandbox("data")
-  print(sandbox$path)
-  cleanup_sandbox(sandbox)
-})
-
-unlink(tmp, recursive = TRUE)
+# Copy a data directory into the sandbox (paths are relative to project root).
+# setup_sandbox() creates its working directory inside tempdir() automatically.
+sandbox <- setup_sandbox("data")
+print(sandbox$path)
+cleanup_sandbox(sandbox)
 }
 }

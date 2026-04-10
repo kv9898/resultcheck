@@ -15,12 +15,8 @@
 #'
 #' @examples
 #' \donttest{
-#' tmp <- tempfile()
-#' dir.create(tmp)
-#' writeLines("", file.path(tmp, "resultcheck.yml"))
-#' root <- find_root(start_path = tmp)
+#' root <- find_root()
 #' print(root)
-#' unlink(tmp, recursive = TRUE)
 #' }
 find_root <- function(start_path = NULL) {
   if (!requireNamespace("rprojroot", quietly = TRUE)) {
@@ -96,9 +92,12 @@ get_start_path_for_find_root <- function() {
 
 #' Get Snapshot File Path
 #'
-#' Constructs the path to a snapshot file within the project's snapshot directory.
+#' Constructs the path to a snapshot file within the project's snapshot
+#' directory and creates the directory if it does not yet exist.
 #' Snapshot files are stored in \code{_resultcheck_snapshots/} relative to the
-#' project root, organized by script name.
+#' project root (located via \code{find_root()}), organized by script name.
+#' The directory is created inside the \strong{user's project directory} so
+#' that snapshot files can be committed to version control.
 #'
 #' @param name Character. The name of the snapshot (without extension).
 #' @param script_name Optional. The name of the script file creating the snapshot.
@@ -444,7 +443,12 @@ is_testing <- function() {
 #' run_in_sandbox), throws an error if snapshot doesn't exist or doesn't match.
 #'
 #' Snapshots are stored in \code{_resultcheck_snapshots/} directory relative
-#' to the project root, organized by script name.
+#' to the project root (located via \code{find_root()}), organized by script
+#' name.  \strong{This function writes files to the user's project directory by
+#' design}: snapshot files are meant to be persistent and committed to version
+#' control alongside the analysis scripts they protect.  The interactive prompt
+#' (asking whether to overwrite an existing snapshot) is only shown when R is
+#' running interactively.
 #'
 #' @param value The R object to snapshot (e.g., plot, table, model output).
 #' @param name Character. A descriptive name for this snapshot.
@@ -466,25 +470,19 @@ is_testing <- function() {
 #'
 #' @examples
 #' \donttest{
-#' # Set up a temporary project root so writes go to tempdir, not user filespace
-#' tmp <- tempfile()
-#' dir.create(tmp)
-#' writeLines("", file.path(tmp, "resultcheck.yml"))
+#' # In an analysis script (interactive mode).
+#' # Writes _resultcheck_snapshots/ at the project root — by design.
+#' model <- lm(mpg ~ wt, data = mtcars)
+#' snapshot(model, "mtcars_model", script_name = "example")
 #'
-#' withr::with_dir(tmp, {
-#'   model <- lm(mpg ~ wt, data = mtcars)
+#' # Use only print() output (skip str() for volatile fields):
+#' snapshot(model, "mtcars_model_print", method = "print", script_name = "example")
 #'
-#'   # First call: saves the snapshot (no interactive prompt needed)
-#'   snapshot(model, "mtcars_model", script_name = "example")
+#' # Use only str() output:
+#' snapshot(model, "mtcars_model_str", method = "str", script_name = "example")
 #'
-#'   # Use only print() output (skip str() for volatile fields):
-#'   snapshot(model, "mtcars_model_print", method = "print", script_name = "example")
-#'
-#'   # Use only str() output:
-#'   snapshot(model, "mtcars_model_str", method = "str", script_name = "example")
-#' })
-#'
-#' unlink(tmp, recursive = TRUE)
+#' # In testing mode (inside run_in_sandbox or testthat):
+#' # Errors immediately if snapshot is missing or doesn't match.
 #' }
 snapshot <- function(value, name, script_name = NULL, method = c("both", "print", "str")) {
   method <- match.arg(method)

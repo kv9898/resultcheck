@@ -39,21 +39,11 @@
 #'
 #' @examples
 #' \donttest{
-#' # Set up a temporary project root so all file I/O stays in tempdir
-#' tmp <- tempfile()
-#' dir.create(tmp)
-#' writeLines("", file.path(tmp, "resultcheck.yml"))
-#' dir.create(file.path(tmp, "data"))
-#' write.csv(data.frame(x = 1:3), file.path(tmp, "data", "mydata.csv"),
-#'           row.names = FALSE)
-#'
-#' withr::with_dir(tmp, {
-#'   sandbox <- setup_sandbox("data")
-#'   print(sandbox$path)
-#'   cleanup_sandbox(sandbox)
-#' })
-#'
-#' unlink(tmp, recursive = TRUE)
+#' # Copy a data directory into the sandbox (paths are relative to project root).
+#' # setup_sandbox() creates its working directory inside tempdir() automatically.
+#' sandbox <- setup_sandbox("data")
+#' print(sandbox$path)
+#' cleanup_sandbox(sandbox)
 #' }
 setup_sandbox <- function(files, temp_base = NULL) {
   # Generate unique ID for this sandbox
@@ -184,19 +174,10 @@ setup_sandbox <- function(files, temp_base = NULL) {
 #'
 #' @examples
 #' \donttest{
-#' # Set up a temporary project root so all file I/O stays in tempdir
-#' tmp <- tempfile()
-#' dir.create(tmp)
-#' writeLines("", file.path(tmp, "resultcheck.yml"))
-#' writeLines("x <- 1 + 1", file.path(tmp, "analysis.R"))
-#'
-#' withr::with_dir(tmp, {
-#'   sandbox <- setup_sandbox(character(0))
-#'   run_in_sandbox("analysis.R", sandbox)
-#'   cleanup_sandbox(sandbox)
-#' })
-#'
-#' unlink(tmp, recursive = TRUE)
+#' # Run an analysis script inside an isolated sandbox.
+#' sandbox <- setup_sandbox(character(0))
+#' run_in_sandbox("analysis.R", sandbox)
+#' cleanup_sandbox(sandbox)
 #' }
 run_in_sandbox <- function(script_path, 
                            sandbox = NULL, 
@@ -335,17 +316,9 @@ run_in_sandbox <- function(script_path,
 #'
 #' @examples
 #' \donttest{
-#' # Set up a temporary project root so all file I/O stays in tempdir
-#' tmp <- tempfile()
-#' dir.create(tmp)
-#' writeLines("", file.path(tmp, "resultcheck.yml"))
-#'
-#' withr::with_dir(tmp, {
-#'   sandbox <- setup_sandbox(character(0))
-#'   cleanup_sandbox(sandbox)
-#' })
-#'
-#' unlink(tmp, recursive = TRUE)
+#' sandbox <- setup_sandbox(character(0))
+#' # ... use sandbox ...
+#' cleanup_sandbox(sandbox)
 #' }
 cleanup_sandbox <- function(sandbox = NULL, force = TRUE) {
   # Get sandbox

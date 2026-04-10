@@ -21,13 +21,9 @@ Removes a sandbox directory and all its contents. This should be called
 after testing is complete to free up disk space.
 }
 \examples{
-\dontrun{
-# Setup sandbox
-sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
-
+\donttest{
+sandbox <- setup_sandbox(character(0))
 # ... use sandbox ...
-
-# Clean up
 cleanup_sandbox(sandbox)
 }
 }

@@ -22,11 +22,7 @@ or a \code{.git} directory. When running inside a sandbox created by
 }
 \examples{
 \donttest{
-tmp <- tempfile()
-dir.create(tmp)
-writeLines("", file.path(tmp, "resultcheck.yml"))
-root <- find_root(start_path = tmp)
+root <- find_root()
 print(root)
-unlink(tmp, recursive = TRUE)
 }
 }

@@ -34,18 +34,9 @@ analysis scripts without polluting the console or creating unwanted plots.
 }
 \examples{
 \donttest{
-# Set up a temporary project root so all file I/O stays in tempdir
-tmp <- tempfile()
-dir.create(tmp)
-writeLines("", file.path(tmp, "resultcheck.yml"))
-writeLines("x <- 1 + 1", file.path(tmp, "analysis.R"))
-
-withr::with_dir(tmp, {
-  sandbox <- setup_sandbox(character(0))
-  run_in_sandbox("analysis.R", sandbox)
-  cleanup_sandbox(sandbox)
-})
-
-unlink(tmp, recursive = TRUE)
+# Run an analysis script inside an isolated sandbox.
+sandbox <- setup_sandbox(character(0))
+run_in_sandbox("analysis.R", sandbox)
+cleanup_sandbox(sandbox)
 }
 }

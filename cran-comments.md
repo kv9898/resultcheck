@@ -20,13 +20,19 @@ therefore been added to the Description field.
 
 All `\dontrun{}` wrappers in examples have been replaced with `\donttest{}`.
 
-Examples that write files (e.g. `snapshot()`, `setup_sandbox()`,
-`run_in_sandbox()`, `cleanup_sandbox()`) now create a temporary directory
-(via `tempfile()` / `dir.create()`) as a self-contained project root and use
-`withr::with_dir()` to run within it. All file I/O therefore stays inside
-`tempdir()`, not in the user's working directory or home directory. The
-temporary directory is removed with `unlink()` at the end of each example.
+The `snapshot()` function is intentionally a file-writing function: its core
+purpose is to persist human-readable `.md` snapshots in
+`_resultcheck_snapshots/` at the project root so they can be committed to
+version control and detected by `find_root()` on subsequent runs.  Writing to
+the user's project directory is therefore not incidental but a fundamental part
+of the package's design, and this is now stated explicitly in the
+`snapshot()` documentation.
 
-The `snapshot()` function already guards its `readline()` call with
-`if (interactive())` in the function body, so non-interactive callers
-(including example execution) never trigger the interactive prompt.
+The `\donttest{}` wrapper ensures examples are skipped during automated `R CMD
+check` runs.  The interactive overwrite prompt inside `snapshot()` is already
+guarded by `if (interactive())` in the function body, so non-interactive
+callers (including example runners) never trigger it.
+
+The sandbox functions (`setup_sandbox()`, `run_in_sandbox()`,
+`cleanup_sandbox()`) create their working directories inside `tempdir()` via
+`tempfile()` and do not write to the user's home directory.
