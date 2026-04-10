@@ -33,14 +33,19 @@ warnings, and graphical output. This is useful for testing empirical
 analysis scripts without polluting the console or creating unwanted plots.
 }
 \examples{
-\dontrun{
-# Setup sandbox
-sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
+\donttest{
+# Set up a temporary project root so all file I/O stays in tempdir
+tmp <- tempfile()
+dir.create(tmp)
+writeLines("", file.path(tmp, "resultcheck.yml"))
+writeLines("x <- 1 + 1", file.path(tmp, "analysis.R"))
 
-# Run script in sandbox
-run_in_sandbox("code/analysis.R", sandbox)
+withr::with_dir(tmp, {
+  sandbox <- setup_sandbox(character(0))
+  run_in_sandbox("analysis.R", sandbox)
+  cleanup_sandbox(sandbox)
+})
 
-# Clean up
-cleanup_sandbox(sandbox)
+unlink(tmp, recursive = TRUE)
 }
 }

@@ -38,15 +38,22 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Create sandbox and copy files
-#' sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
-#' 
-#' # Use sandbox path
-#' print(sandbox$path)
-#' 
-#' # Clean up when done
-#' cleanup_sandbox(sandbox)
+#' \donttest{
+#' # Set up a temporary project root so all file I/O stays in tempdir
+#' tmp <- tempfile()
+#' dir.create(tmp)
+#' writeLines("", file.path(tmp, "resultcheck.yml"))
+#' dir.create(file.path(tmp, "data"))
+#' write.csv(data.frame(x = 1:3), file.path(tmp, "data", "mydata.csv"),
+#'           row.names = FALSE)
+#'
+#' withr::with_dir(tmp, {
+#'   sandbox <- setup_sandbox("data")
+#'   print(sandbox$path)
+#'   cleanup_sandbox(sandbox)
+#' })
+#'
+#' unlink(tmp, recursive = TRUE)
 #' }
 setup_sandbox <- function(files, temp_base = NULL) {
   # Generate unique ID for this sandbox
@@ -176,15 +183,20 @@ setup_sandbox <- function(files, temp_base = NULL) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Setup sandbox
-#' sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
-#' 
-#' # Run script in sandbox
-#' run_in_sandbox("code/analysis.R", sandbox)
-#' 
-#' # Clean up
-#' cleanup_sandbox(sandbox)
+#' \donttest{
+#' # Set up a temporary project root so all file I/O stays in tempdir
+#' tmp <- tempfile()
+#' dir.create(tmp)
+#' writeLines("", file.path(tmp, "resultcheck.yml"))
+#' writeLines("x <- 1 + 1", file.path(tmp, "analysis.R"))
+#'
+#' withr::with_dir(tmp, {
+#'   sandbox <- setup_sandbox(character(0))
+#'   run_in_sandbox("analysis.R", sandbox)
+#'   cleanup_sandbox(sandbox)
+#' })
+#'
+#' unlink(tmp, recursive = TRUE)
 #' }
 run_in_sandbox <- function(script_path, 
                            sandbox = NULL, 
@@ -322,14 +334,18 @@ run_in_sandbox <- function(script_path,
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Setup sandbox
-#' sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
-#' 
-#' # ... use sandbox ...
-#' 
-#' # Clean up
-#' cleanup_sandbox(sandbox)
+#' \donttest{
+#' # Set up a temporary project root so all file I/O stays in tempdir
+#' tmp <- tempfile()
+#' dir.create(tmp)
+#' writeLines("", file.path(tmp, "resultcheck.yml"))
+#'
+#' withr::with_dir(tmp, {
+#'   sandbox <- setup_sandbox(character(0))
+#'   cleanup_sandbox(sandbox)
+#' })
+#'
+#' unlink(tmp, recursive = TRUE)
 #' }
 cleanup_sandbox <- function(sandbox = NULL, force = TRUE) {
   # Get sandbox

@@ -14,9 +14,13 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' root <- find_root()
+#' \donttest{
+#' tmp <- tempfile()
+#' dir.create(tmp)
+#' writeLines("", file.path(tmp, "resultcheck.yml"))
+#' root <- find_root(start_path = tmp)
 #' print(root)
+#' unlink(tmp, recursive = TRUE)
 #' }
 find_root <- function(start_path = NULL) {
   if (!requireNamespace("rprojroot", quietly = TRUE)) {
@@ -461,22 +465,26 @@ is_testing <- function() {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # In an analysis script (interactive mode):
-#' model <- lm(mpg ~ wt, data = mtcars)
-#' snapshot(model, "mtcars_model")
-#' 
-#' # First time: saves the snapshot
-#' # Later times: compares, shows differences, prompts to update
-#' 
-#' # Use only print() output (skip str() which may contain volatile fields):
-#' snapshot(model, "mtcars_model_print", method = "print")
-#' 
-#' # Use only str() output:
-#' snapshot(model, "mtcars_model_str", method = "str")
-#' 
-#' # In testing mode (inside run_in_sandbox or testthat):
-#' # Errors if snapshot missing or doesn't match
+#' \donttest{
+#' # Set up a temporary project root so writes go to tempdir, not user filespace
+#' tmp <- tempfile()
+#' dir.create(tmp)
+#' writeLines("", file.path(tmp, "resultcheck.yml"))
+#'
+#' withr::with_dir(tmp, {
+#'   model <- lm(mpg ~ wt, data = mtcars)
+#'
+#'   # First call: saves the snapshot (no interactive prompt needed)
+#'   snapshot(model, "mtcars_model", script_name = "example")
+#'
+#'   # Use only print() output (skip str() for volatile fields):
+#'   snapshot(model, "mtcars_model_print", method = "print", script_name = "example")
+#'
+#'   # Use only str() output:
+#'   snapshot(model, "mtcars_model_str", method = "str", script_name = "example")
+#' })
+#'
+#' unlink(tmp, recursive = TRUE)
 #' }
 snapshot <- function(value, name, script_name = NULL, method = c("both", "print", "str")) {
   method <- match.arg(method)

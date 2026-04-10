@@ -30,14 +30,21 @@ into it while preserving their path structure. This is useful for testing
 empirical analysis scripts in isolation.
 }
 \examples{
-\dontrun{
-# Create sandbox and copy files
-sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
+\donttest{
+# Set up a temporary project root so all file I/O stays in tempdir
+tmp <- tempfile()
+dir.create(tmp)
+writeLines("", file.path(tmp, "resultcheck.yml"))
+dir.create(file.path(tmp, "data"))
+write.csv(data.frame(x = 1:3), file.path(tmp, "data", "mydata.csv"),
+          row.names = FALSE)
 
-# Use sandbox path
-print(sandbox$path)
+withr::with_dir(tmp, {
+  sandbox <- setup_sandbox("data")
+  print(sandbox$path)
+  cleanup_sandbox(sandbox)
+})
 
-# Clean up when done
-cleanup_sandbox(sandbox)
+unlink(tmp, recursive = TRUE)
 }
 }

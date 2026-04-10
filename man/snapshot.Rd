@@ -41,21 +41,25 @@ Snapshots are stored in \code{_resultcheck_snapshots/} directory relative
 to the project root, organized by script name.
 }
 \examples{
-\dontrun{
-# In an analysis script (interactive mode):
-model <- lm(mpg ~ wt, data = mtcars)
-snapshot(model, "mtcars_model")
+\donttest{
+# Set up a temporary project root so writes go to tempdir, not user filespace
+tmp <- tempfile()
+dir.create(tmp)
+writeLines("", file.path(tmp, "resultcheck.yml"))
 
-# First time: saves the snapshot
-# Later times: compares, shows differences, prompts to update
+withr::with_dir(tmp, {
+  model <- lm(mpg ~ wt, data = mtcars)
 
-# Use only print() output (skip str() which may contain volatile fields):
-snapshot(model, "mtcars_model_print", method = "print")
+  # First call: saves the snapshot (no interactive prompt needed)
+  snapshot(model, "mtcars_model", script_name = "example")
 
-# Use only str() output:
-snapshot(model, "mtcars_model_str", method = "str")
+  # Use only print() output (skip str() for volatile fields):
+  snapshot(model, "mtcars_model_print", method = "print", script_name = "example")
 
-# In testing mode (inside run_in_sandbox or testthat):
-# Errors if snapshot missing or doesn't match
+  # Use only str() output:
+  snapshot(model, "mtcars_model_str", method = "str", script_name = "example")
+})
+
+unlink(tmp, recursive = TRUE)
 }
 }

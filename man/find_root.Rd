@@ -21,8 +21,12 @@ or a \code{.git} directory. When running inside a sandbox created by
 \code{setup_sandbox()}, it will search from the original working directory.
 }
 \examples{
-\dontrun{
-root <- find_root()
+\donttest{
+tmp <- tempfile()
+dir.create(tmp)
+writeLines("", file.path(tmp, "resultcheck.yml"))
+root <- find_root(start_path = tmp)
 print(root)
+unlink(tmp, recursive = TRUE)
 }
 }
