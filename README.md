@@ -8,6 +8,14 @@ Result Stability Checks for Empirical R Projects
 
 ## Installation
 
+### Latest Stable Version
+
+```r
+install.packages("resultcheck")
+```
+
+### Latest Development Version (Unstable)
+
 ```r
 # install.packages("devtools")
 devtools::install_github("kv9898/resultcheck")

@@ -1,3 +1,7 @@
+# resultcheck 0.1.3
+
+* Prepare for release to CRAN.
+
 # resultcheck 0.1.2
 
 * Add precision rounding option in `resultcheck.yml` to stabilise snapshot comparisons across runs.
