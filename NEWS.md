@@ -10,7 +10,7 @@
 
 # resultcheck 0.1.2
 
-* Add precision rounding option in `_resultcheck.yml` to stabilise snapshot comparisons across runs.
+* Add precision rounding option in `_resultcheck.yml` to stabilize snapshot comparisons across runs.
 * Add `[ignored]` markers in `snapshot()` output to explicitly indicate excluded components.
 
 # resultcheck 0.1.1
