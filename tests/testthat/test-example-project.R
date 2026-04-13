@@ -33,7 +33,7 @@ test_that("example project: analysis produces stable results", {
   snapshot(model, "income_model", script_name = "analysis")
 
   snapshot_file <- file.path(
-    temp_project, "_resultcheck_snapshots", "analysis", "income_model.md"
+    temp_project, "tests/_resultcheck_snaps", "analysis", "income_model.md"
   )
   expect_true(file.exists(snapshot_file))
 

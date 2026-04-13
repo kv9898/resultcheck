@@ -19,7 +19,8 @@ The full path to the snapshot file.
 }
 \description{
 Constructs the path to a snapshot file within the project's snapshot directory.
-Snapshot files are stored in \code{_resultcheck_snapshots/} relative to the
-project root, organized by script name.
+Snapshot files are stored under \code{tests/_resultcheck_snaps/} by default,
+organized by script name. This location can be overridden with
+\code{snapshot.dir} in \code{_resultcheck.yml}.
 }
 \keyword{internal}

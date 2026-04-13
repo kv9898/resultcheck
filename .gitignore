@@ -1,6 +1,6 @@
 .Rproj.user
 *.Rcheck/
-_resultcheck_snapshots/
+tests/_resultcheck_snaps/
 *.tar.gz
 check/
 docs
