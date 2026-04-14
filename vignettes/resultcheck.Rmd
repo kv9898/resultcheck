@@ -180,6 +180,19 @@ This test:
 - runs `analysis.R` inside it
 - fails if any snapshot differs from the stored version
 
+You can extend your tests to verify that your script produces the expected output files.
+
+For example:
+
+```r
+  expect_true(
+    file.exists(file.path(sandbox$path, "output/regModels.RData")),
+    info = "regModels.RData not found"
+  )
+```
+
+This is useful when your analysis produces files (e.g. model objects, tables, or figures) that you want to ensure are created correctly.
+
 ### Sandbox environment
 
 The sandbox is a temporary directory that mimics a clean R session.
