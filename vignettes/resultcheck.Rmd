@@ -252,3 +252,40 @@ You can run your tests using `testthat::test_dir("tests/testthat")`.
 If you are using [Positron](https://positron.posit.co/), you can run tests in the test pane once you have installed the [Positron R Tester extension](https://open-vsx.org/extension/kv9898/positron-r-tester). This provides a visual interface for running tests and inspecting results:
 
 ![Positron R Tester](img/r-tester.png)
+
+## Running tests on GitHub
+
+While you can run tests locally, it is often a good idea to run them automatically using [GitHub Actions](https://docs.github.com/en/actions).
+
+This is especially useful for:
+
+- **Collaborative projects** — tests run automatically on every push, helping catch unintended changes introduced by collaborators
+- **Saving local resources** — running tests (especially sandboxed scripts) can take time and block your current R session
+
+Using GitHub Actions allows tests to run in the cloud, so you don’t need to wait for them locally or manage multiple sessions.
+
+### What you need
+
+To set this up, you will need some familiarity with:
+
+`renv` (for managing package versions)
+Git and GitHub (for version control)
+GitHub Actions (for automation)
+
+These tools are generally useful for reproducible research, and we recommend learning them if you are not already using them.
+
+### Fully automated checks
+
+Once configured, tests run automatically whenever you push changes to your repository.
+
+This means:
+
+- you don’t need to remember to run tests locally
+- failures are caught immediately
+- your results are continuously checked in a clean environment
+
+> Think of this as moving your tests from "something you remember to run" to "something that runs automatically for you."
+
+For a full walkthrough, see:
+
+[👉 Automated Testing with GitHub Actions](renv-github-actions.html)
