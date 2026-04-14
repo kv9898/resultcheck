@@ -106,7 +106,7 @@ The file: `tests/_resultcheck_snaps/analysis/model.md` contains a human-readable
 
 By default, `snapshot()` automatically chooses a representation for the object.
 
-You can override this using the method argument:
+You can override this using the `method` argument:
 
 ```r
 snapshot(model, "model", method = "print")
@@ -268,9 +268,9 @@ Using GitHub Actions allows tests to run in the cloud, so you don’t need to wa
 
 To set this up, you will need some familiarity with:
 
-`renv` (for managing package versions)
-Git and GitHub (for version control)
-GitHub Actions (for automation)
+- `renv` (for managing package versions)
+- Git and GitHub (for version control)
+- GitHub Actions (for automation)
 
 These tools are generally useful for reproducible research, and we recommend learning them if you are not already using them.
 
