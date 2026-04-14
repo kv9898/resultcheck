@@ -75,3 +75,40 @@ Controls how many digits are used when comparing numeric values.
 Specifies where snapshot files are stored, relative to the project root.
 
 By default, snapshots are stored in: `tests/_resultcheck_snaps`
+
+## Add snapshots to your analysis
+
+The primary way to use `resultcheck` is to add `snapshot()` calls to your analysis script.
+
+For example, if you have a script `analysis.R` that fits a model:
+
+```r
+model <- lm(mpg ~ wt, data = mtcars)
+resultcheck::snapshot(model, "model")
+```
+You can also snapshot data frames, plots, tables, or any other R object.
+
+### First run: creating a snapshot
+
+When you run the `snapshot()` line for the first time, a snapshot file is created. This establishes the baseline that future runs will be compared against.
+
+For example:
+
+```r
+> resultcheck::snapshot(model, "model")
+Warning: snapshot() will write a snapshot file to: path/to/your/project/tests/_resultcheck_snaps/analysis/model.md
+✓ New snapshot saved: analysis/model.md
+```
+
+The file: `tests/_resultcheck_snaps/analysis/model.md` contains a human-readable representation of the model object.
+
+### Snapshot representation
+
+By default, `s`napshot()` automatically chooses a representation for the object.
+
+You can override this using the method argument:
+
+```r
+snapshot(model, "model", method = "print")
+snapshot(model, "model", method = "str")
+```
