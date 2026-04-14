@@ -50,8 +50,9 @@ are found and emits a warning. In testing mode (inside testthat or
 run_in_sandbox), throws an error if snapshot doesn't exist or doesn't
 match.
 
-Snapshots are stored in `_resultcheck_snapshots/` directory relative to
-the project root, organized by script name.
+Snapshots are stored under `tests/_resultcheck_snaps/` by default,
+organized by script name, and configurable via `snapshot.dir` in
+`_resultcheck.yml`.
 
 ## Examples
 

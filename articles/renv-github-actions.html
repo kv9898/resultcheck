@@ -131,21 +131,21 @@ differences would go unnoticed.</p>
 ├── .Rprofile                   # auto-activates renv
 ├── renv.lock                   # locked package versions (committed)
 ├── renv/                       # renv internals (mostly gitignored)
-├── resultcheck.yml             # marks the project root
+├── _resultcheck.yml             # marks the project root
 ├── data/
 │   └── panel_data.rds
 ├── code/
 │   └── analysis.R              # your analysis script
-├── _resultcheck_snapshots/     # committed snapshot files
+├── tests/_resultcheck_snaps/     # committed snapshot files
 │   └── analysis/
 │       └── main_model.md
 └── tests/
     └── testthat/
         └── test-analysis.R</code></pre>
-<p>The <code>resultcheck.yml</code> file at the root can be empty — its
+<p>The <code>_resultcheck.yml</code> file at the root can be empty — its
 presence is enough for <code><a href="../reference/find_root.html">find_root()</a></code> to locate the
 project:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># resultcheck.yml</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># _resultcheck.yml</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -342,7 +342,7 @@ error.</p>
 2. Run interactively → snapshots
    generated / updated
 3. Review diffs, accept changes
-4. git add _resultcheck_snapshots/
+4. git add tests/_resultcheck_snaps/
    git commit &amp;&amp; git push
                                   5. Workflow triggered
                                   6. renv::restore() (from cache)
@@ -369,10 +369,10 @@ line in the snapshot file with the literal text <code>[ignored]</code>.
 That line position is skipped on every platform.</li>
 <li>
 <strong><code>snapshot.precision</code></strong> — add a
-<code>precision</code> key to <code>resultcheck.yml</code> to round all
+<code>precision</code> key to <code>_resultcheck.yml</code> to round all
 floating-point numbers before comparison:</li>
 </ul>
-<div class="sourceCode" id="cb10"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># resultcheck.yml</span></span>
+<div class="sourceCode" id="cb10"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># _resultcheck.yml</span></span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">snapshot</span><span class="kw">:</span></span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="at">  </span><span class="fu">precision</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span></code></pre></div>
 <p>Either option lets CI pass on all platforms without losing the safety

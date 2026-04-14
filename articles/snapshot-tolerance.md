@@ -17,7 +17,7 @@ naïve snapshot comparison treats them as different.
 
 1.  **`[ignored]` line markers** — mark specific lines in a snapshot
     file as known discrepancies that should always be skipped.
-2.  **`snapshot.precision` in `resultcheck.yml`** — round all
+2.  **`snapshot.precision` in `_resultcheck.yml`** — round all
     floating-point numbers to a fixed number of decimal places before
     comparing or storing snapshots.
 
@@ -27,12 +27,12 @@ naïve snapshot comparison treats them as different.
 
 ### How it works
 
-Open any `.md` snapshot file under `_resultcheck_snapshots/` and replace
-the entire content of a volatile line with the literal text `[ignored]`.
-On every subsequent run, that line position is masked before the
-comparison takes place, so differences there will never trigger a
-failure. When you update a snapshot interactively, the `[ignored]`
-markers are automatically preserved in the new file.
+Open any `.md` snapshot file under `tests/_resultcheck_snaps/` and
+replace the entire content of a volatile line with the literal text
+`[ignored]`. On every subsequent run, that line position is masked
+before the comparison takes place, so differences there will never
+trigger a failure. When you update a snapshot interactively, the
+`[ignored]` markers are automatically preserved in the new file.
 
 ### Step-by-step example
 
@@ -43,8 +43,8 @@ like:
       ..- attr(*, "scaled:center")= num 2.98e-17
 
 and these values fluctuate slightly between platforms. Open the snapshot
-file at `_resultcheck_snapshots/PCA/panel_data_pca.md` and change those
-specific lines to:
+file at `tests/_resultcheck_snaps/PCA/panel_data_pca.md` and change
+those specific lines to:
 
     [ignored]
     [ignored]
@@ -83,18 +83,18 @@ every other line continues to be verified.
 
 ------------------------------------------------------------------------
 
-## Feature 2: Numeric precision in `resultcheck.yml`
+## Feature 2: Numeric precision in `_resultcheck.yml`
 
 ### How it works
 
-Add a `snapshot.precision` key to the `resultcheck.yml` file at the root
-of your project. Before storing or comparing a snapshot, every
+Add a `snapshot.precision` key to the `_resultcheck.yml` file at the
+root of your project. Before storing or comparing a snapshot, every
 floating-point number in the text representation is rounded to that many
 decimal places. Integer-like tokens (e.g. index ranges such as
 `[1:1071]`) are left unchanged.
 
 ``` yaml
-# resultcheck.yml
+# _resultcheck.yml
 snapshot:
   precision: 10
 ```
@@ -104,7 +104,7 @@ the snapshots compare as equal.
 
 ### Step-by-step example
 
-1.  Add `precision` to `resultcheck.yml`:
+1.  Add `precision` to `_resultcheck.yml`:
 
     ``` yaml
     snapshot:

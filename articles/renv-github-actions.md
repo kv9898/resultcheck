@@ -35,25 +35,25 @@ A minimal project that uses this workflow looks like:
     ├── .Rprofile                   # auto-activates renv
     ├── renv.lock                   # locked package versions (committed)
     ├── renv/                       # renv internals (mostly gitignored)
-    ├── resultcheck.yml             # marks the project root
+    ├── _resultcheck.yml             # marks the project root
     ├── data/
     │   └── panel_data.rds
     ├── code/
     │   └── analysis.R              # your analysis script
-    ├── _resultcheck_snapshots/     # committed snapshot files
+    ├── tests/_resultcheck_snaps/     # committed snapshot files
     │   └── analysis/
     │       └── main_model.md
     └── tests/
         └── testthat/
             └── test-analysis.R
 
-The `resultcheck.yml` file at the root can be empty — its presence is
+The `_resultcheck.yml` file at the root can be empty — its presence is
 enough for
 [`find_root()`](https://kv9898.github.io/resultcheck/reference/find_root.md)
 to locate the project:
 
 ``` yaml
-# resultcheck.yml
+# _resultcheck.yml
 ```
 
 ------------------------------------------------------------------------
@@ -258,7 +258,7 @@ debugging a strange linking error.
     2. Run interactively → snapshots
        generated / updated
     3. Review diffs, accept changes
-    4. git add _resultcheck_snapshots/
+    4. git add tests/_resultcheck_snaps/
        git commit && git push
                                       5. Workflow triggered
                                       6. renv::restore() (from cache)
@@ -283,11 +283,11 @@ values on different operating systems, use the mechanisms described in
 - **`[ignored]` markers** — replace a volatile line in the snapshot file
   with the literal text `[ignored]`. That line position is skipped on
   every platform.
-- **`snapshot.precision`** — add a `precision` key to `resultcheck.yml`
+- **`snapshot.precision`** — add a `precision` key to `_resultcheck.yml`
   to round all floating-point numbers before comparison:
 
 ``` yaml
-# resultcheck.yml
+# _resultcheck.yml
 snapshot:
   precision: 10
 ```

@@ -1,9 +1,9 @@
 # Find Project Root Directory
 
 Finds the root directory of the current R project using various
-heuristics. The function searches for markers like `resultcheck.yml`,
-`.Rproj` files, or a `.git` directory. When running inside a sandbox
-created by
+heuristics. The function searches for markers like `_resultcheck.yml`
+(preferred), `resultcheck.yml` (legacy), `.Rproj` files, or a `.git`
+directory. When running inside a sandbox created by
 [`setup_sandbox()`](https://kv9898.github.io/resultcheck/reference/setup_sandbox.md),
 it will search from the original working directory.
 

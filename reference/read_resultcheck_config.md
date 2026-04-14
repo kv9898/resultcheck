@@ -1,8 +1,8 @@
 # Read resultcheck Configuration
 
-Reads configuration settings from the `resultcheck.yml` file located at
-the project root. Returns an empty list if the file does not exist or
-cannot be parsed.
+Reads configuration settings from the `_resultcheck.yml` file located at
+the project root (falling back to legacy `resultcheck.yml` if needed).
+Returns an empty list if neither file exists or parsing fails.
 
 ## Usage
 

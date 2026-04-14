@@ -101,7 +101,7 @@
 </h2>
 <p>Consider a project with this layout:</p>
 <pre><code>myproject/
-├── resultcheck.yml       # marks the project root
+├── _resultcheck.yml       # marks the project root
 ├── data/
 │   └── income.csv        # input data
 ├── analysis.R            # analysis script
@@ -167,12 +167,15 @@
 <p>Creates or verifies a snapshot of any R object.</p>
 <ul>
 <li>
-<strong>First interactive run</strong>: saves the object as a human-readable <code>.md</code> file under <code>_resultcheck_snapshots/&lt;script&gt;/</code> at the project root.</li>
+<strong>First interactive run</strong>: saves the object as a human-readable <code>.md</code> file under <code>tests/_resultcheck_snaps/&lt;script&gt;/</code> at the project root by default.</li>
 <li>
 <strong>Subsequent interactive runs</strong>: shows a diff and prompts to update.</li>
 <li>
 <strong>Inside <code><a href="reference/run_in_sandbox.html">run_in_sandbox()</a></code></strong>: errors if the snapshot is missing or doesn’t match.</li>
 </ul>
+<p>You can override the default snapshot directory in <code>_resultcheck.yml</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">snapshot</span><span class="kw">:</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="at">  </span><span class="fu">dir</span><span class="kw">:</span><span class="at"> </span><span class="st">"custom/snapshots/path"</span></span></code></pre></div>
 <p>The <code>method</code> argument controls how the object is serialized:</p>
 <table class="table">
 <colgroup>
@@ -225,9 +228,9 @@
 <h3 id="find_rootstart_path--null">
 <code>find_root(start_path = NULL)</code><a class="anchor" aria-label="anchor" href="#find_rootstart_path--null"></a>
 </h3>
-<p>Locates the project root by searching upward for a <code>resultcheck.yml</code>, <code>.Rproj</code>, or <code>.git</code> marker. Called automatically by <code><a href="reference/snapshot.html">snapshot()</a></code> and <code><a href="reference/setup_sandbox.html">setup_sandbox()</a></code>.</p>
-<p>Place an empty <code>resultcheck.yml</code> at your project root to make detection reliable:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># resultcheck.yml</span></span></code></pre></div>
+<p>Locates the project root by searching upward for a <code>_resultcheck.yml</code> (or legacy <code>resultcheck.yml</code>), <code>.Rproj</code>, or <code>.git</code> marker. Called automatically by <code><a href="reference/snapshot.html">snapshot()</a></code> and <code><a href="reference/setup_sandbox.html">setup_sandbox()</a></code>.</p>
+<p>Place an empty <code>_resultcheck.yml</code> at your project root to make detection reliable:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># _resultcheck.yml</span></span></code></pre></div>
 <hr>
 </div>
 </div>

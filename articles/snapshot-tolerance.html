@@ -94,8 +94,8 @@ lines in a snapshot file as known discrepancies that should always be
 skipped.</li>
 <li>
 <strong><code>snapshot.precision</code> in
-<code>resultcheck.yml</code></strong> — round all floating-point numbers
-to a fixed number of decimal places before comparing or storing
+<code>_resultcheck.yml</code></strong> — round all floating-point
+numbers to a fixed number of decimal places before comparing or storing
 snapshots.</li>
 </ol>
 <hr>
@@ -107,8 +107,8 @@ snapshots.</li>
 <h3 id="how-it-works">How it works<a class="anchor" aria-label="anchor" href="#how-it-works"></a>
 </h3>
 <p>Open any <code>.md</code> snapshot file under
-<code>_resultcheck_snapshots/</code> and replace the entire content of a
-volatile line with the literal text <code>[ignored]</code>. On every
+<code>tests/_resultcheck_snaps/</code> and replace the entire content of
+a volatile line with the literal text <code>[ignored]</code>. On every
 subsequent run, that line position is masked before the comparison takes
 place, so differences there will never trigger a failure. When you
 update a snapshot interactively, the <code>[ignored]</code> markers are
@@ -123,7 +123,7 @@ includes lines like:</p>
   ..- attr(*, "scaled:center")= num 2.98e-17</code></pre>
 <p>and these values fluctuate slightly between platforms. Open the
 snapshot file at
-<code>_resultcheck_snapshots/PCA/panel_data_pca.md</code> and change
+<code>tests/_resultcheck_snaps/PCA/panel_data_pca.md</code> and change
 those specific lines to:</p>
 <pre><code>[ignored]
 [ignored]</code></pre>
@@ -166,18 +166,18 @@ disk.</li>
 </div>
 </div>
 <div class="section level2">
-<h2 id="feature-2-numeric-precision-in-resultcheck-yml">Feature 2: Numeric precision in <code>resultcheck.yml</code><a class="anchor" aria-label="anchor" href="#feature-2-numeric-precision-in-resultcheck-yml"></a>
+<h2 id="feature-2-numeric-precision-in-_resultcheck-yml">Feature 2: Numeric precision in <code>_resultcheck.yml</code><a class="anchor" aria-label="anchor" href="#feature-2-numeric-precision-in-_resultcheck-yml"></a>
 </h2>
 <div class="section level3">
 <h3 id="how-it-works-1">How it works<a class="anchor" aria-label="anchor" href="#how-it-works-1"></a>
 </h3>
 <p>Add a <code>snapshot.precision</code> key to the
-<code>resultcheck.yml</code> file at the root of your project. Before
+<code>_resultcheck.yml</code> file at the root of your project. Before
 storing or comparing a snapshot, every floating-point number in the text
 representation is rounded to that many decimal places. Integer-like
 tokens (e.g. index ranges such as <code>[1:1071]</code>) are left
 unchanged.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># resultcheck.yml</span></span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># _resultcheck.yml</span></span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">snapshot</span><span class="kw">:</span></span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="at">  </span><span class="fu">precision</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span></code></pre></div>
 <p>With <code>precision: 10</code>, both <code>2.41e-17</code> and
@@ -189,7 +189,7 @@ as equal.</p>
 </h3>
 <ol style="list-style-type: decimal">
 <li>
-<p>Add <code>precision</code> to <code>resultcheck.yml</code>:</p>
+<p>Add <code>precision</code> to <code>_resultcheck.yml</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">snapshot</span><span class="kw">:</span></span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="at">  </span><span class="fu">precision</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span></code></pre></div>
 </li>

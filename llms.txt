@@ -54,7 +54,7 @@ The package supports a two-phase workflow:
 Consider a project with this layout:
 
     myproject/
-    ├── resultcheck.yml       # marks the project root
+    ├── _resultcheck.yml       # marks the project root
     ├── data/
     │   └── income.csv        # input data
     ├── analysis.R            # analysis script
@@ -120,11 +120,19 @@ interactively, review the diff, and confirm the update.
 Creates or verifies a snapshot of any R object.
 
 - **First interactive run**: saves the object as a human-readable `.md`
-  file under `_resultcheck_snapshots/<script>/` at the project root.
+  file under `tests/_resultcheck_snaps/<script>/` at the project root by
+  default.
 - **Subsequent interactive runs**: shows a diff and prompts to update.
 - **Inside
   [`run_in_sandbox()`](https://kv9898.github.io/resultcheck/reference/run_in_sandbox.md)**:
   errors if the snapshot is missing or doesn’t match.
+
+You can override the default snapshot directory in `_resultcheck.yml`:
+
+``` yaml
+snapshot:
+  dir: "custom/snapshots/path"
+```
 
 The `method` argument controls how the object is serialized:
 
@@ -166,17 +174,18 @@ recently created sandbox.
 
 ### `find_root(start_path = NULL)`
 
-Locates the project root by searching upward for a `resultcheck.yml`,
-`.Rproj`, or `.git` marker. Called automatically by
+Locates the project root by searching upward for a `_resultcheck.yml`
+(or legacy `resultcheck.yml`), `.Rproj`, or `.git` marker. Called
+automatically by
 [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
 and
 [`setup_sandbox()`](https://kv9898.github.io/resultcheck/reference/setup_sandbox.md).
 
-Place an empty `resultcheck.yml` at your project root to make detection
+Place an empty `_resultcheck.yml` at your project root to make detection
 reliable:
 
 ``` yaml
-# resultcheck.yml
+# _resultcheck.yml
 ```
 
 ------------------------------------------------------------------------

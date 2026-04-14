@@ -1,12 +1,22 @@
 # Changelog
 
+## resultcheck 0.1.4
+
+- Rename project config file from `resultcheck.yml` to
+  `_resultcheck.yml` (legacy `resultcheck.yml` is still read for
+  backward compatibility).
+- Change default snapshot location to `tests/_resultcheck_snaps/`
+  instead of `_resultcheck_snapshots/`.
+- Add configurable snapshot directory support via `snapshot.dir` in
+  `_resultcheck.yml`.
+
 ## resultcheck 0.1.3
 
 - Prepare for release to CRAN.
 
 ## resultcheck 0.1.2
 
-- Add precision rounding option in `resultcheck.yml` to stabilise
+- Add precision rounding option in `_resultcheck.yml` to stabilize
   snapshot comparisons across runs.
 - Add `[ignored]` markers in
   [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
@@ -42,5 +52,5 @@
 - [`cleanup_sandbox()`](https://kv9898.github.io/resultcheck/reference/cleanup_sandbox.md)
   — remove the sandbox directory after testing.
 - [`find_root()`](https://kv9898.github.io/resultcheck/reference/find_root.md)
-  — locate the project root using `resultcheck.yml`, `.Rproj`, or `.git`
-  as markers.
+  — locate the project root using `_resultcheck.yml`, `.Rproj`, or
+  `.git` as markers.

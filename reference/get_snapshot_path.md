@@ -1,8 +1,9 @@
 # Get Snapshot File Path
 
 Constructs the path to a snapshot file within the project's snapshot
-directory. Snapshot files are stored in `_resultcheck_snapshots/`
-relative to the project root, organized by script name.
+directory. Snapshot files are stored under `tests/_resultcheck_snaps/`
+by default, organized by script name. This location can be overridden
+with `snapshot.dir` in `_resultcheck.yml`.
 
 ## Usage
 
