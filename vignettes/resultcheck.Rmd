@@ -113,6 +113,32 @@ snapshot(model, "model", method = "print")
 snapshot(model, "model", method = "str")
 ```
 
+### Tip: snapshot before writing outputs
+
+If your analysis writes outputs to disk (e.g. `.RData`, `.csv`, tables, or plots), we recommend that you:
+
+- **Create a snapshot for each important output**, and
+- **Call `snapshot()` immediately before writing the file**
+
+For example:
+
+```r
+model <- lm(mpg ~ wt, data = mtcars)
+
+# snapshot the object
+snapshot(model, "main_model")
+
+# then write it to disk
+save(model, file = "output/model.RData")
+```
+
+This ensures that:
+
+- the snapshot always reflects the **latest version of the object**, and
+- any unintended changes are detected **before they are written to disk**
+
+In general, it is a good idea to snapshot the same objects that you would consider part of your final outputs.
+
 ### Subsequent runs: comparing against the snapshot
 
 On subsequent runs, `snapshot()` compares the current value of the object against the stored snapshot.
