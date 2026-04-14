@@ -116,3 +116,26 @@ We recommend committing these snapshot files to **version control**. This allows
 - collaborate more effectively
 - automatically detect unintended changes via tests or CI
 
+## Does resultcheck track changes over time?
+
+No — it compares against the **current snapshot**.
+
+It does not maintain a full history like version control.
+
+If you want history, use Git — `resultcheck` complements it.
+
+## What about large projects — is the sandbox expensive?
+
+`setup_sandbox()` copies files into a temporary directory.
+
+For very large projects, this can be expensive in time and disk space.
+
+Current recommendations:
+
+- include only necessary files
+- avoid copying large unused directories
+
+Future versions may include:
+
+- size warnings
+- more selective copying
