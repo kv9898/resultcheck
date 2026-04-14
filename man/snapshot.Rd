@@ -40,23 +40,21 @@ run_in_sandbox), throws an error if snapshot doesn't exist or doesn't match.
 Snapshots are stored under \code{tests/_resultcheck_snaps/} by default,
 organized by script name, and configurable via \code{snapshot.dir} in
 \code{_resultcheck.yml}.
+
+When \code{snapshot()} writes or updates a snapshot in interactive mode, it
+warns and shows the exact file path that will be written.
 }
 \examples{
-\dontrun{
-# In an analysis script (interactive mode):
-model <- lm(mpg ~ wt, data = mtcars)
-snapshot(model, "mtcars_model")
+with_example({
+  source("analysis.R")
+  snapshot(lm(mpg ~ wt, data = mtcars), "model_print", script_name = "analysis", method = "print")
+  snapshot(lm(mpg ~ wt, data = mtcars), "model_str", script_name = "analysis", method = "str")
 
-# First time: saves the snapshot
-# Later times: compares, shows differences, prompts to update
-
-# Use only print() output (skip str() which may contain volatile fields):
-snapshot(model, "mtcars_model_print", method = "print")
-
-# Use only str() output:
-snapshot(model, "mtcars_model_str", method = "str")
-
-# In testing mode (inside run_in_sandbox or testthat):
-# Errors if snapshot missing or doesn't match
-}
+  if (interactive()) {
+    bad <- file.path("tests", "_resultcheck_snaps", "analysis", "model_mismatch.md")
+    active <- file.path("tests", "_resultcheck_snaps", "analysis", "model.md")
+    file.copy(bad, active, overwrite = TRUE)
+    source("analysis.R")
+  }
+})
 }

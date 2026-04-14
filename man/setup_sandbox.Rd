@@ -30,14 +30,9 @@ into it while preserving their path structure. This is useful for testing
 empirical analysis scripts in isolation.
 }
 \examples{
-\dontrun{
-# Create sandbox and copy files
-sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
-
-# Use sandbox path
-print(sandbox$path)
-
-# Clean up when done
-cleanup_sandbox(sandbox)
-}
+with_example({
+  sandbox <- setup_sandbox("analysis.R")
+  print(sandbox$path)
+  cleanup_sandbox(sandbox)
+})
 }

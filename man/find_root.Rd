@@ -22,8 +22,8 @@ or a \code{.git} directory. When running inside a sandbox created by
 \code{setup_sandbox()}, it will search from the original working directory.
 }
 \examples{
-\dontrun{
-root <- find_root()
-print(root)
-}
+with_example({
+  root <- find_root()
+  print(root)
+})
 }

@@ -128,7 +128,7 @@ test_that("analysis produces stable results", {
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
 
   # snapshot() inside run_in_sandbox() errors on any mismatch
-  run_in_sandbox("code/analysis.R", sandbox)
+  expect_true(run_in_sandbox("code/analysis.R", sandbox))
 })
 ```
 
@@ -137,6 +137,10 @@ Run locally to confirm everything passes before pushing:
 ```r
 testthat::test_dir("tests/testthat")
 ```
+
+For package examples and quick demos, you can avoid writing into your current
+project by wrapping code in `resultcheck::with_example({...})`, which creates a
+temporary project in `tempdir()` and cleans it up automatically.
 
 ---
 

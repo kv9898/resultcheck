@@ -14,6 +14,101 @@
 }
 
 
+#' Run Code Inside a Temporary Example Project
+#'
+#' Creates a self-contained example project under \code{tempdir()}, including:
+#' \itemize{
+#'   \item \code{_resultcheck.yml} (project root marker)
+#'   \item \code{analysis.R} with \code{snapshot(model, "model")}
+#'   \item matching and mismatched snapshot files
+#'   \item \code{tests/testthat/test-analysis.R}
+#' }
+#' then temporarily sets the working directory to that project while
+#' evaluating \code{code}.
+#'
+#' @param code Code to evaluate inside the temporary example project.
+#' @param mismatch Logical. If TRUE, replaces the active snapshot with a
+#'   mismatched version before evaluating \code{code}.
+#'
+#' @return The value of \code{code}.
+#'
+#' @export
+#'
+#' @examples
+#' with_example({
+#'   root <- find_root()
+#'   print(root)
+#' })
+with_example <- function(code, mismatch = FALSE) {
+  example_root <- tempfile("resultcheck-example-", tmpdir = tempdir())
+  dir.create(example_root, recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(example_root, recursive = TRUE, force = TRUE), add = TRUE)
+
+  dir.create(file.path(example_root, "tests", "_resultcheck_snaps", "analysis"),
+             recursive = TRUE, showWarnings = FALSE)
+  dir.create(file.path(example_root, "tests", "testthat"),
+             recursive = TRUE, showWarnings = FALSE)
+
+  writeLines("# Example project root marker",
+             file.path(example_root, "_resultcheck.yml"))
+
+  writeLines(
+    c(
+      'model <- lm(mpg ~ wt, data = mtcars)',
+      'resultcheck::snapshot(model, "model")'
+    ),
+    file.path(example_root, "analysis.R")
+  )
+
+  model <- lm(mpg ~ wt, data = mtcars)
+  snapshot_text <- serialize_value(model, method = "both")
+  snapshot_path <- file.path(
+    example_root, "tests", "_resultcheck_snaps", "analysis", "model.md"
+  )
+  mismatch_path <- file.path(
+    example_root, "tests", "_resultcheck_snaps", "analysis", "model_mismatch.md"
+  )
+  writeLines(snapshot_text, snapshot_path)
+
+  mismatch_text <- snapshot_text
+  first_numeric <- which(grepl("[-+]?[0-9]*\\.[0-9]+", mismatch_text))[1]
+  if (!is.na(first_numeric)) {
+    line <- mismatch_text[first_numeric]
+    m <- regexpr("[-+]?[0-9]*\\.[0-9]+", line, perl = TRUE)
+    if (m[1] != -1L) {
+      matched <- regmatches(line, m)
+      digits <- nchar(sub(".*\\.", "", matched))
+      bumped <- format(round(as.numeric(matched) + 1, digits), nsmall = digits)
+      regmatches(line, m) <- bumped
+      mismatch_text[first_numeric] <- line
+    }
+  }
+  writeLines(mismatch_text, mismatch_path)
+
+  writeLines(
+    c(
+      "library(testthat)",
+      "library(resultcheck)",
+      "",
+      'test_that("run_tested_script", {',
+      '  sandbox <- setup_sandbox("analysis.R")',
+      "  on.exit(cleanup_sandbox(sandbox), add = TRUE)",
+      "",
+      '  expect_true(run_in_sandbox("analysis.R", sandbox))',
+      "})"
+    ),
+    file.path(example_root, "tests", "testthat", "test-analysis.R")
+  )
+
+  if (isTRUE(mismatch)) {
+    file.copy(mismatch_path, snapshot_path, overwrite = TRUE)
+  }
+
+  expr <- substitute(code)
+  withr::with_dir(example_root, eval.parent(expr))
+}
+
+
 #' Setup a Sandbox Environment for Testing
 #'
 #' Creates a temporary directory and copies specified files and/or directories
@@ -38,16 +133,11 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Create sandbox and copy files
-#' sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
-#' 
-#' # Use sandbox path
-#' print(sandbox$path)
-#' 
-#' # Clean up when done
-#' cleanup_sandbox(sandbox)
-#' }
+#' with_example({
+#'   sandbox <- setup_sandbox("analysis.R")
+#'   print(sandbox$path)
+#'   cleanup_sandbox(sandbox)
+#' })
 setup_sandbox <- function(files, temp_base = NULL) {
   # Generate unique ID for this sandbox
   sandbox_id <- paste0(
@@ -171,21 +261,16 @@ setup_sandbox <- function(files, temp_base = NULL) {
 #' @param suppress_warnings Logical. Whether to suppress warnings (default: TRUE).
 #' @param capture_output Logical. Whether to capture output (default: TRUE).
 #'
-#' @return Invisible NULL. The function is called for its side effects.
+#' @return Invisible TRUE on successful execution.
 #'
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Setup sandbox
-#' sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
-#' 
-#' # Run script in sandbox
-#' run_in_sandbox("code/analysis.R", sandbox)
-#' 
-#' # Clean up
-#' cleanup_sandbox(sandbox)
-#' }
+#' with_example({
+#'   sandbox <- setup_sandbox("analysis.R")
+#'   on.exit(cleanup_sandbox(sandbox), add = TRUE)
+#'   run_in_sandbox("analysis.R", sandbox)
+#' })
 run_in_sandbox <- function(script_path, 
                            sandbox = NULL, 
                            suppress_messages = TRUE,
@@ -303,7 +388,7 @@ run_in_sandbox <- function(script_path,
   # Ensure cleanup (redundant but safe)
   .resultcheck_env$.resultcheck_original_wd <- NULL
   
-  invisible(NULL)
+  invisible(TRUE)
 }
 
 
@@ -322,15 +407,10 @@ run_in_sandbox <- function(script_path,
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Setup sandbox
-#' sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
-#' 
-#' # ... use sandbox ...
-#' 
-#' # Clean up
-#' cleanup_sandbox(sandbox)
-#' }
+#' with_example({
+#'   sandbox <- setup_sandbox("analysis.R")
+#'   cleanup_sandbox(sandbox)
+#' })
 cleanup_sandbox <- function(sandbox = NULL, force = TRUE) {
   # Get sandbox
   if (is.null(sandbox)) {
