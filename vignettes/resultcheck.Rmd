@@ -112,3 +112,44 @@ You can override this using the method argument:
 snapshot(model, "model", method = "print")
 snapshot(model, "model", method = "str")
 ```
+
+### Subsequent runs: comparing against the snapshot
+
+On subsequent runs, `snapshot()` compares the current value of the object against the stored snapshot.
+
+If the results match, you will see:
+
+```r
+> resultcheck::snapshot(model, "model")
+✓ Snapshot matches: model
+```
+
+If the results differ, you will see a message indicating the differences:
+
+```r
+> resultcheck::snapshot(model, "model")
+Warning: 
+Snapshot differences found for: model
+File: path/to/your/project/tests/_resultcheck_snaps/analysis/model.md
+
+Differences:
+old[1:7] vs new[1:7]
+  "# Snapshot: lm"
+  ""
+  "## List Structure"
+- "List of 13"
++ "List of 12"
+  " $ coefficients : Named num [1:2] 37.29 -5.34"
+  "  ..- attr(*, \"names\")= chr [1:2] \"(Intercept)\" \"wt\""
+  " $ residuals    : Named num [1:32] -2.28 -0.92 -2.09 1.3 -0.2 ..."
+```
+In interactive use, you will be prompted:
+
+```
+Update snapshot? (y/n):
+```
+
+- Press `y` to update the snapshot (if the change is expected)
+- Press `n` to keep the existing snapshot and investigate further
+
+In automated contexts (discussed later), differences result in an error rather than an interactive prompt.
