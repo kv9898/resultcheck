@@ -34,7 +34,7 @@ analysis scripts without polluting the console or creating unwanted plots.
 }
 \examples{
 with_example({
-  sandbox <- setup_sandbox("analysis.R")
+  sandbox <- setup_sandbox()
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
   run_in_sandbox("analysis.R", sandbox)
 })

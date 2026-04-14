@@ -8,7 +8,7 @@ test_that("example project helper creates consistent runnable files", {
     expect_true(file.exists(file.path("tests", "_resultcheck_snaps", "analysis", "model_mismatch.md")))
     expect_true(file.exists(file.path("tests", "testthat", "test-analysis.R")))
 
-    sandbox <- setup_sandbox("analysis.R")
+    sandbox <- setup_sandbox()
     on.exit(cleanup_sandbox(sandbox), add = TRUE)
     expect_true(run_in_sandbox("analysis.R", sandbox))
   })
@@ -19,7 +19,7 @@ test_that("example project helper supports mismatch demos", {
   skip_if_not_installed("withr")
 
   with_example({
-    sandbox <- setup_sandbox("analysis.R")
+    sandbox <- setup_sandbox()
     on.exit(cleanup_sandbox(sandbox), add = TRUE)
 
     expect_error(

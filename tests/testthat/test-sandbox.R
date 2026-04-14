@@ -18,6 +18,14 @@ test_that("setup_sandbox creates a temporary directory", {
   })
 })
 
+test_that("setup_sandbox accepts no files argument to create an empty sandbox", {
+  sandbox <- setup_sandbox()
+  on.exit(cleanup_sandbox(sandbox), add = TRUE)
+
+  expect_s3_class(sandbox, "resultcheck_sandbox")
+  expect_true(dir.exists(sandbox$path))
+})
+
 
 test_that("setup_sandbox copies files with directory structure", {
   # Create test directory structure

@@ -54,13 +54,13 @@ with_example <- function(code, mismatch = FALSE) {
 
   writeLines(
     c(
-      'model <- lm(mpg ~ wt, data = mtcars)',
+      'model <- stats::lm(mpg ~ wt, data = datasets::mtcars)',
       'resultcheck::snapshot(model, "model")'
     ),
     file.path(example_root, "analysis.R")
   )
 
-  model <- lm(mpg ~ wt, data = mtcars)
+  model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
   matching_snapshot_text <- serialize_value(model, method = "both")
   snapshot_path <- file.path(
     example_root, "tests", "_resultcheck_snaps", "analysis", "model.md"
@@ -97,7 +97,7 @@ with_example <- function(code, mismatch = FALSE) {
       "library(resultcheck)",
       "",
       'test_that("analysis produces stable results", {',
-      '  sandbox <- setup_sandbox("analysis.R")',
+      '  sandbox <- setup_sandbox()',
       "  on.exit(cleanup_sandbox(sandbox), add = TRUE)",
       "",
       '  expect_true(run_in_sandbox("analysis.R", sandbox))',
@@ -127,7 +127,8 @@ with_example <- function(code, mismatch = FALSE) {
 #' empirical analysis scripts in isolation.
 #'
 #' @param files Character vector of relative file or directory paths to copy
-#'   to the sandbox.  Paths are resolved relative to the project root (found
+#'   to the sandbox. Leave as \code{NULL} (default) to create an empty sandbox.
+#'   Paths are resolved relative to the project root (found
 #'   using \code{find_root()}); if the project root cannot be determined the
 #'   current working directory is used.  When a path refers to a directory,
 #'   the entire directory is copied recursively.  Absolute paths and path
@@ -145,11 +146,18 @@ with_example <- function(code, mismatch = FALSE) {
 #'
 #' @examples
 #' with_example({
-#'   sandbox <- setup_sandbox("analysis.R")
+#'   sandbox <- setup_sandbox()
 #'   print(sandbox$path)
 #'   cleanup_sandbox(sandbox)
 #' })
-setup_sandbox <- function(files, temp_base = NULL) {
+setup_sandbox <- function(files = NULL, temp_base = NULL) {
+  if (is.null(files)) {
+    files <- character(0)
+  }
+  if (!is.character(files)) {
+    stop("`files` must be a character vector of relative paths or NULL.", call. = FALSE)
+  }
+
   # Generate unique ID for this sandbox
   sandbox_id <- paste0(
     "sandbox_",
@@ -278,7 +286,7 @@ setup_sandbox <- function(files, temp_base = NULL) {
 #'
 #' @examples
 #' with_example({
-#'   sandbox <- setup_sandbox("analysis.R")
+#'   sandbox <- setup_sandbox()
 #'   on.exit(cleanup_sandbox(sandbox), add = TRUE)
 #'   run_in_sandbox("analysis.R", sandbox)
 #' })
@@ -419,7 +427,7 @@ run_in_sandbox <- function(script_path,
 #'
 #' @examples
 #' with_example({
-#'   sandbox <- setup_sandbox("analysis.R")
+#'   sandbox <- setup_sandbox()
 #'   cleanup_sandbox(sandbox)
 #' })
 cleanup_sandbox <- function(sandbox = NULL, force = TRUE) {

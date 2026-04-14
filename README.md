@@ -60,7 +60,7 @@ library(testthat)
 library(resultcheck)
 
 test_that("analysis produces stable results", {
-  sandbox <- setup_sandbox("analysis.R")
+  sandbox <- setup_sandbox()
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
 
   expect_true(run_in_sandbox("analysis.R", sandbox))
@@ -71,8 +71,7 @@ To try this quickly without creating files in your current project:
 
 ```r
 resultcheck::with_example({
-  source("analysis.R")
-  sandbox <- setup_sandbox("analysis.R")
+  sandbox <- setup_sandbox()
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
   stopifnot(isTRUE(run_in_sandbox("analysis.R", sandbox)))
 })
@@ -110,7 +109,7 @@ Use `"print"` or `"str"` when one serialization method produces volatile output 
 
 Snapshots are plain text and intended to be committed to version control.
 
-### `setup_sandbox(files, temp_base = NULL)`
+### `setup_sandbox(files = NULL, temp_base = NULL)`
 
 Creates a temporary directory and copies the listed files and/or directories into it, preserving their path structure relative to the project root. Directories are copied recursively. Snapshot files do not need to be listed.
 

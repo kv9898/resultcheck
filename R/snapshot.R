@@ -491,17 +491,23 @@ warn_snapshot_write <- function(snapshot_file) {
 #'
 #' @examples
 #' with_example({
-#'   source("analysis.R")
-#'   snapshot(lm(mpg ~ wt, data = mtcars), "model_print", script_name = "analysis", method = "print")
-#'   snapshot(lm(mpg ~ wt, data = mtcars), "model_str", script_name = "analysis", method = "str")
-#'
-#'   if (interactive()) {
-#'     bad <- file.path("tests", "_resultcheck_snaps", "analysis", "model_mismatch.md")
-#'     active <- file.path("tests", "_resultcheck_snaps", "analysis", "model.md")
-#'     file.copy(bad, active, overwrite = TRUE)
-#'     source("analysis.R")
-#'   }
+#'   model <- lm(mpg ~ wt, data = mtcars)
+#'   snapshot(model, "model_both", script_name = "analysis", method = "both")
+#'   snapshot(model, "model_print", script_name = "analysis", method = "print")
+#'   snapshot(model, "model_str", script_name = "analysis", method = "str")
 #' })
+#'
+#' with_example({
+#'   sandbox <- setup_sandbox()
+#'   on.exit(cleanup_sandbox(sandbox), add = TRUE)
+#'   run_in_sandbox("analysis.R", sandbox)
+#' })
+#'
+#' if (interactive()) with_example({
+#'   sandbox <- setup_sandbox()
+#'   on.exit(cleanup_sandbox(sandbox), add = TRUE)
+#'   run_in_sandbox("analysis.R", sandbox)
+#' }, mismatch = TRUE)
 snapshot <- function(value, name, script_name = NULL, method = c("both", "print", "str")) {
   method <- match.arg(method)
 

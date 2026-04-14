@@ -22,7 +22,7 @@ after testing is complete to free up disk space.
 }
 \examples{
 with_example({
-  sandbox <- setup_sandbox("analysis.R")
+  sandbox <- setup_sandbox()
   cleanup_sandbox(sandbox)
 })
 }

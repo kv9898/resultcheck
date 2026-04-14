@@ -4,11 +4,12 @@
 \alias{setup_sandbox}
 \title{Setup a Sandbox Environment for Testing}
 \usage{
-setup_sandbox(files, temp_base = NULL)
+setup_sandbox(files = NULL, temp_base = NULL)
 }
 \arguments{
 \item{files}{Character vector of relative file or directory paths to copy
-to the sandbox.  Paths are resolved relative to the project root (found
+to the sandbox. Leave as \code{NULL} (default) to create an empty sandbox.
+Paths are resolved relative to the project root (found
 using \code{find_root()}); if the project root cannot be determined the
 current working directory is used.  When a path refers to a directory,
 the entire directory is copied recursively.  Absolute paths and path
@@ -31,7 +32,7 @@ empirical analysis scripts in isolation.
 }
 \examples{
 with_example({
-  sandbox <- setup_sandbox("analysis.R")
+  sandbox <- setup_sandbox()
   print(sandbox$path)
   cleanup_sandbox(sandbox)
 })
