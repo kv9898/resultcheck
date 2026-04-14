@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   renv-github-actions: renv-github-actions.html
   snapshot-tolerance: snapshot-tolerance.html
-last_built: 2026-04-14T09:15Z
+last_built: 2026-04-14T09:19Z
 urls:
   reference: https://kv9898.github.io/resultcheck/reference
   article: https://kv9898.github.io/resultcheck/articles
