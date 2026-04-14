@@ -40,3 +40,19 @@ snapshot(model, "main_model")
 
 This will create a snapshot file at: `tests/_resultcheck_snaps/[your_script_name]/main_model.md`.
 
+## How does resultcheck differ from manually comparing the `.rds` or `.rda` files?
+
+`.rds` and `.rda` files are binary formats, which can be large and difficult to compare directly.
+
+In contrast, resultcheck stores snapshots as `.md` files, which are:
+
+- human-readable
+- easy to compare (e.g. with Git diffs)
+- version control-friendly
+
+We recommend committing these snapshot files to **version control**. This allows you to:
+
+- see how results change across revisions
+- collaborate more effectively
+- automatically detect unintended changes via tests or CI
+
