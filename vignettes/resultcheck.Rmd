@@ -244,3 +244,11 @@ sandbox <- setup_sandbox("data")
 ```
 
 `resultcheck` will copy these files into the sandbox while preserving their relative structure.
+
+## Running tests
+
+You can run your tests using `testthat::test_dir("tests/testthat")`.
+
+If you are using [Positron](https://positron.posit.co/), you can run tests in the test pane once you have installed the [Positron R Tester extension](https://open-vsx.org/extension/kv9898/positron-r-tester). This provides a visual interface for running tests and inspecting results:
+
+![Positron R Tester](img/r-tester.png)
