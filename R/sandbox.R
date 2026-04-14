@@ -79,7 +79,11 @@ with_example <- function(code, mismatch = FALSE) {
     if (m[1] != -1L) {
       matched <- regmatches(line, m)
       digits <- if (grepl("\\.", matched)) nchar(sub(".*\\.", "", matched)) else 0L
-      altered_number <- format(round(as.numeric(matched) + 1, digits), nsmall = digits)
+      altered_number <- format(
+        round(as.numeric(matched) + 1, digits),
+        nsmall = digits,
+        scientific = FALSE
+      )
       regmatches(line, m) <- altered_number
       mismatch_text[first_numeric] <- line
     }
@@ -103,6 +107,11 @@ with_example <- function(code, mismatch = FALSE) {
 
   if (isTRUE(mismatch)) {
     file.copy(mismatch_path, snapshot_path, overwrite = TRUE)
+  }
+
+  if (!requireNamespace("withr", quietly = TRUE)) {
+    stop("Package 'withr' is required but not installed. ",
+         "Please install it with: install.packages('withr')")
   }
 
   expr <- substitute(code)
