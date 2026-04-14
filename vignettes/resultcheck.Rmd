@@ -32,3 +32,46 @@ These issues make it difficult to detect when results have changed — and even 
 `resultcheck` is designed to address this problem by letting you **explicitly track and verify key results** as your analysis evolves.
 
 The following sections walk through a typical workflow and show how `resultcheck` helps you detect and manage changes in your results.
+
+## Mark project root
+
+The core idea behind `resultcheck`’s testing workflow is that it *copies* all files a script depends on into a temporary directory, and runs the script there to mimic a clean environment.
+
+To do this reliably, `resultcheck` needs to know where your **project root** is.
+
+You can mark your project root by creating any of the following in the root directory. `resultcheck` will detect them in the following order:
+
+1. `_resultcheck.yml`
+2. `.Rproj`
+3. `.git` (created automatically when you run `git init`)
+
+You can verify that `resultcheck` has correctly identified your project root by running:
+
+```r
+resultcheck::find_root()
+```
+
+## (Optional) Configure `resultcheck` settings
+
+You usually do not need to modify any settings, but you can customise `resultcheck` using a `_resultcheck.yml` file in your project root.
+
+For example:
+
+```yaml
+# _resultcheck.yml
+snapshot:
+  precision: 10
+  dir: "tests/_resultcheck_snaps"
+```
+`precision`
+
+Controls how many digits are used when comparing numeric values.
+
+- Increase this if you need higher precision
+- Decrease this to allow for small numerical differences across environments
+
+`dir`
+
+Specifies where snapshot files are stored, relative to the project root.
+
+By default, snapshots are stored in: `tests/_resultcheck_snaps`
