@@ -111,8 +111,8 @@ By default, `snapshot()` automatically chooses a representation for the object.
 You can override this using the `method` argument:
 
 ```r
-snapshot(model, "model", method = "print")
-snapshot(model, "model", method = "str")
+resultcheck::snapshot(model, "model", method = "print")
+resultcheck::snapshot(model, "model", method = "str")
 ```
 
 ### Tip: snapshot before writing outputs
