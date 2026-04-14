@@ -128,7 +128,7 @@ For example:
 model <- lm(mpg ~ wt, data = mtcars)
 
 # snapshot the object
-snapshot(model, "main_model")
+resultcheck::snapshot(model, "main_model")
 
 # then write it to disk
 save(model, file = "output/model.RData")
