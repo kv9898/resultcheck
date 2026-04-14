@@ -102,6 +102,8 @@ Warning: snapshot() will write a snapshot file to: path/to/your/project/tests/_r
 
 The file: `tests/_resultcheck_snaps/analysis/model.md` contains a human-readable representation of the model object.
 
+Snapshots should be committed to **version control**. This allows you to track changes to your results over time, and collaborate with others without losing the ability to detect changes, and is needed for automated testing (see [GitHub Tests](#github-tests)).
+
 ### Snapshot representation
 
 By default, `snapshot()` automatically chooses a representation for the object.
@@ -253,7 +255,7 @@ If you are using [Positron](https://positron.posit.co/), you can run tests in th
 
 ![Positron R Tester](img/r-tester.png)
 
-## Running tests on GitHub
+## Running tests on GitHub {#github-tests}
 
 While you can run tests locally, it is often a good idea to run them automatically using [GitHub Actions](https://docs.github.com/en/actions).
 
