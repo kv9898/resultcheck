@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/kv9898/resultcheck/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/kv9898/resultcheck/blob/HEAD/DESCRIPTION)
 
 Yang D (2026). *resultcheck: Result Stability Checks for Empirical R
 Projects*. R package version 0.1.4,

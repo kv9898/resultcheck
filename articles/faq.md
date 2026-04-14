@@ -31,6 +31,7 @@ You then decide:
 1.  **Object level**
 
 ``` r
+
 snapshot(model, "main_model")
 ```
 
@@ -42,6 +43,7 @@ On subsequent runs, you will be notified if it changes.
 2.  **Script/project level**
 
 ``` r
+
 run_in_sandbox("analysis.R", sandbox)
 ```
 
@@ -134,6 +136,7 @@ You do **not** need to manually save anything to disk.
 `resultcheck` snapshots objects directly as `.md` files, for example:
 
 ``` r
+
 model <- lm(mpg ~ wt, data = mtcars)
 snapshot(model, "main_model")
 ```
@@ -194,7 +197,7 @@ is primarily used to identify which files (e.g. data, saved objects)
 should be copied into the sandbox when running analyses in a clean
 environment.
 
-Unlike `here::here()`,
+Unlike [`here::here()`](https://here.r-lib.org/reference/here.html),
 [`find_root()`](https://kv9898.github.io/resultcheck/reference/find_root.md)
 will **error if no project root is found**, rather than guessing a path.
 This is intentional, to avoid silently writing or reading files from the
@@ -205,8 +208,8 @@ In most cases, you should **not** need to call
 directly.
 
 For constructing file paths in your own analysis code, we recommend
-using `here::here()` (or equivalent tools), as it is more flexible and
-designed for everyday use.
+using [`here::here()`](https://here.r-lib.org/reference/here.html) (or
+equivalent tools), as it is more flexible and designed for everyday use.
 
 ## Can I see exactly what changed in a model?
 
