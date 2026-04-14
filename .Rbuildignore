@@ -1,8 +1,9 @@
 ^resultcheck\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
-^_resultcheck_snapshots$
+^tests/_resultcheck_snaps$
 ^\.github$
+^_resultcheck\.yml$
 ^resultcheck\.yml$
 ^cran-comments\.md$
 ^_pkgdown\.yml$

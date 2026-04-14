@@ -1,7 +1,8 @@
 #' Find Project Root Directory
 #'
 #' Finds the root directory of the current R project using various heuristics.
-#' The function searches for markers like \code{resultcheck.yml}, \code{.Rproj} files,
+#' The function searches for markers like \code{_resultcheck.yml} (preferred),
+#' \code{resultcheck.yml} (legacy), \code{.Rproj} files,
 #' or a \code{.git} directory. When running inside a sandbox created by
 #' \code{setup_sandbox()}, it will search from the original working directory.
 #'
@@ -39,7 +40,8 @@ find_root <- function(start_path = NULL) {
   
   # Define criteria for finding project root
   # Try multiple criteria in order of preference
-  criteria <- rprojroot::has_file("resultcheck.yml") |
+  criteria <- rprojroot::has_file("_resultcheck.yml") |
+    rprojroot::has_file("resultcheck.yml") |
     rprojroot::has_file_pattern("[.]Rproj$") |
     rprojroot::is_git_root
   
@@ -49,7 +51,8 @@ find_root <- function(start_path = NULL) {
   }, error = function(e) {
     stop("Could not find project root from path: ", start_path, ". ",
          "Please ensure you are in a project directory ",
-         "with either a resultcheck.yml, .Rproj file, or .git directory. ",
+         "with either a _resultcheck.yml (or legacy resultcheck.yml), ",
+         ".Rproj file, or .git directory. ",
          "Original error: ", e$message, call. = FALSE)
   })
 }
@@ -93,8 +96,9 @@ get_start_path_for_find_root <- function() {
 #' Get Snapshot File Path
 #'
 #' Constructs the path to a snapshot file within the project's snapshot directory.
-#' Snapshot files are stored in \code{_resultcheck_snapshots/} relative to the
-#' project root, organized by script name.
+#' Snapshot files are stored under \code{tests/_resultcheck_snaps/} by default,
+#' organized by script name. This location can be overridden with
+#' \code{snapshot.dir} in \code{_resultcheck.yml}.
 #'
 #' @param name Character. The name of the snapshot (without extension).
 #' @param script_name Optional. The name of the script file creating the snapshot.
@@ -106,6 +110,7 @@ get_start_path_for_find_root <- function() {
 #' @keywords internal
 get_snapshot_path <- function(name, script_name = NULL, ext = "md") {
   root <- find_root()
+  config <- read_resultcheck_config()
   
   # If script_name not provided, try to detect from call stack
   if (is.null(script_name)) {
@@ -130,8 +135,20 @@ get_snapshot_path <- function(name, script_name = NULL, ext = "md") {
   # Clean up script name (remove extension)
   script_name <- sub("\\.[Rr]$", "", script_name)
   
+  snapshot_base <- config[["snapshot"]][["dir"]]
+  if (!is.character(snapshot_base) ||
+      length(snapshot_base) != 1L ||
+      is.na(snapshot_base) ||
+      trimws(snapshot_base) == "") {
+    snapshot_base <- "tests/_resultcheck_snaps"
+  }
+  snapshot_base <- trimws(snapshot_base)
+  is_absolute <- startsWith(snapshot_base, "/") ||
+    grepl("^[A-Za-z]:[\\\\/]", snapshot_base)
+  snapshot_root <- if (is_absolute) snapshot_base else file.path(root, snapshot_base)
+
   # Construct snapshot directory path
-  snapshot_dir <- file.path(root, "_resultcheck_snapshots", script_name)
+  snapshot_dir <- file.path(snapshot_root, script_name)
   
   # Create directory if it doesn't exist
   if (!dir.exists(snapshot_dir)) {
@@ -152,9 +169,9 @@ IGNORED_MARKER <- "[ignored]"
 
 #' Read resultcheck Configuration
 #'
-#' Reads configuration settings from the \code{resultcheck.yml} file located
-#' at the project root.  Returns an empty list if the file does not exist or
-#' cannot be parsed.
+#' Reads configuration settings from the \code{_resultcheck.yml} file located
+#' at the project root (falling back to legacy \code{resultcheck.yml} if
+#' needed). Returns an empty list if neither file exists or parsing fails.
 #'
 #' @return A named list of configuration values, or an empty list.
 #'
@@ -162,7 +179,11 @@ IGNORED_MARKER <- "[ignored]"
 read_resultcheck_config <- function() {
   tryCatch({
     root <- find_root()
-    config_path <- file.path(root, "resultcheck.yml")
+    config_path <- file.path(root, "_resultcheck.yml")
+    if (!file.exists(config_path)) {
+      legacy_path <- file.path(root, "resultcheck.yml")
+      config_path <- if (file.exists(legacy_path)) legacy_path else config_path
+    }
     if (!file.exists(config_path)) return(list())
     config <- yaml::read_yaml(config_path)
     if (is.null(config)) list() else config
@@ -439,8 +460,9 @@ is_testing <- function() {
 #' are found and emits a warning. In testing mode (inside testthat or
 #' run_in_sandbox), throws an error if snapshot doesn't exist or doesn't match.
 #'
-#' Snapshots are stored in \code{_resultcheck_snapshots/} directory relative
-#' to the project root, organized by script name.
+#' Snapshots are stored under \code{tests/_resultcheck_snaps/} by default,
+#' organized by script name, and configurable via \code{snapshot.dir} in
+#' \code{_resultcheck.yml}.
 #'
 #' @param value The R object to snapshot (e.g., plot, table, model output).
 #' @param name Character. A descriptive name for this snapshot.
@@ -568,4 +590,3 @@ snapshot <- function(value, name, script_name = NULL, method = c("both", "print"
     return(invisible(FALSE))
   }
 }
-

@@ -35,7 +35,7 @@ Consider a project with this layout:
 
 ```
 myproject/
-├── resultcheck.yml       # marks the project root
+├── _resultcheck.yml       # marks the project root
 ├── data/
 │   └── income.csv        # input data
 ├── analysis.R            # analysis script
@@ -98,9 +98,16 @@ When `analysis.R` changes in a way that alters the model, `run_in_sandbox()` err
 
 Creates or verifies a snapshot of any R object.
 
-- **First interactive run**: saves the object as a human-readable `.md` file under `_resultcheck_snapshots/<script>/` at the project root.
+- **First interactive run**: saves the object as a human-readable `.md` file under `tests/_resultcheck_snaps/<script>/` at the project root by default.
 - **Subsequent interactive runs**: shows a diff and prompts to update.
 - **Inside `run_in_sandbox()`**: errors if the snapshot is missing or doesn't match.
+
+You can override the default snapshot directory in `_resultcheck.yml`:
+
+```yaml
+snapshot:
+  dir: "custom/snapshots/path"
+```
 
 The `method` argument controls how the object is serialized:
 
@@ -128,12 +135,12 @@ Removes the sandbox directory. Omit the argument to clean up the most recently c
 
 ### `find_root(start_path = NULL)`
 
-Locates the project root by searching upward for a `resultcheck.yml`, `.Rproj`, or `.git` marker. Called automatically by `snapshot()` and `setup_sandbox()`.
+Locates the project root by searching upward for a `_resultcheck.yml` (or legacy `resultcheck.yml`), `.Rproj`, or `.git` marker. Called automatically by `snapshot()` and `setup_sandbox()`.
 
-Place an empty `resultcheck.yml` at your project root to make detection reliable:
+Place an empty `_resultcheck.yml` at your project root to make detection reliable:
 
 ```yaml
-# resultcheck.yml
+# _resultcheck.yml
 ```
 
 ---

@@ -34,7 +34,7 @@ test_that("snapshot creates .md file when run interactively", {
     test_value <- data.frame(x = 1:5, y = 6:10)
     snapshot(test_value, "test_snapshot", script_name = "analysis")
     
-    snapshot_path <- file.path(temp_project, "_resultcheck_snapshots", "analysis", "test_snapshot.md")
+    snapshot_path <- file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "test_snapshot.md")
     expect_true(file.exists(snapshot_path))
     expect_equal(tools::file_ext(snapshot_path), "md")
     
@@ -86,13 +86,13 @@ test_that("snapshot works with different object types", {
     snapshot(vec, "vec_snap", script_name = "analysis")
 
     model_snapshot <- readLines(
-      file.path(temp_project, "_resultcheck_snapshots", "analysis", "model_snap.md"),
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "model_snap.md"),
       warn = FALSE
     )
     
-    expect_true(file.exists(file.path(temp_project, "_resultcheck_snapshots", "analysis", "list_snap.md")))
-    expect_true(file.exists(file.path(temp_project, "_resultcheck_snapshots", "analysis", "model_snap.md")))
-    expect_true(file.exists(file.path(temp_project, "_resultcheck_snapshots", "analysis", "vec_snap.md")))
+    expect_true(file.exists(file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "list_snap.md")))
+    expect_true(file.exists(file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "model_snap.md")))
+    expect_true(file.exists(file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "vec_snap.md")))
     expect_true(any(grepl('<environment: <normalized>>', model_snapshot, fixed = TRUE)))
   })
 })
@@ -109,8 +109,8 @@ test_that("snapshot organizes by script name when specified", {
     snapshot(data.frame(a = 1), "snap1", script_name = "custom1")
     snapshot(data.frame(b = 2), "snap2", script_name = "custom2")
     
-    expect_true(dir.exists(file.path(temp_project, "_resultcheck_snapshots", "custom1")))
-    expect_true(dir.exists(file.path(temp_project, "_resultcheck_snapshots", "custom2")))
+    expect_true(dir.exists(file.path(temp_project, "tests/_resultcheck_snaps", "custom1")))
+    expect_true(dir.exists(file.path(temp_project, "tests/_resultcheck_snaps", "custom2")))
   })
 })
 
@@ -173,11 +173,11 @@ test_that("snapshot respects method parameter", {
     snapshot(val, "snap_str",   script_name = "analysis", method = "str")
 
     content_print <- readLines(
-      file.path(temp_project, "_resultcheck_snapshots", "analysis", "snap_print.md"),
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "snap_print.md"),
       warn = FALSE
     )
     content_str <- readLines(
-      file.path(temp_project, "_resultcheck_snapshots", "analysis", "snap_str.md"),
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "snap_str.md"),
       warn = FALSE
     )
 
@@ -245,7 +245,7 @@ test_that("snapshot in testing mode passes when differing lines are [ignored]", 
     val1 <- c(1.0, 2.0, 3.0)
     snapshot(val1, "snap_ignored_mode", script_name = "analysis")
 
-    snap_file <- file.path(temp_project, "_resultcheck_snapshots",
+    snap_file <- file.path(temp_project, "tests/_resultcheck_snaps",
                            "analysis", "snap_ignored_mode.md")
 
     lines <- readLines(snap_file)
@@ -278,7 +278,7 @@ test_that("mask_ignored_lines preserves [ignored] marker in masked new_text", {
     val <- c(1.0, 2.0, 3.0)
     snapshot(val, "ignored_preserve_test", script_name = "analysis")
 
-    snap_file <- file.path(temp_project, "_resultcheck_snapshots",
+    snap_file <- file.path(temp_project, "tests/_resultcheck_snaps",
                            "analysis", "ignored_preserve_test.md")
 
     lines <- readLines(snap_file)
@@ -340,7 +340,7 @@ test_that("compare_snapshot_text returns NULL with precision when tiny diffs exi
 })
 
 
-test_that("snapshot reads precision from resultcheck.yml and stores rounded values", {
+test_that("snapshot reads precision from _resultcheck.yml and stores rounded values", {
   temp_project <- tempfile()
   dir.create(temp_project)
   dir.create(file.path(temp_project, ".git"))
@@ -348,17 +348,57 @@ test_that("snapshot reads precision from resultcheck.yml and stores rounded valu
   on.exit(unlink(temp_project, recursive = TRUE))
 
   writeLines(c("snapshot:", "  precision: 5"),
-             file.path(temp_project, "resultcheck.yml"))
+             file.path(temp_project, "_resultcheck.yml"))
 
   withr::with_dir(temp_project, {
     val <- 1.123456789
     snapshot(val, "precision_test", script_name = "analysis")
 
-    snap_file <- file.path(temp_project, "_resultcheck_snapshots",
+    snap_file <- file.path(temp_project, "tests/_resultcheck_snaps",
                            "analysis", "precision_test.md")
     content <- readLines(snap_file)
     expect_true(any(grepl("1.12346", content, fixed = TRUE)))
     expect_false(any(grepl("1.123456789", content, fixed = TRUE)))
+  })
+})
+
+test_that("snapshot uses configured snapshot.dir from _resultcheck.yml", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  writeLines(
+    c("snapshot:", "  dir: custom_snapshots"),
+    file.path(temp_project, "_resultcheck.yml")
+  )
+
+  withr::with_dir(temp_project, {
+    snapshot(letters[1:3], "custom_dir_test", script_name = "analysis")
+
+    snap_file <- file.path(
+      temp_project, "custom_snapshots", "analysis", "custom_dir_test.md"
+    )
+    expect_true(file.exists(snap_file))
+  })
+})
+
+test_that("read_resultcheck_config supports legacy resultcheck.yml", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  writeLines(
+    c("snapshot:", "  precision: 4"),
+    file.path(temp_project, "resultcheck.yml")
+  )
+
+  withr::with_dir(temp_project, {
+    cfg <- resultcheck:::read_resultcheck_config()
+    expect_equal(cfg$snapshot$precision, 4)
   })
 })
 

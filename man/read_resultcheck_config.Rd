@@ -10,8 +10,8 @@ read_resultcheck_config()
 A named list of configuration values, or an empty list.
 }
 \description{
-Reads configuration settings from the \code{resultcheck.yml} file located
-at the project root.  Returns an empty list if the file does not exist or
-cannot be parsed.
+Reads configuration settings from the \code{_resultcheck.yml} file located
+at the project root (falling back to legacy \code{resultcheck.yml} if
+needed). Returns an empty list if neither file exists or parsing fails.
 }
 \keyword{internal}
