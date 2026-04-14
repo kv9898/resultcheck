@@ -71,6 +71,7 @@ with_example <- function(code, mismatch = FALSE) {
   writeLines(matching_snapshot_text, snapshot_path)
 
   mismatch_text <- matching_snapshot_text
+  # Intentionally alter the first numeric token so the mismatch demo fails.
   numeric_pattern <- "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?"
   first_numeric <- which(grepl(numeric_pattern, mismatch_text, perl = TRUE))[1]
   if (!is.na(first_numeric)) {
@@ -95,7 +96,7 @@ with_example <- function(code, mismatch = FALSE) {
       "library(testthat)",
       "library(resultcheck)",
       "",
-      'test_that("run_tested_script", {',
+      'test_that("analysis produces stable results", {',
       '  sandbox <- setup_sandbox("analysis.R")',
       "  on.exit(cleanup_sandbox(sandbox), add = TRUE)",
       "",
