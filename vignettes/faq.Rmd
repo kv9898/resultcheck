@@ -24,3 +24,19 @@ A helpful way to think about it is:
 
 > Git tracks *what* changed in your code
 > resultcheck tracks *whether your results* changed
+
+## Do I need to save models as `.rds` or `.rda` files to use resultcheck?
+
+No.
+
+You do **not** need to manually save anything to disk.
+
+`resultcheck` snapshots objects directly as `.md` files, for example:
+
+```r
+model <- lm(mpg ~ wt, data = mtcars)
+snapshot(model, "main_model")
+```
+
+This will create a snapshot file at: `tests/_resultcheck_snaps/[your_script_name]/main_model.md`.
+
