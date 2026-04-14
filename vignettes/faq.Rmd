@@ -14,6 +14,66 @@ knitr::opts_chunk$set(
 )
 ```
 
+## What is the scope of the package?
+
+`resultcheck` helps you detect when the **results of your analysis change unexpectedly**.
+
+It does this by snapshotting key outputs (e.g. data, models, tables) and comparing them when your code is rerun.
+
+A simplified workflow:
+
+1. Write your analysis
+2. Add `snapshot()` calls to key outputs
+3. Run once → snapshots are recorded
+4. Commit snapshots to Git
+5. Re-run code (locally or in CI)
+6. If outputs change → tests fail
+
+You then decide:
+
+- update snapshot (expected change), or
+- fix the code (unexpected change)
+
+
+### Levels of usage
+
+`resultcheck` operates at two main levels:
+
+1. **Object level**
+
+```r
+snapshot(model, "main_model")
+```
+
+This is typically used during **interactive analysis**.
+
+When you are satisfied with a result, you “lock it in” with a snapshot.
+On subsequent runs, you will be notified if it changes.
+
+2. **Script/project level**
+
+```r
+run_in_sandbox("analysis.R", sandbox)
+```
+This is used for **automated checks**, for example in tests or CI.
+
+It reruns your analysis in a clean environment and verifies that previously snapshotted results remain unchanged.
+
+This helps detect unintended changes due to:
+
+- code modifications (e.g. refactoring)
+- updates from collaborators
+- differences in environments (packages, R version, OS)
+
+### Typical workflow
+
+In practice, you might:
+
+- run snapshots interactively while developing your analysis
+- run tests (e.g. via [`testthat`](https://testthat.r-lib.org)) before committing changes
+- optionally use CI (e.g. [GitHub Actions](renv-github-actions.html)
+) to run checks automatically
+
 ## Is resultcheck a version control system?
 
 No — `resultcheck` does not track code history or file changes.
