@@ -104,7 +104,7 @@ The file: `tests/_resultcheck_snaps/analysis/model.md` contains a human-readable
 
 ### Snapshot representation
 
-By default, `s`napshot()` automatically chooses a representation for the object.
+By default, `snapshot()` automatically chooses a representation for the object.
 
 You can override this using the method argument:
 
