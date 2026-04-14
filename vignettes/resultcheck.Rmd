@@ -153,3 +153,55 @@ Update snapshot? (y/n):
 - Press `n` to keep the existing snapshot and investigate further
 
 In automated contexts (discussed later), differences result in an error rather than an interactive prompt.
+
+## Set up automated tests
+
+In practice, analyses are often not rerun once they are considered “finished”, unless something breaks. To ensure that results remain stable over time, we recommend adding **automated tests** for scripts that you do not intend to modify further.
+
+`resultcheck` works naturally with [`testthat`](https://testthat.r-lib.org/) to run these checks automatically.
+
+For example, to test `analysis.R`, create a file `tests/testthat/test-analysis.R` with the following content:
+
+```r
+library(testthat)
+library(resultcheck)
+
+test_that("analysis produces stable results", {
+  sandbox <- setup_sandbox()
+  on.exit(cleanup_sandbox(sandbox), add = TRUE)
+
+  expect_true(run_in_sandbox("analysis.R", sandbox))
+})
+```
+
+This test:
+
+- creates a temporary sandbox environment
+- runs `analysis.R` inside it
+- fails if any snapshot differs from the stored version
+
+### Sandbox environment
+
+The sandbox is a temporary directory that mimics a clean R session.
+
+Because your script may depend on external files (e.g. data or helper scripts), you need to include those files when setting up the sandbox.
+
+For example:
+
+```r
+sandbox <- setup_sandbox("data/weather.csv")
+```
+
+You can include multiple files:
+
+```r
+sandbox <- setup_sandbox(c("data/income.csv", "data/weather.csv"))
+```
+
+Or entire directories:
+
+```r
+sandbox <- setup_sandbox("data")
+```
+
+`resultcheck` will copy these files into the sandbox while preserving their relative structure.
