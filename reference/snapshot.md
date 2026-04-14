@@ -63,11 +63,8 @@ with_example({
   snapshot(model, "model_print", script_name = "analysis", method = "print")
   snapshot(model, "model_str", script_name = "analysis", method = "str")
 })
-#> Warning: snapshot() will write a snapshot file to: C:/Users/Dianyi/AppData/Local/Temp/RtmpY953jS/resultcheck-example-4a2b4341b7c89/tests/_resultcheck_snaps/analysis/model_both.md
 #> ✓ New snapshot saved: analysis/model_both.md
-#> Warning: snapshot() will write a snapshot file to: C:/Users/Dianyi/AppData/Local/Temp/RtmpY953jS/resultcheck-example-4a2b4341b7c89/tests/_resultcheck_snaps/analysis/model_print.md
 #> ✓ New snapshot saved: analysis/model_print.md
-#> Warning: snapshot() will write a snapshot file to: C:/Users/Dianyi/AppData/Local/Temp/RtmpY953jS/resultcheck-example-4a2b4341b7c89/tests/_resultcheck_snaps/analysis/model_str.md
 #> ✓ New snapshot saved: analysis/model_str.md
 
 with_example({
@@ -81,20 +78,4 @@ if (interactive()) with_example({
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
   run_in_sandbox("analysis.R", sandbox)
 }, mismatch = TRUE)
-#> Error in value[[3L]](cond): Error executing script in sandbox: 
-#> Snapshot differences found for: model
-#> File: C:/Users/Dianyi/AppData/Local/Temp/RtmpY953jS/resultcheck-example-4a2b449875615/tests/_resultcheck_snaps/analysis/model.md
-#> 
-#> Differences:
-#> old[1:7] vs new[1:7]
-#>   "# Snapshot: lm"
-#>   ""
-#>   "## List Structure"
-#> - "List of 13"
-#> + "List of 12"
-#>   " $ coefficients : Named num [1:2] 37.29 -5.34"
-#>   "  ..- attr(*, \"names\")= chr [1:2] \"(Intercept)\" \"wt\""
-#>   " $ residuals    : Named num [1:32] -2.28 -0.92 -2.09 1.3 -0.2 ..."
-#> 
-#> Snapshot does not match. Run interactively to review and update.
 ```

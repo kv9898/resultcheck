@@ -42,5 +42,5 @@ with_example({
   root <- find_root()
   print(root)
 })
-#> [1] "C:/Users/Dianyi/AppData/Local/Temp/RtmpY953jS/resultcheck-example-4a2b431514108"
+#> [1] "/tmp/RtmphqwzFg/resultcheck-example-1b4818329433"
 ```

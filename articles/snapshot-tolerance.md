@@ -1,7 +1,6 @@
 # Handling Platform Differences in Snapshots
 
 ``` r
-
 library(resultcheck)
 ```
 

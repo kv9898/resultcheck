@@ -17,14 +17,12 @@ local testing.
 ### Latest Stable Version
 
 ``` r
-
 install.packages("resultcheck")
 ```
 
 ### Latest Development Version (Unstable)
 
 ``` r
-
 # install.packages("devtools")
 devtools::install_github("kv9898/resultcheck")
 ```
@@ -71,7 +69,6 @@ can generate this layout for documentation/testing under
 ### `analysis.R` — snapshot key results
 
 ``` r
-
 model <- lm(mpg ~ wt, data = mtcars)
 resultcheck::snapshot(model, "model")
 ```
@@ -79,7 +76,6 @@ resultcheck::snapshot(model, "model")
 ### `tests/testthat/test-analysis.R` — automated test
 
 ``` r
-
 library(testthat)
 library(resultcheck)
 
@@ -94,7 +90,6 @@ test_that("analysis produces stable results", {
 To try this quickly without creating files in your current project:
 
 ``` r
-
 resultcheck::with_example({
   sandbox <- setup_sandbox()
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
@@ -129,11 +124,11 @@ snapshot:
 
 The `method` argument controls how the object is serialized:
 
-| Value | Behavior |
-|----|----|
+| Value              | Behavior                                                                                                                      |
+|--------------------|-------------------------------------------------------------------------------------------------------------------------------|
 | `"both"` (default) | Type-specific logic using both [`print()`](https://rdrr.io/r/base/print.html) and [`str()`](https://rdrr.io/r/utils/str.html) |
-| `"print"` | Only [`print()`](https://rdrr.io/r/base/print.html) output is captured |
-| `"str"` | Only [`str()`](https://rdrr.io/r/utils/str.html) output is captured |
+| `"print"`          | Only [`print()`](https://rdrr.io/r/base/print.html) output is captured                                                        |
+| `"str"`            | Only [`str()`](https://rdrr.io/r/utils/str.html) output is captured                                                           |
 
 Use `"print"` or `"str"` when one serialization method produces volatile
 output that should be excluded from the snapshot (e.g. objects that

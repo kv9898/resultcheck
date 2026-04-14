@@ -1,12 +1,12 @@
-pandoc: 3.8.3
-pkgdown: 2.2.0.9000
-pkgdown_sha: 4c94c26166b2454cf69f72fde63d3cd74f61a274
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
 articles:
   faq: faq.html
   renv-github-actions: renv-github-actions.html
   resultcheck: resultcheck.html
   snapshot-tolerance: snapshot-tolerance.html
-last_built: 2026-04-14T16:51Z
+last_built: 2026-04-14T17:02Z
 urls:
   reference: https://kv9898.github.io/resultcheck/reference
   article: https://kv9898.github.io/resultcheck/articles

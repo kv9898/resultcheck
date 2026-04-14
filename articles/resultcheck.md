@@ -56,7 +56,6 @@ You can verify that `resultcheck` has correctly identified your project
 root by running:
 
 ``` r
-
 resultcheck::find_root()
 ```
 
@@ -97,7 +96,6 @@ calls to your analysis script.
 For example, if you have a script `analysis.R` that fits a model:
 
 ``` r
-
 model <- lm(mpg ~ wt, data = mtcars)
 resultcheck::snapshot(model, "model")
 ```
@@ -136,7 +134,6 @@ automatically chooses a representation for the object.
 You can override this using the `method` argument:
 
 ``` r
-
 resultcheck::snapshot(model, "model", method = "print")
 resultcheck::snapshot(model, "model", method = "str")
 ```
@@ -154,7 +151,6 @@ or plots), we recommend that you:
 For example:
 
 ``` r
-
 model <- lm(mpg ~ wt, data = mtcars)
 
 # snapshot the object
@@ -233,7 +229,6 @@ For example, to test `analysis.R`, create a file
 `tests/testthat/test-analysis.R` with the following content:
 
 ``` r
-
 library(testthat)
 library(resultcheck)
 
@@ -257,7 +252,6 @@ expected output files.
 For example:
 
 ``` r
-
   expect_true(
     file.exists(file.path(sandbox$path, "output/regModels.RData")),
     info = "regModels.RData not found"
@@ -277,21 +271,18 @@ scripts), you need to include those files when setting up the sandbox.
 For example:
 
 ``` r
-
 sandbox <- setup_sandbox("data/weather.csv")
 ```
 
 You can include multiple files:
 
 ``` r
-
 sandbox <- setup_sandbox(c("data/income.csv", "data/weather.csv"))
 ```
 
 Or entire directories:
 
 ``` r
-
 sandbox <- setup_sandbox("data")
 ```
 
