@@ -29,13 +29,8 @@ Logical indicating success (invisible).
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Setup sandbox
-sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
-
-# ... use sandbox ...
-
-# Clean up
-cleanup_sandbox(sandbox)
-} # }
+with_example({
+  sandbox <- setup_sandbox()
+  cleanup_sandbox(sandbox)
+})
 ```

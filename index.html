@@ -99,34 +99,24 @@
 <div class="section level2">
 <h2 id="integrated-example">Integrated Example<a class="anchor" aria-label="anchor" href="#integrated-example"></a>
 </h2>
-<p>Consider a project with this layout:</p>
+<p><code><a href="reference/with_example.html">with_example()</a></code> can generate this layout for documentation/testing under <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>:</p>
 <pre><code>myproject/
-├── _resultcheck.yml       # marks the project root
-├── data/
-│   └── income.csv        # input data
-├── analysis.R            # analysis script
+├── _resultcheck.yml
+├── analysis.R
 └── tests/
+    ├── _resultcheck_snaps/
+    │   └── analysis/
+    │       ├── model.md
+    │       └── model_mismatch.md
     └── testthat/
         └── test-analysis.R</code></pre>
 <div class="section level3">
-<h3 id="analysisr--snapshot-key-results-and-write-output">
-<code>analysis.R</code> — snapshot key results and write output<a class="anchor" aria-label="anchor" href="#analysisr--snapshot-key-results-and-write-output"></a>
+<h3 id="analysisr--snapshot-key-results">
+<code>analysis.R</code> — snapshot key results<a class="anchor" aria-label="anchor" href="#analysisr--snapshot-key-results"></a>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"data/income.csv"</span><span class="op">)</span></span>
-<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">income</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">data</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Snapshot detects unexpected result changes across code revisions.</span></span>
-<span><span class="co"># Interactive: warns and prompts to update when differences are found.</span></span>
-<span><span class="co"># Inside run_in_sandbox(): errors if snapshot is missing or doesn't match.</span></span>
-<span><span class="fu">resultcheck</span><span class="fu">::</span><span class="fu"><a href="reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="va">model</span>, <span class="st">"income_model"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Write model summary to an output file</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="st">"output"</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  <span class="st">"output/model_summary.csv"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">wt</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span>
+<span><span class="fu">resultcheck</span><span class="fu">::</span><span class="fu"><a href="reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="va">model</span>, <span class="st">"model"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="teststestthattest-analysisr--automated-test">
@@ -137,23 +127,18 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/kv9898/resultcheck/" class="external-link">resultcheck</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://testthat.r-lib.org/reference/test_that.html" class="external-link">test_that</a></span><span class="op">(</span><span class="st">"analysis produces stable results"</span>, <span class="op">{</span></span>
-<span></span>
-<span>  <span class="co"># Run the script in an isolated sandbox.</span></span>
-<span>  <span class="co"># Only input data is copied — snapshot files live at the project root and</span></span>
-<span>  <span class="co"># are located automatically by find_root(); you do not need to list them.</span></span>
-<span>  <span class="co"># You may pass an entire directory instead of individual file paths.</span></span>
-<span>  <span class="va">sandbox</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/setup_sandbox.html">setup_sandbox</a></span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span>
+<span>  <span class="va">sandbox</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/setup_sandbox.html">setup_sandbox</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit</a></span><span class="op">(</span><span class="fu"><a href="reference/cleanup_sandbox.html">cleanup_sandbox</a></span><span class="op">(</span><span class="va">sandbox</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span>  <span class="co"># Errors immediately if any snapshot inside analysis.R doesn't match.</span></span>
-<span>  <span class="fu"><a href="reference/run_in_sandbox.html">run_in_sandbox</a></span><span class="op">(</span><span class="st">"analysis.R"</span>, <span class="va">sandbox</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="co"># Verify output files were written.</span></span>
-<span>  <span class="fu"><a href="https://testthat.r-lib.org/reference/logical-expectations.html" class="external-link">expect_true</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">sandbox</span><span class="op">$</span><span class="va">path</span>, <span class="st">"output"</span>, <span class="st">"model_summary.csv"</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://testthat.r-lib.org/reference/logical-expectations.html" class="external-link">expect_true</a></span><span class="op">(</span><span class="fu"><a href="reference/run_in_sandbox.html">run_in_sandbox</a></span><span class="op">(</span><span class="st">"analysis.R"</span>, <span class="va">sandbox</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<p>When <code>analysis.R</code> changes in a way that alters the model, <code><a href="reference/run_in_sandbox.html">run_in_sandbox()</a></code> errors immediately. To accept the change, re-run the script interactively, review the diff, and confirm the update.</p>
+<p>To try this quickly without creating files in your current project:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">resultcheck</span><span class="fu">::</span><span class="fu"><a href="reference/with_example.html">with_example</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>  <span class="va">sandbox</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/setup_sandbox.html">setup_sandbox</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit</a></span><span class="op">(</span><span class="fu"><a href="reference/cleanup_sandbox.html">cleanup_sandbox</a></span><span class="op">(</span><span class="va">sandbox</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Logic.html" class="external-link">isTRUE</a></span><span class="op">(</span><span class="fu"><a href="reference/run_in_sandbox.html">run_in_sandbox</a></span><span class="op">(</span><span class="st">"analysis.R"</span>, <span class="va">sandbox</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 </div>
@@ -172,10 +157,12 @@
 <strong>Subsequent interactive runs</strong>: shows a diff and prompts to update.</li>
 <li>
 <strong>Inside <code><a href="reference/run_in_sandbox.html">run_in_sandbox()</a></code></strong>: errors if the snapshot is missing or doesn’t match.</li>
+<li>
+<strong>When writing snapshots interactively</strong>: warns and shows the exact output path.</li>
 </ul>
 <p>You can override the default snapshot directory in <code>_resultcheck.yml</code>:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">snapshot</span><span class="kw">:</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="at">  </span><span class="fu">dir</span><span class="kw">:</span><span class="at"> </span><span class="st">"custom/snapshots/path"</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">snapshot</span><span class="kw">:</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="at">  </span><span class="fu">dir</span><span class="kw">:</span><span class="at"> </span><span class="st">"custom/snapshots/path"</span></span></code></pre></div>
 <p>The <code>method</code> argument controls how the object is serialized:</p>
 <table class="table">
 <colgroup>
@@ -207,8 +194,8 @@
 <p>Snapshots are plain text and intended to be committed to version control.</p>
 </div>
 <div class="section level3">
-<h3 id="setup_sandboxfiles-temp_base--null">
-<code>setup_sandbox(files, temp_base = NULL)</code><a class="anchor" aria-label="anchor" href="#setup_sandboxfiles-temp_base--null"></a>
+<h3 id="setup_sandboxfiles--null-temp_base--null">
+<code>setup_sandbox(files = NULL, temp_base = NULL)</code><a class="anchor" aria-label="anchor" href="#setup_sandboxfiles--null-temp_base--null"></a>
 </h3>
 <p>Creates a temporary directory and copies the listed files and/or directories into it, preserving their path structure relative to the project root. Directories are copied recursively. Snapshot files do not need to be listed.</p>
 </div>
@@ -217,6 +204,7 @@
 <code>run_in_sandbox(script_path, sandbox = NULL, ...)</code><a class="anchor" aria-label="anchor" href="#run_in_sandboxscript_path-sandbox--null-"></a>
 </h3>
 <p>Runs an R script inside the sandbox. The working directory is set to the sandbox, but <code><a href="reference/find_root.html">find_root()</a></code> and <code><a href="reference/snapshot.html">snapshot()</a></code> automatically resolve back to the original project root so snapshots are found correctly.</p>
+<p>Returns <code>TRUE</code> invisibly on success, so you can use <code>expect_true(run_in_sandbox(...))</code> directly in testthat.</p>
 </div>
 <div class="section level3">
 <h3 id="cleanup_sandboxsandbox--null-force--true">
@@ -230,7 +218,13 @@
 </h3>
 <p>Locates the project root by searching upward for a <code>_resultcheck.yml</code> (or legacy <code>resultcheck.yml</code>), <code>.Rproj</code>, or <code>.git</code> marker. Called automatically by <code><a href="reference/snapshot.html">snapshot()</a></code> and <code><a href="reference/setup_sandbox.html">setup_sandbox()</a></code>.</p>
 <p>Place an empty <code>_resultcheck.yml</code> at your project root to make detection reliable:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># _resultcheck.yml</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># _resultcheck.yml</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="with_examplecode-mismatch--false">
+<code>with_example(code, mismatch = FALSE)</code><a class="anchor" aria-label="anchor" href="#with_examplecode-mismatch--false"></a>
+</h3>
+<p>Creates a temporary example project in <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>, sets the working directory there while evaluating <code>code</code>, then cleans up automatically.</p>
 <hr>
 </div>
 </div>

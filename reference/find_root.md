@@ -28,8 +28,9 @@ The path to the project root directory.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-root <- find_root()
-print(root)
-} # }
+with_example({
+  root <- find_root()
+  print(root)
+})
+#> [1] "/tmp/RtmpLE1ysM/resultcheck-example-19ee13939ad"
 ```

@@ -51,34 +51,26 @@ The package supports a two-phase workflow:
 
 ## Integrated Example
 
-Consider a project with this layout:
+[`with_example()`](https://kv9898.github.io/resultcheck/reference/with_example.md)
+can generate this layout for documentation/testing under
+[`tempdir()`](https://rdrr.io/r/base/tempfile.html):
 
     myproject/
-    ├── _resultcheck.yml       # marks the project root
-    ├── data/
-    │   └── income.csv        # input data
-    ├── analysis.R            # analysis script
+    ├── _resultcheck.yml
+    ├── analysis.R
     └── tests/
+        ├── _resultcheck_snaps/
+        │   └── analysis/
+        │       ├── model.md
+        │       └── model_mismatch.md
         └── testthat/
             └── test-analysis.R
 
-### `analysis.R` — snapshot key results and write output
+### `analysis.R` — snapshot key results
 
 ``` r
-data <- read.csv("data/income.csv")
-model <- lm(income ~ age + education, data = data)
-
-# Snapshot detects unexpected result changes across code revisions.
-# Interactive: warns and prompts to update when differences are found.
-# Inside run_in_sandbox(): errors if snapshot is missing or doesn't match.
-resultcheck::snapshot(model, "income_model")
-
-# Write model summary to an output file
-dir.create("output", showWarnings = FALSE)
-write.csv(
-  as.data.frame(coef(summary(model))),
-  "output/model_summary.csv"
-)
+model <- lm(mpg ~ wt, data = mtcars)
+resultcheck::snapshot(model, "model")
 ```
 
 ### `tests/testthat/test-analysis.R` — automated test
@@ -88,28 +80,22 @@ library(testthat)
 library(resultcheck)
 
 test_that("analysis produces stable results", {
-
-  # Run the script in an isolated sandbox.
-  # Only input data is copied — snapshot files live at the project root and
-  # are located automatically by find_root(); you do not need to list them.
-  # You may pass an entire directory instead of individual file paths.
-  sandbox <- setup_sandbox("data")
+  sandbox <- setup_sandbox()
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
 
-  # Errors immediately if any snapshot inside analysis.R doesn't match.
-  run_in_sandbox("analysis.R", sandbox)
-
-  # Verify output files were written.
-  expect_true(
-    file.exists(file.path(sandbox$path, "output", "model_summary.csv"))
-  )
+  expect_true(run_in_sandbox("analysis.R", sandbox))
 })
 ```
 
-When `analysis.R` changes in a way that alters the model,
-[`run_in_sandbox()`](https://kv9898.github.io/resultcheck/reference/run_in_sandbox.md)
-errors immediately. To accept the change, re-run the script
-interactively, review the diff, and confirm the update.
+To try this quickly without creating files in your current project:
+
+``` r
+resultcheck::with_example({
+  sandbox <- setup_sandbox()
+  on.exit(cleanup_sandbox(sandbox), add = TRUE)
+  stopifnot(isTRUE(run_in_sandbox("analysis.R", sandbox)))
+})
+```
 
 ------------------------------------------------------------------------
 
@@ -126,6 +112,8 @@ Creates or verifies a snapshot of any R object.
 - **Inside
   [`run_in_sandbox()`](https://kv9898.github.io/resultcheck/reference/run_in_sandbox.md)**:
   errors if the snapshot is missing or doesn’t match.
+- **When writing snapshots interactively**: warns and shows the exact
+  output path.
 
 You can override the default snapshot directory in `_resultcheck.yml`:
 
@@ -150,7 +138,7 @@ embed session-specific file paths or random IDs in their
 Snapshots are plain text and intended to be committed to version
 control.
 
-### `setup_sandbox(files, temp_base = NULL)`
+### `setup_sandbox(files = NULL, temp_base = NULL)`
 
 Creates a temporary directory and copies the listed files and/or
 directories into it, preserving their path structure relative to the
@@ -166,6 +154,9 @@ and
 [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
 automatically resolve back to the original project root so snapshots are
 found correctly.
+
+Returns `TRUE` invisibly on success, so you can use
+`expect_true(run_in_sandbox(...))` directly in testthat.
 
 ### `cleanup_sandbox(sandbox = NULL, force = TRUE)`
 
@@ -187,6 +178,12 @@ reliable:
 ``` yaml
 # _resultcheck.yml
 ```
+
+### `with_example(code, mismatch = FALSE)`
+
+Creates a temporary example project in
+[`tempdir()`](https://rdrr.io/r/base/tempfile.html), sets the working
+directory there while evaluating `code`, then cleans up automatically.
 
 ------------------------------------------------------------------------
 

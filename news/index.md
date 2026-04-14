@@ -9,6 +9,18 @@
   instead of `_resultcheck_snapshots/`.
 - Add configurable snapshot directory support via `snapshot.dir` in
   `_resultcheck.yml`.
+- Add
+  [`with_example()`](https://kv9898.github.io/resultcheck/reference/with_example.md)
+  to run package examples in temporary projects under
+  [`tempdir()`](https://rdrr.io/r/base/tempfile.html), avoiding writes
+  to user home/package/getwd locations.
+- Update examples/docs to be executable without `\\dontrun{}` and use
+  [`setup_sandbox()`](https://kv9898.github.io/resultcheck/reference/setup_sandbox.md)
+  with no required file arguments for empty sandboxes.
+- [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
+  now warns with the exact target path before interactive writes;
+  default path remains configurable via `snapshot.dir` in
+  `_resultcheck.yml`.
 
 ## resultcheck 0.1.3
 

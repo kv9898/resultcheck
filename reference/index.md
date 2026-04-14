@@ -12,3 +12,5 @@
   : Setup a Sandbox Environment for Testing
 - [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
   : Interactive Snapshot Testing
+- [`with_example()`](https://kv9898.github.io/resultcheck/reference/with_example.md)
+  : Run Code Inside a Temporary Example Project

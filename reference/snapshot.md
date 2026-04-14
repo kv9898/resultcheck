@@ -57,21 +57,25 @@ organized by script name, and configurable via `snapshot.dir` in
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# In an analysis script (interactive mode):
-model <- lm(mpg ~ wt, data = mtcars)
-snapshot(model, "mtcars_model")
+with_example({
+  model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
+  snapshot(model, "model_both", script_name = "analysis", method = "both")
+  snapshot(model, "model_print", script_name = "analysis", method = "print")
+  snapshot(model, "model_str", script_name = "analysis", method = "str")
+})
+#> ✓ New snapshot saved: analysis/model_both.md
+#> ✓ New snapshot saved: analysis/model_print.md
+#> ✓ New snapshot saved: analysis/model_str.md
 
-# First time: saves the snapshot
-# Later times: compares, shows differences, prompts to update
+with_example({
+  sandbox <- setup_sandbox()
+  on.exit(cleanup_sandbox(sandbox), add = TRUE)
+  run_in_sandbox("analysis.R", sandbox)
+})
 
-# Use only print() output (skip str() which may contain volatile fields):
-snapshot(model, "mtcars_model_print", method = "print")
-
-# Use only str() output:
-snapshot(model, "mtcars_model_str", method = "str")
-
-# In testing mode (inside run_in_sandbox or testthat):
-# Errors if snapshot missing or doesn't match
-} # }
+if (interactive()) with_example({
+  sandbox <- setup_sandbox()
+  on.exit(cleanup_sandbox(sandbox), add = TRUE)
+  run_in_sandbox("analysis.R", sandbox)
+}, mismatch = TRUE)
 ```

@@ -7,7 +7,7 @@ useful for testing empirical analysis scripts in isolation.
 ## Usage
 
 ``` r
-setup_sandbox(files, temp_base = NULL)
+setup_sandbox(files = NULL, temp_base = NULL)
 ```
 
 ## Arguments
@@ -15,7 +15,8 @@ setup_sandbox(files, temp_base = NULL)
 - files:
 
   Character vector of relative file or directory paths to copy to the
-  sandbox. Paths are resolved relative to the project root (found using
+  sandbox. Leave as `NULL` (default) to create an empty sandbox. Paths
+  are resolved relative to the project root (found using
   [`find_root()`](https://kv9898.github.io/resultcheck/reference/find_root.md));
   if the project root cannot be determined the current working directory
   is used. When a path refers to a directory, the entire directory is
@@ -45,14 +46,10 @@ A list with class "resultcheck_sandbox" containing:
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Create sandbox and copy files
-sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
-
-# Use sandbox path
-print(sandbox$path)
-
-# Clean up when done
-cleanup_sandbox(sandbox)
-} # }
+with_example({
+  sandbox <- setup_sandbox()
+  print(sandbox$path)
+  cleanup_sandbox(sandbox)
+})
+#> [1] "/tmp/RtmpLE1ysM/sandbox_20260414_121202_78yvg5fi19ee25262a96"
 ```

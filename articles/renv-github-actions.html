@@ -200,11 +200,15 @@ snapshot files, review them, then commit them to version control.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit</a></span><span class="op">(</span><span class="fu"><a href="../reference/cleanup_sandbox.html">cleanup_sandbox</a></span><span class="op">(</span><span class="va">sandbox</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co"># snapshot() inside run_in_sandbox() errors on any mismatch</span></span>
-<span>  <span class="fu"><a href="../reference/run_in_sandbox.html">run_in_sandbox</a></span><span class="op">(</span><span class="st">"code/analysis.R"</span>, <span class="va">sandbox</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://testthat.r-lib.org/reference/logical-expectations.html" class="external-link">expect_true</a></span><span class="op">(</span><span class="fu"><a href="../reference/run_in_sandbox.html">run_in_sandbox</a></span><span class="op">(</span><span class="st">"code/analysis.R"</span>, <span class="va">sandbox</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Run locally to confirm everything passes before pushing:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">testthat</span><span class="fu">::</span><span class="fu"><a href="https://testthat.r-lib.org/reference/test_dir.html" class="external-link">test_dir</a></span><span class="op">(</span><span class="st">"tests/testthat"</span><span class="op">)</span></span></code></pre></div>
+<p>For package examples and quick demos, you can avoid writing into your
+current project by wrapping code in
+<code>resultcheck::with_example({...})</code>, which creates a temporary
+project in <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code> and cleans it up automatically.</p>
 <hr>
 </div>
 <div class="section level2">

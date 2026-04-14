@@ -48,6 +48,10 @@
 <ul><li>Rename project config file from <code>resultcheck.yml</code> to <code>_resultcheck.yml</code> (legacy <code>resultcheck.yml</code> is still read for backward compatibility).</li>
 <li>Change default snapshot location to <code>tests/_resultcheck_snaps/</code> instead of <code>_resultcheck_snapshots/</code>.</li>
 <li>Add configurable snapshot directory support via <code>snapshot.dir</code> in <code>_resultcheck.yml</code>.</li>
+<li>Add <code><a href="../reference/with_example.html">with_example()</a></code> to run package examples in temporary projects under <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>, avoiding writes to user home/package/getwd locations.</li>
+<li>Update examples/docs to be executable without <code>\\dontrun{}</code> and use <code><a href="../reference/setup_sandbox.html">setup_sandbox()</a></code> with no required file arguments for empty sandboxes.</li>
+<li>
+<code><a href="../reference/snapshot.html">snapshot()</a></code> now warns with the exact target path before interactive writes; default path remains configurable via <code>snapshot.dir</code> in <code>_resultcheck.yml</code>.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.3" id="resultcheck-013">resultcheck 0.1.3<a class="anchor" aria-label="anchor" href="#resultcheck-013"></a></h2>

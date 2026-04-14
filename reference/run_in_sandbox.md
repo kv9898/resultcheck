@@ -43,19 +43,14 @@ run_in_sandbox(
 
 ## Value
 
-Invisible NULL. The function is called for its side effects.
+Invisible TRUE on successful execution.
 
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Setup sandbox
-sandbox <- setup_sandbox(c("data/mydata.rds", "code/analysis.R"))
-
-# Run script in sandbox
-run_in_sandbox("code/analysis.R", sandbox)
-
-# Clean up
-cleanup_sandbox(sandbox)
-} # }
+with_example({
+  sandbox <- setup_sandbox()
+  on.exit(cleanup_sandbox(sandbox), add = TRUE)
+  run_in_sandbox("analysis.R", sandbox)
+})
 ```
