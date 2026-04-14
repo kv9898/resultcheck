@@ -5,10 +5,17 @@ template:
 authors:
   Dianyi Yang:
     href: https://rubuky.com
-
+navbar:
+  structure:
+    left: [reference, articles, faq, news]
+  components:
+    faq:
+      text: FAQ
+      href: articles/faq.html
 articles:
   - title: Vignettes
     navbar:
     contents:
       - snapshot-tolerance
       - renv-github-actions
+      - faq
