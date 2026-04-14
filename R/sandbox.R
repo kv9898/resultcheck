@@ -71,15 +71,15 @@ with_example <- function(code, mismatch = FALSE) {
   writeLines(snapshot_text, snapshot_path)
 
   mismatch_text <- snapshot_text
-  first_numeric <- which(grepl("[-+]?[0-9]*\\.[0-9]+", mismatch_text))[1]
+  first_numeric <- which(grepl("[-+]?[0-9]+\\.[0-9]+", mismatch_text))[1]
   if (!is.na(first_numeric)) {
     line <- mismatch_text[first_numeric]
-    m <- regexpr("[-+]?[0-9]*\\.[0-9]+", line, perl = TRUE)
+    m <- regexpr("[-+]?[0-9]+\\.[0-9]+", line, perl = TRUE)
     if (m[1] != -1L) {
       matched <- regmatches(line, m)
       digits <- nchar(sub(".*\\.", "", matched))
-      bumped <- format(round(as.numeric(matched) + 1, digits), nsmall = digits)
-      regmatches(line, m) <- bumped
+      altered_number <- format(round(as.numeric(matched) + 1, digits), nsmall = digits)
+      regmatches(line, m) <- altered_number
       mismatch_text[first_numeric] <- line
     }
   }
