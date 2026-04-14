@@ -18,7 +18,7 @@ For academic researchers and data scientists using R, a common problem is that *
 
 Sometimes the difference is obvious. In worse cases, it happens silently — and you only notice much later, after results have been shared, revised, or even published.
 
-Following best practices (e.g. using `renv`, clearing your workspace, version control, and a clear project structure) can reduce this risk — and I’ve written more about these workflows in this [blog post](https://opensource.posit.co/blog/2026-04-13_reproducible-research-renv-quarto-github/. However, these practices can be costly during exploratory work, and they do not fully eliminate all sources of instability.
+Following best practices (e.g. using `renv`, clearing your workspace, version control, and a clear project structure) can reduce this risk — and I’ve written more about these workflows in this [blog post](https://opensource.posit.co/blog/2026-04-13_reproducible-research-renv-quarto-github/). However, these practices can be costly during exploratory work, and they do not fully eliminate all sources of instability.
 
 In practice, results can change due to:
 
