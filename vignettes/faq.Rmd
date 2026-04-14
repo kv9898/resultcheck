@@ -139,3 +139,15 @@ Future versions may include:
 
 - size warnings
 - more selective copying
+
+## Is find_root() the same as here::here()?
+
+Not exactly.
+
+`find_root()` is an internal helper used by resultcheck to locate the project root. It is primarily used to identify which files (e.g. data, saved objects) should be copied into the sandbox when running analyses in a clean environment.
+
+Unlike `here::here()`, `find_root()` will **error if no project root is found**, rather than guessing a path. This is intentional, to avoid silently writing or reading files from the wrong location.
+
+In most cases, you should **not** need to call `find_root()` directly.
+
+For constructing file paths in your own analysis code, we recommend using `here::here()` (or equivalent tools), as it is more flexible and designed for everyday use.
