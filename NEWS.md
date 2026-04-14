@@ -1,4 +1,4 @@
-# resultcheck 0.1.4
+# resultcheck (development version)
 
 * Rename project config file from `resultcheck.yml` to `_resultcheck.yml` (legacy `resultcheck.yml` is still read for backward compatibility).
 * Change default snapshot location to `tests/_resultcheck_snaps/` instead of `_resultcheck_snapshots/`.
