@@ -7,7 +7,7 @@ authors:
     href: https://rubuky.com
 navbar:
   structure:
-    left: [reference, articles, faq, news]
+    left: [intro, reference, articles, faq, news]
   components:
     faq:
       text: FAQ
