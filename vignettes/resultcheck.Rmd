@@ -180,7 +180,7 @@ Update snapshot? (y/n):
 - Press `y` to update the snapshot (if the change is expected)
 - Press `n` to keep the existing snapshot and investigate further
 
-In automated contexts (discussed later), differences result in an error rather than an interactive prompt.
+In testing contexts (see [local tests](#local-tests) and [GitHub tests](#github-tests)), differences result in an error rather than an interactive prompt.
 
 ## Set up automated tests
 
@@ -247,7 +247,7 @@ sandbox <- setup_sandbox("data")
 
 `resultcheck` will copy these files into the sandbox while preserving their relative structure.
 
-## Running tests
+## Running tests {#local-tests}
 
 You can run your tests using `testthat::test_dir("tests/testthat")`.
 
