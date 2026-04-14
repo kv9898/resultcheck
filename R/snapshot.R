@@ -15,10 +15,10 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' root <- find_root()
-#' print(root)
-#' }
+#' with_example({
+#'   root <- find_root()
+#'   print(root)
+#' })
 find_root <- function(start_path = NULL) {
   if (!requireNamespace("rprojroot", quietly = TRUE)) {
     stop("Package 'rprojroot' is required but not installed. ",
@@ -449,6 +449,13 @@ is_testing <- function() {
   return(in_sandbox)
 }
 
+warn_snapshot_write <- function(snapshot_file) {
+  if (interactive()) {
+    warning("snapshot() will write a snapshot file to: ", snapshot_file,
+            call. = FALSE, immediate. = TRUE)
+  }
+}
+
 
 #' Interactive Snapshot Testing
 #'
@@ -483,23 +490,24 @@ is_testing <- function() {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # In an analysis script (interactive mode):
-#' model <- lm(mpg ~ wt, data = mtcars)
-#' snapshot(model, "mtcars_model")
-#' 
-#' # First time: saves the snapshot
-#' # Later times: compares, shows differences, prompts to update
-#' 
-#' # Use only print() output (skip str() which may contain volatile fields):
-#' snapshot(model, "mtcars_model_print", method = "print")
-#' 
-#' # Use only str() output:
-#' snapshot(model, "mtcars_model_str", method = "str")
-#' 
-#' # In testing mode (inside run_in_sandbox or testthat):
-#' # Errors if snapshot missing or doesn't match
-#' }
+#' with_example({
+#'   model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
+#'   snapshot(model, "model_both", script_name = "analysis", method = "both")
+#'   snapshot(model, "model_print", script_name = "analysis", method = "print")
+#'   snapshot(model, "model_str", script_name = "analysis", method = "str")
+#' })
+#'
+#' with_example({
+#'   sandbox <- setup_sandbox()
+#'   on.exit(cleanup_sandbox(sandbox), add = TRUE)
+#'   run_in_sandbox("analysis.R", sandbox)
+#' })
+#'
+#' if (interactive()) with_example({
+#'   sandbox <- setup_sandbox()
+#'   on.exit(cleanup_sandbox(sandbox), add = TRUE)
+#'   run_in_sandbox("analysis.R", sandbox)
+#' }, mismatch = TRUE)
 snapshot <- function(value, name, script_name = NULL, method = c("both", "print", "str")) {
   method <- match.arg(method)
 
@@ -533,6 +541,7 @@ snapshot <- function(value, name, script_name = NULL, method = c("both", "print"
     }
     
     # First time: save the snapshot
+    warn_snapshot_write(snapshot_file)
     writeLines(new_text, snapshot_file)
     message("\u2713 New snapshot saved: ", basename(dirname(snapshot_file)), "/", basename(snapshot_file))
     return(invisible(TRUE))
@@ -577,6 +586,7 @@ snapshot <- function(value, name, script_name = NULL, method = c("both", "print"
     
     if (tolower(trimws(response)) == "y") {
       # Preserve any [ignored] markers from the stored snapshot
+      warn_snapshot_write(snapshot_file)
       writeLines(mask_ignored_lines(old_text, new_text), snapshot_file)
       message("\u2713 Snapshot updated.")
       return(invisible(TRUE))

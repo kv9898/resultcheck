@@ -18,6 +18,14 @@ test_that("setup_sandbox creates a temporary directory", {
   })
 })
 
+test_that("setup_sandbox accepts no files argument to create an empty sandbox", {
+  sandbox <- setup_sandbox()
+  on.exit(cleanup_sandbox(sandbox), add = TRUE)
+
+  expect_s3_class(sandbox, "resultcheck_sandbox")
+  expect_true(dir.exists(sandbox$path))
+})
+
 
 test_that("setup_sandbox copies files with directory structure", {
   # Create test directory structure
@@ -112,7 +120,7 @@ test_that("run_in_sandbox executes script in sandbox directory", {
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
 
   # Run script in sandbox
-  run_in_sandbox(script_file, sandbox)
+  expect_true(run_in_sandbox(script_file, sandbox))
 
   # Check that output was created in sandbox
   expect_true(file.exists(file.path(sandbox$path, "output.txt")))
@@ -136,7 +144,7 @@ test_that("run_in_sandbox uses last sandbox by default", {
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
 
   # Run without specifying sandbox
-  run_in_sandbox(script_file)
+  expect_true(run_in_sandbox(script_file))
 
   # Check that output was created
   expect_true(file.exists(file.path(sandbox$path, "output.txt")))
@@ -162,7 +170,8 @@ test_that("run_in_sandbox suppresses messages and warnings", {
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
 
   # Run with suppression (default) - should not show messages/warnings
-  expect_silent(run_in_sandbox(script_file, sandbox))
+  result <- expect_silent(run_in_sandbox(script_file, sandbox))
+  expect_true(result)
 })
 
 
@@ -295,7 +304,7 @@ test_that("Full workflow: setup, run, cleanup", {
 
     # Full workflow
     sandbox <- setup_sandbox(basename(data_file))
-    run_in_sandbox(script_file, sandbox)
+    expect_true(run_in_sandbox(script_file, sandbox))
 
     # Verify output
     output_file <- file.path(sandbox$path, "output.rds")

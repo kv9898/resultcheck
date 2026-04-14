@@ -5,3 +5,6 @@ tests/_resultcheck_snaps/
 check/
 docs
 inst/doc
+
+/.quarto/
+**/*.quarto_ipynb
