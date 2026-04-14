@@ -1,6 +1,7 @@
 #' @importFrom utils getSrcref str
 #' @importFrom grDevices dev.off pdf
 #' @importFrom yaml read_yaml
+#' @importFrom stats lm
 NULL
 
 #' Reset sandbox state (internal)
