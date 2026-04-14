@@ -73,9 +73,9 @@ with_example <- function(code, mismatch = FALSE) {
   mismatch_text <- matching_snapshot_text
   # Intentionally alter the first numeric token so the mismatch demo fails.
   numeric_pattern <- "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?"
-  first_numeric <- which(grepl(numeric_pattern, mismatch_text, perl = TRUE))[1]
-  if (!is.na(first_numeric)) {
-    line <- mismatch_text[first_numeric]
+  first_numeric_line <- which(grepl(numeric_pattern, mismatch_text, perl = TRUE))[1]
+  if (!is.na(first_numeric_line)) {
+    line <- mismatch_text[first_numeric_line]
     m <- regexpr(numeric_pattern, line, perl = TRUE)
     if (m[1] != -1L) {
       matched <- regmatches(line, m)
@@ -86,7 +86,7 @@ with_example <- function(code, mismatch = FALSE) {
         scientific = FALSE
       )
       regmatches(line, m) <- altered_number
-      mismatch_text[first_numeric] <- line
+      mismatch_text[first_numeric_line] <- line
     }
   }
   writeLines(mismatch_text, mismatch_path)
