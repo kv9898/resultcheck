@@ -46,7 +46,7 @@ warns and shows the exact file path that will be written.
 }
 \examples{
 with_example({
-  model <- lm(mpg ~ wt, data = mtcars)
+  model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
   snapshot(model, "model_both", script_name = "analysis", method = "both")
   snapshot(model, "model_print", script_name = "analysis", method = "print")
   snapshot(model, "model_str", script_name = "analysis", method = "str")
