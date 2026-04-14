@@ -14,4 +14,19 @@ knitr::opts_chunk$set(
 )
 ```
 
-hi
+For academic researchers and data scientists using R, a common problem is that **the same code does not always produce the same results**.
+
+Sometimes the difference is obvious. In worse cases, it happens silently — and you only notice much later, after results have been shared, revised, or even published.
+
+Following best practices (e.g. using `renv`, clearing your workspace, version control, and a clear project structure) can reduce this risk — and I’ve written more about these workflows in this [blog post](https://opensource.posit.co/blog/2026-04-13_reproducible-research-renv-quarto-github/. However, these practices can be costly during exploratory work, and they do not fully eliminate all sources of instability.
+
+In practice, results can change due to:
+
+1. implicit randomness
+2. non-deterministic computation (e.g. parallelization)
+3. changes in underlying data (e.g. APIs or databases)
+4. platform differences (e.g. floating-point precision, OS-specific behavior)
+
+These issues make it difficult to detect when results have changed — and even harder to manage in *collaborative* projects.
+
+`resultcheck` is designed to address this problem by letting you **explicitly track and verify key results** as your analysis evolves.
