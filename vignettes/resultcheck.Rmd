@@ -35,8 +35,9 @@ The following sections walk through a typical workflow and show how `resultcheck
 
 ## Mark project root
 
-The core idea behind `resultcheck`’s testing workflow is that it *copies* all files a script depends on into a temporary directory, and runs the script there to mimic a clean environment.
+The core idea behind `resultcheck`’s testing workflow is that it *copies* the files and directories you explicitly provide into a temporary directory, and runs the script there to mimic a clean environment.
 
+This means you need to list any required inputs and helper files (for example, data files, sourced scripts, or other resources) that the script needs inside the sandbox.
 To do this reliably, `resultcheck` needs to know where your **project root** is.
 
 You can mark your project root by creating any of the following in the root directory. `resultcheck` will detect them in the following order:
