@@ -10,10 +10,7 @@
 > these in the description field of your DESCRIPTION file in the form
 > authors (year) <doi:...>
 
-The package implements an original snapshot-testing workflow for empirical R
-projects. There are no external publications (papers, preprints, or book
-chapters) that describe the methods used in this package. No references have
-therefore been added to the Description field.
+The package implements an original snapshot-testing workflow for empirical R projects. To the best of our knowledge, there are no published references (papers, preprints, or books) describing these methods. Therefore, no references have been added to the Description field.
 
 > Please replace `\\dontrun{}` wrappers for executable examples and avoid writing
 > by default/in examples to the user's home filespace.
