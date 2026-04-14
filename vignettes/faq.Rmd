@@ -151,3 +151,30 @@ Unlike `here::here()`, `find_root()` will **error if no project root is found**,
 In most cases, you should **not** need to call `find_root()` directly.
 
 For constructing file paths in your own analysis code, we recommend using `here::here()` (or equivalent tools), as it is more flexible and designed for everyday use.
+
+## Can I see exactly what changed in a model?
+
+Currently, `resultcheck` reports differences as text diffs.
+
+For example:
+
+```r
+Warning: 
+Snapshot differences found for: model
+File: E:/OneDrive/Desktop/ark-test/tests/_resultcheck_snaps/resultcheck-test/model.md
+
+Differences:
+old[2:8] vs new[2:8]
+  ""
+  "## List Structure"
+  "List of 12"
+- " $ coefficients : Named num [1:2] 40.03 -5.34"
++ " $ coefficients : Named num [1:2] 37.29 -5.34"
+  "  ..- attr(*, \"names\")= chr [1:2] \"(Intercept)\" \"wt\""
+  " $ residuals    : Named num [1:32] -2.28 -0.92 -2.09 1.3 -0.2 ..."
+  "  ..- attr(*, \"names\")= chr [1:32] \"Mazda RX4\" \"Mazda RX4 Wag\" \"Datsun 710\" \"Hornet 4 Drive\" ..."
+
+Update snapshot? (y/n): 
+```
+
+More structured comparisons are a possible future extension.
