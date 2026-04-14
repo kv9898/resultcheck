@@ -1,6 +1,6 @@
 # Changelog
 
-## resultcheck 0.1.4
+## resultcheck (development version)
 
 - Rename project config file from `resultcheck.yml` to
   `_resultcheck.yml` (legacy `resultcheck.yml` is still read for
