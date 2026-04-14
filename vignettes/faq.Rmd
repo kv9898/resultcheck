@@ -14,4 +14,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-Hi.
+## Is resultcheck a version control system?
+
+No — `resultcheck` does not track code history or file changes.
+
+Instead, it checks whether the **results produced by your analysis** change when code is rerun.
+
+A helpful way to think about it is:
+
+> Git tracks *what* changed in your code
+> resultcheck tracks *whether your results* changed
