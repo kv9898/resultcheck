@@ -40,7 +40,7 @@
 #'   print(root)
 #' })
 with_example <- function(code, mismatch = FALSE) {
-  example_root <- tempfile("resultcheck-example-", tmpdir = tempdir())
+  example_root <- tempfile("resultcheck-example-")
   dir.create(example_root, recursive = TRUE, showWarnings = FALSE)
   on.exit(unlink(example_root, recursive = TRUE, force = TRUE), add = TRUE)
 

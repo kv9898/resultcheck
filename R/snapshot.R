@@ -449,6 +449,13 @@ is_testing <- function() {
   return(in_sandbox)
 }
 
+warn_snapshot_write <- function(snapshot_file) {
+  if (interactive()) {
+    warning("snapshot() will write a snapshot file to: ", snapshot_file,
+            call. = FALSE, immediate. = TRUE)
+  }
+}
+
 
 #' Interactive Snapshot Testing
 #'
@@ -528,10 +535,7 @@ snapshot <- function(value, name, script_name = NULL, method = c("both", "print"
     }
     
     # First time: save the snapshot
-    if (interactive()) {
-      warning("snapshot() will write a snapshot file to: ", snapshot_file,
-              call. = FALSE, immediate. = TRUE)
-    }
+    warn_snapshot_write(snapshot_file)
     writeLines(new_text, snapshot_file)
     message("\u2713 New snapshot saved: ", basename(dirname(snapshot_file)), "/", basename(snapshot_file))
     return(invisible(TRUE))
@@ -576,8 +580,7 @@ snapshot <- function(value, name, script_name = NULL, method = c("both", "print"
     
     if (tolower(trimws(response)) == "y") {
       # Preserve any [ignored] markers from the stored snapshot
-      warning("snapshot() will write a snapshot file to: ", snapshot_file,
-              call. = FALSE, immediate. = TRUE)
+      warn_snapshot_write(snapshot_file)
       writeLines(mask_ignored_lines(old_text, new_text), snapshot_file)
       message("\u2713 Snapshot updated.")
       return(invisible(TRUE))
