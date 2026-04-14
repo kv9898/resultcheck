@@ -74,6 +74,36 @@ In practice, you might:
 - optionally use CI (e.g. [GitHub Actions](renv-github-actions.html)
 ) to run checks automatically
 
+## Can I use resultcheck for exploratory work?
+
+Yes — but with some care.
+
+Academic research and data analysis are often iterative and exploratory, and new analyses frequently build on earlier results. `resultcheck` can be useful during this process by helping you ensure that previously established results remain stable as you continue working.
+
+You can add `snapshot()` calls gradually as your analysis evolves, and update them when changes are expected. This allows you to introduce checks incrementally rather than all at once.
+
+In practice, `resultcheck` works best when used to `lock in results that you consider stable`, rather than for rapidly changing intermediate outputs. As your project matures, this makes it easier to ensure reproducibility and detect unintended changes.
+
+Combined with version control, this also enables you to *refactor and reorganize your code with confidence*, knowing that you will be alerted if any key results change unexpectedly.
+
+### Caveat: script and object names
+
+`resultcheck` identifies snapshots based on the **script name** and **snapshot name**.
+
+This means that:
+
+- renaming a script, or
+- changing the name passed to `snapshot()`
+
+will cause `resultcheck` to treat it as a new snapshot, rather than a modification of an existing one.
+
+In general, once you have decided to snapshot a result, it is best to keep:
+
+- script names, and
+- snapshot names
+
+stable.
+
 ## Is resultcheck a version control system?
 
 No — `resultcheck` does not track code history or file changes.
