@@ -40,9 +40,6 @@ run_in_sandbox), throws an error if snapshot doesn't exist or doesn't match.
 Snapshots are stored under \code{tests/_resultcheck_snaps/} by default,
 organized by script name, and configurable via \code{snapshot.dir} in
 \code{_resultcheck.yml}.
-
-When \code{snapshot()} writes or updates a snapshot in interactive mode, it
-warns and shows the exact file path that will be written.
 }
 \examples{
 with_example({
