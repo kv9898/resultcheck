@@ -30,6 +30,10 @@ even harder to manage in *collaborative* projects.
 Instead of tracking code, `resultcheck` tracks the **R objects created
 during your analysis**.
 
+`resultcheck` is intended to be used *alongside* version control
+(e.g. Git), so that snapshots can be tracked, shared, and verified
+across collaborators.
+
 The following sections walk through a typical workflow and show how
 `resultcheck` helps you detect and manage changes in your results.
 
