@@ -84,20 +84,10 @@
 your analysis change unexpectedly</strong>.</p>
 <p>It does this by snapshotting key outputs (e.g. data, models, tables)
 and comparing them when your code is rerun.</p>
-<p>A simplified workflow:</p>
-<ol style="list-style-type: decimal">
-<li>Write your analysis</li>
-<li>Add <code><a href="../reference/snapshot.html">snapshot()</a></code> calls to key outputs</li>
-<li>Run once → snapshots are recorded</li>
-<li>Commit snapshots to Git</li>
-<li>Re-run code (locally or in CI)</li>
-<li>If outputs change → tests fail</li>
-</ol>
-<p>You then decide:</p>
-<ul>
-<li>update snapshot (expected change), or</li>
-<li>fix the code (unexpected change)</li>
-</ul>
+<p>For a full example workflow, see the <a href="resultcheck.html">Get
+Started guide</a>.</p>
+<p>In short, <code>resultcheck</code> works by snapshotting key results
+and checking whether they change when your analysis is rerun.</p>
 <div class="section level3">
 <h3 id="levels-of-usage">Levels of usage<a class="anchor" aria-label="anchor" href="#levels-of-usage"></a>
 </h3>

@@ -8,21 +8,11 @@ change unexpectedly**.
 It does this by snapshotting key outputs (e.g. data, models, tables) and
 comparing them when your code is rerun.
 
-A simplified workflow:
+For a full example workflow, see the [Get Started
+guide](https://kv9898.github.io/resultcheck/articles/resultcheck.md).
 
-1.  Write your analysis
-2.  Add
-    [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
-    calls to key outputs
-3.  Run once → snapshots are recorded
-4.  Commit snapshots to Git
-5.  Re-run code (locally or in CI)
-6.  If outputs change → tests fail
-
-You then decide:
-
-- update snapshot (expected change), or
-- fix the code (unexpected change)
+In short, `resultcheck` works by snapshotting key results and checking
+whether they change when your analysis is rerun.
 
 ### Levels of usage
 

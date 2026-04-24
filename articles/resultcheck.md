@@ -37,6 +37,27 @@ across collaborators.
 The following sections walk through a typical workflow and show how
 `resultcheck` helps you detect and manage changes in your results.
 
+## A typical workflow
+
+`resultcheck` fits into your analysis workflow as follows:
+
+1.  Write your analysis
+2.  Add
+    [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
+    calls to key results
+3.  Run once → snapshots are recorded
+4.  Commit snapshots to Git
+5.  Re-run code (locally or in CI)
+6.  If results change → tests fail
+
+At that point, you decide:
+
+- update the snapshot (if the change is expected), or
+- investigate further (if the change is unexpected)
+
+This allows you to detect unintended changes in results as your analysis
+evolves.
+
 ## Mark project root
 
 The core idea behind `resultcheck`’s testing workflow is that it

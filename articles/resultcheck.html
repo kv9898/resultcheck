@@ -111,6 +111,27 @@ and verified across collaborators.</p>
 <code>resultcheck</code> helps you detect and manage changes in your
 results.</p>
 <div class="section level2">
+<h2 id="a-typical-workflow">A typical workflow<a class="anchor" aria-label="anchor" href="#a-typical-workflow"></a>
+</h2>
+<p><code>resultcheck</code> fits into your analysis workflow as
+follows:</p>
+<ol style="list-style-type: decimal">
+<li>Write your analysis</li>
+<li>Add <code><a href="../reference/snapshot.html">snapshot()</a></code> calls to key results</li>
+<li>Run once → snapshots are recorded</li>
+<li>Commit snapshots to Git</li>
+<li>Re-run code (locally or in CI)</li>
+<li>If results change → tests fail</li>
+</ol>
+<p>At that point, you decide:</p>
+<ul>
+<li>update the snapshot (if the change is expected), or</li>
+<li>investigate further (if the change is unexpected)</li>
+</ul>
+<p>This allows you to detect unintended changes in results as your
+analysis evolves.</p>
+</div>
+<div class="section level2">
 <h2 id="mark-project-root">Mark project root<a class="anchor" aria-label="anchor" href="#mark-project-root"></a>
 </h2>
 <p>The core idea behind <code>resultcheck</code>’s testing workflow is
