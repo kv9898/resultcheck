@@ -186,6 +186,37 @@ analysis</strong> change when code is rerun.</p>
 </blockquote>
 </div>
 <div class="section level2">
+<h2 id="how-can-collaborators-track-changes-in-snapshots-over-time">How can collaborators track changes in snapshots over time?<a class="anchor" aria-label="anchor" href="#how-can-collaborators-track-changes-in-snapshots-over-time"></a>
+</h2>
+<p><code>resultcheck</code> focuses on checking whether results have
+changed, not on tracking their history.</p>
+<p>Information such as:</p>
+<ul>
+<li>when a snapshot was created<br>
+</li>
+<li>who created it<br>
+</li>
+<li>which commit it corresponds to</li>
+</ul>
+<p>is handled by version control systems such as Git.</p>
+<p>In practice, we recommend committing snapshots <em>alongside</em> the
+code changes that produce them, and writing clear <strong>commit
+messages</strong> that explain <em>why</em> results changed (e.g. due to
+code refactoring, data updates, or dependency changes). This makes it
+much easier for collaborators to interpret differences later.</p>
+<p>You can inspect snapshot history using Git tools such as:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">git</span> log tests/_resultcheck_snaps/</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">git</span> blame tests/_resultcheck_snaps/analysis/model.md</span></code></pre></div>
+<p>These commands show who changed what and when. Many code editors
+(e.g. VS Code, Positron) provide a <em>graphical</em> interface for
+this, allowing you to <strong>trace each line of a snapshot</strong>
+back to the commit that introduced it.</p>
+<p>This makes it possible to understand changes at a very fine-grained
+level, while keeping snapshot files clean and focused on results. In
+this workflow, <code>resultcheck</code> detects changes in results, and
+Git explains them.</p>
+</div>
+<div class="section level2">
 <h2 id="do-i-need-to-save-models-as--rds-or--rda-files-to-use-resultcheck">Do I need to save models as <code>.rds</code> or <code>.rda</code>
 files to use resultcheck?<a class="anchor" aria-label="anchor" href="#do-i-need-to-save-models-as--rds-or--rda-files-to-use-resultcheck"></a>
 </h2>
@@ -194,7 +225,7 @@ files to use resultcheck?<a class="anchor" aria-label="anchor" href="#do-i-need-
 disk.</p>
 <p><code>resultcheck</code> snapshots objects directly as
 <code>.md</code> files, for example:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">wt</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="va">model</span>, <span class="st">"main_model"</span><span class="op">)</span></span></code></pre></div>
 <p>This will create a snapshot file at:
@@ -271,22 +302,22 @@ flexible and designed for everyday use.</p>
 <p>Currently, <code>resultcheck</code> reports differences as text
 diffs.</p>
 <p>For example:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>Warning<span class="sc">:</span> </span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>Snapshot differences found <span class="cf">for</span><span class="sc">:</span> model</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>File<span class="sc">:</span> E<span class="sc">:</span><span class="er">/</span>OneDrive<span class="sc">/</span>Desktop<span class="sc">/</span>ark<span class="sc">-</span>test<span class="sc">/</span>tests<span class="sc">/</span>_resultcheck_snaps<span class="sc">/</span>resultcheck<span class="sc">-</span>test<span class="sc">/</span>model.md</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>Differences<span class="sc">:</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>old[<span class="dv">2</span><span class="sc">:</span><span class="dv">8</span>] vs new[<span class="dv">2</span><span class="sc">:</span><span class="dv">8</span>]</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="st">""</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  <span class="st">"## List Structure"</span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  <span class="st">"List of 12"</span></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="sc">-</span> <span class="st">" $ coefficients : Named num [1:2] 40.03 -5.34"</span></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="sc">+</span> <span class="st">" $ coefficients : Named num [1:2] 37.29 -5.34"</span></span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  <span class="st">"  ..- attr(*, </span><span class="sc">\"</span><span class="st">names</span><span class="sc">\"</span><span class="st">)= chr [1:2] </span><span class="sc">\"</span><span class="st">(Intercept)</span><span class="sc">\"</span><span class="st"> </span><span class="sc">\"</span><span class="st">wt</span><span class="sc">\"</span><span class="st">"</span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="st">" $ residuals    : Named num [1:32] -2.28 -0.92 -2.09 1.3 -0.2 ..."</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>  <span class="st">"  ..- attr(*, </span><span class="sc">\"</span><span class="st">names</span><span class="sc">\"</span><span class="st">)= chr [1:32] </span><span class="sc">\"</span><span class="st">Mazda RX4</span><span class="sc">\"</span><span class="st"> </span><span class="sc">\"</span><span class="st">Mazda RX4 Wag</span><span class="sc">\"</span><span class="st"> </span><span class="sc">\"</span><span class="st">Datsun 710</span><span class="sc">\"</span><span class="st"> </span><span class="sc">\"</span><span class="st">Hornet 4 Drive</span><span class="sc">\"</span><span class="st"> ..."</span></span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>Update snapshot? (y<span class="sc">/</span>n)<span class="sc">:</span> </span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>Warning<span class="sc">:</span> </span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>Snapshot differences found <span class="cf">for</span><span class="sc">:</span> model</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>File<span class="sc">:</span> E<span class="sc">:</span><span class="er">/</span>OneDrive<span class="sc">/</span>Desktop<span class="sc">/</span>ark<span class="sc">-</span>test<span class="sc">/</span>tests<span class="sc">/</span>_resultcheck_snaps<span class="sc">/</span>resultcheck<span class="sc">-</span>test<span class="sc">/</span>model.md</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>Differences<span class="sc">:</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>old[<span class="dv">2</span><span class="sc">:</span><span class="dv">8</span>] vs new[<span class="dv">2</span><span class="sc">:</span><span class="dv">8</span>]</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="st">""</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="st">"## List Structure"</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="st">"List of 12"</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="sc">-</span> <span class="st">" $ coefficients : Named num [1:2] 40.03 -5.34"</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="sc">+</span> <span class="st">" $ coefficients : Named num [1:2] 37.29 -5.34"</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  <span class="st">"  ..- attr(*, </span><span class="sc">\"</span><span class="st">names</span><span class="sc">\"</span><span class="st">)= chr [1:2] </span><span class="sc">\"</span><span class="st">(Intercept)</span><span class="sc">\"</span><span class="st"> </span><span class="sc">\"</span><span class="st">wt</span><span class="sc">\"</span><span class="st">"</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>  <span class="st">" $ residuals    : Named num [1:32] -2.28 -0.92 -2.09 1.3 -0.2 ..."</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>  <span class="st">"  ..- attr(*, </span><span class="sc">\"</span><span class="st">names</span><span class="sc">\"</span><span class="st">)= chr [1:32] </span><span class="sc">\"</span><span class="st">Mazda RX4</span><span class="sc">\"</span><span class="st"> </span><span class="sc">\"</span><span class="st">Mazda RX4 Wag</span><span class="sc">\"</span><span class="st"> </span><span class="sc">\"</span><span class="st">Datsun 710</span><span class="sc">\"</span><span class="st"> </span><span class="sc">\"</span><span class="st">Hornet 4 Drive</span><span class="sc">\"</span><span class="st"> ..."</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>Update snapshot? (y<span class="sc">/</span>n)<span class="sc">:</span> </span></code></pre></div>
 <p>More structured comparisons are a possible future extension.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

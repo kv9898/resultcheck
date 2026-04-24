@@ -127,6 +127,9 @@ resultcheck::snapshot(model, "model")
 
 You can also snapshot data frames, plots, tables, or any other R object.
 
+Snapshots can be committed and shared, allowing collaborators to verify
+that their results match yours.
+
 ### First run: creating a snapshot
 
 When you run the
