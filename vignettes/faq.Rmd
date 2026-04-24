@@ -110,22 +110,25 @@ A helpful way to think about it is:
 `resultcheck` focuses on checking whether results have changed, not on tracking their history.
 
 Information such as:
+
 - when a snapshot was created  
 - who created it  
 - which commit it corresponds to  
 
-is handled by version control systems such as *Git*.
+is handled by version control systems such as Git.
 
-We recommend using Git tools such as:
+In practice, we recommend committing snapshots *alongside* the code changes that produce them, and writing clear **commit messages** that explain *why* results changed (e.g. due to code refactoring, data updates, or dependency changes). This makes it much easier for collaborators to interpret differences later.
+
+You can inspect snapshot history using Git tools such as:
 
 ```bash
 git log tests/_resultcheck_snaps/
 git blame tests/_resultcheck_snaps/analysis/model.md
 ```
 
-to understand when snapshots changed and who made those changes.
+These commands show who changed what and when. Many code editors (e.g. VS Code, Positron) provide a *graphical* interface for this, allowing you to **trace each line of a snapshot** back to the commit that introduced it.
 
-This keeps snapshot files clean and focused on results, while relying on version control for provenance and collaboration.
+This makes it possible to understand changes at a very fine-grained level, while keeping snapshot files clean and focused on results. In this workflow, `resultcheck` detects changes in results, and Git explains them.
 
 ## Do I need to save models as `.rds` or `.rda` files to use resultcheck?
 
