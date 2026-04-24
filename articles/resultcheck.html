@@ -83,18 +83,19 @@ results</strong>.</p>
 <p>Sometimes the difference is obvious. In worse cases, it happens
 silently — and you only notice much later, after results have been
 shared, revised, or even published.</p>
-<p>Following best practices (e.g. using <code>renv</code>, clearing your
-workspace, version control, and a clear project structure) can reduce
-this risk — and I’ve written more about these workflows in this <a href="https://opensource.posit.co/blog/2026-04-13_reproducible-research-renv-quarto-github/" class="external-link">blog
-post</a>. However, these practices can be costly during exploratory
-work, and they do not fully eliminate all sources of instability.</p>
+<p>Following best practices — such as clearing your workspace, using
+version control, and maintaining a clear project structure — can reduce
+this risk. I’ve written more about these workflows in this <a href="https://opensource.posit.co/blog/2026-04-13_reproducible-research-renv-quarto-github/" class="external-link">blog
+post</a>.</p>
 <p>In practice, results can change due to:</p>
 <ol style="list-style-type: decimal">
 <li>implicit randomness</li>
 <li>non-deterministic computation (e.g. parallelization)</li>
 <li>changes in underlying data (e.g. APIs or databases)</li>
+<li>package updates or dependency changes (even when using tools like
+<code>renv</code>)</li>
 <li>platform differences (e.g. floating-point precision, OS-specific
-behavior)</li>
+behaviour)</li>
 </ol>
 <p>These issues make it difficult to detect when results have changed —
 and even harder to manage in <em>collaborative</em> projects.</p>
