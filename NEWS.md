@@ -1,5 +1,7 @@
 # resultcheck (development version)
 
+* Add "Get Started" and FAQ vignettes to clarify workflow and common questions.
+
 # resultcheck 0.1.4
 
 * Rename project config file from `resultcheck.yml` to `_resultcheck.yml` (legacy `resultcheck.yml` is still read for backward compatibility).
