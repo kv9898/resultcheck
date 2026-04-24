@@ -27,8 +27,8 @@ even harder to manage in *collaborative* projects.
 
 `resultcheck` is designed to address this problem by letting you
 **explicitly track and verify key results** as your analysis evolves.
-Instead of tracking code, `resultcheck` tracks the **objects** from your
-analysis.
+Instead of tracking code, `resultcheck` tracks the **R objects created
+during your analysis**.
 
 The following sections walk through a typical workflow and show how
 `resultcheck` helps you detect and manage changes in your results.
