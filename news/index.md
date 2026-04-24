@@ -1,6 +1,13 @@
 # Changelog
 
+## resultcheck (development version)
+
+- Add “Get Started” and FAQ vignettes to clarify workflow and common
+  questions.
+
 ## resultcheck 0.1.4
+
+CRAN release: 2026-04-21
 
 - Rename project config file from `resultcheck.yml` to
   `_resultcheck.yml` (legacy `resultcheck.yml` is still read for
