@@ -322,11 +322,11 @@ serialize_value <- function(value, method = c("both", "print", "str")) {
       output <- c(output, "## Structure")
       output <- c(output, utils::capture.output(str(value)))
     } else {
-        # Default: use print and str
-        output <- c(output, "## Object")
-        output <- c(output, utils::capture.output(print(value)))
-        output <- c(output, "", "## Structure")
-        output <- c(output, utils::capture.output(str(value)))
+      # method == "both": include both print() and str() output
+      output <- c(output, "## Object")
+      output <- c(output, utils::capture.output(print(value)))
+      output <- c(output, "", "## Structure")
+      output <- c(output, utils::capture.output(str(value)))
     }
   })
   
