@@ -322,28 +322,11 @@ serialize_value <- function(value, method = c("both", "print", "str")) {
       output <- c(output, "## Structure")
       output <- c(output, utils::capture.output(str(value)))
     } else {
-      # method == "both": apply type-specific defaults
-      if (is.data.frame(value)) {
-        # For data frames, show structure and content
-        output <- c(output, "## Structure")
-        output <- c(output, utils::capture.output(str(value)))
-        output <- c(output, "", "## Data")
-        output <- c(output, utils::capture.output(print(value)))
-      } else if (is.list(value)) {
-        # For lists, use str() for structure
-        output <- c(output, "## List Structure")
-        output <- c(output, utils::capture.output(str(value)))
-      } else if (is.atomic(value)) {
-        # For vectors and atomic types
-        output <- c(output, "## Value")
-        output <- c(output, utils::capture.output(print(value)))
-      } else {
-        # Default: use print and str
-        output <- c(output, "## Object")
-        output <- c(output, utils::capture.output(print(value)))
-        output <- c(output, "", "## Structure")
-        output <- c(output, utils::capture.output(str(value)))
-      }
+      # method == "both": include both print() and str() output
+      output <- c(output, "## Object")
+      output <- c(output, utils::capture.output(print(value)))
+      output <- c(output, "", "## Structure")
+      output <- c(output, utils::capture.output(str(value)))
     }
   })
   
