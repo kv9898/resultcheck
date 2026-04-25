@@ -152,10 +152,10 @@ test_that("serialize_value respects method = 'print'", {
   expect_true(any(grepl("## Structure", out_str)))
   expect_false(any(grepl("## Object", out_str)))
 
-  # "both" (default for list) uses List Structure only (type-specific logic)
-  expect_true(any(grepl("## List Structure", out_both)))
-  expect_false(any(grepl("## Object", out_both)))
-  expect_false(any(grepl("^## Structure$", out_both)))
+  # "both" includes print output and structure output
+  expect_true(any(grepl("## Object", out_both)))
+  expect_true(any(grepl("^## Structure$", out_both)))
+  expect_false(any(grepl("## List Structure", out_both)))
 })
 
 
@@ -249,8 +249,8 @@ test_that("snapshot in testing mode passes when differing lines are [ignored]", 
                            "analysis", "snap_ignored_mode.md")
 
     lines <- readLines(snap_file)
-    value_line <- which(grepl("^\\[1\\]", lines))[1]
-    lines[value_line] <- "[ignored]"
+    value_lines <- which(grepl("^\\[1\\]|^\\s*num \\[1:3\\]", lines))
+    lines[value_lines] <- "[ignored]"
     writeLines(lines, snap_file)
 
     # Simulate testing mode by writing a script and running it in a sandbox
