@@ -1,5 +1,12 @@
 # resultcheck
 
+<!-- badges: start -->
+
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/resultcheck)](https://cran.r-project.org/package=resultcheck)
+[![CRAN_Downloads_Badge](https://cranlogs.r-pkg.org/badges/resultcheck)](https://cran.r-project.org/package=resultcheck)
+
+<!-- badges: end -->
+
 Result Stability Checks for Empirical R Projects
 
 ## Overview
