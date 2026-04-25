@@ -249,6 +249,7 @@ test_that("snapshot in testing mode passes when differing lines are [ignored]", 
                            "analysis", "snap_ignored_mode.md")
 
     lines <- readLines(snap_file)
+    # Match changed numeric output in both print() ("[1] ...") and str() ("num [1:3] ...")
     value_lines <- which(grepl("^\\[1\\]|^\\s*num \\[1:3\\]", lines))
     lines[value_lines] <- "[ignored]"
     writeLines(lines, snap_file)
