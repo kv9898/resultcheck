@@ -2,6 +2,7 @@
 
 <!-- badges: start -->
 
+[![R-CMD_CI_Tests_Badge](https://github.com/kv9898/resultcheck/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/kv9898/resultcheck/actions/workflows/ci-tests.yml)
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/resultcheck)](https://cran.r-project.org/package=resultcheck)
 [![CRAN_Downloads_Badge](https://cranlogs.r-pkg.org/badges/resultcheck)](https://cran.r-project.org/package=resultcheck)
 
