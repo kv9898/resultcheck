@@ -704,7 +704,21 @@ SNAPSHOT_OUTPUT_WIDTH <- 110L
 #' @return A character vector with the text representation.
 #'
 #' @keywords internal
-serialize_value <- function(value, methods = DEFAULT_SNAPSHOT_METHODS) {
+serialize_value <- function(value, methods = NULL, use_class_defaults = TRUE) {
+  if (is.null(methods) && use_class_defaults) {
+    config <- tryCatch(
+      read_resultcheck_config(),
+      error = function(e) list(snapshot = list())
+    )
+    methods <- resolve_snapshot_methods(
+      value = value,
+      method = NULL,
+      config = config,
+      method_missing = TRUE
+    )
+  } else if (is.null(methods)) {
+    methods <- DEFAULT_SNAPSHOT_METHODS
+  }
   methods <- coerce_snapshot_methods(methods, arg_name = "methods")
   # Create a text representation using various methods
   output <- character()
