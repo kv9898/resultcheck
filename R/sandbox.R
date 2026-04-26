@@ -61,7 +61,7 @@ with_example <- function(code, mismatch = FALSE) {
   )
 
   model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
-  matching_snapshot_text <- serialize_value(model, method = "both")
+  matching_snapshot_text <- serialize_value(model, methods = "both")
   snapshot_path <- file.path(
     example_root, "tests", "_resultcheck_snaps", "analysis", "model.md"
   )
