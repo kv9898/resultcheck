@@ -338,6 +338,78 @@ coerce_class_override_map <- function(x, source = "snapshot.method_by_class") {
   out
 }
 
+eval_character_literal <- function(expr, source_name, label) {
+  if (is.character(expr)) {
+    return(expr)
+  }
+  if (is.call(expr) && as.character(expr[[1L]]) == "c") {
+    args <- as.list(expr)[-1L]
+    vals <- vapply(args, function(arg) {
+      if (!is.character(arg) || length(arg) != 1L) {
+        stop(
+          source_name, " has unsupported value for ", label,
+          ". Use character method expressions only in defaults files.",
+          call. = FALSE
+        )
+      }
+      arg
+    }, character(1L))
+    return(unname(vals))
+  }
+  stop(
+    source_name, " has unsupported value for ", label,
+    ". Use character method expressions only in defaults files.",
+    call. = FALSE
+  )
+}
+
+eval_class_map_expr <- function(expr, source_name) {
+  if (!is.call(expr) || as.character(expr[[1L]]) != "list") {
+    stop(
+      source_name,
+      " must define `method_by_class` as a named list of character method expressions.",
+      call. = FALSE
+    )
+  }
+  args <- as.list(expr)[-1L]
+  nms <- names(args)
+  if (length(args) == 0L) return(list())
+  if (is.null(nms) || anyNA(nms) || any(trimws(nms) == "")) {
+    stop(
+      source_name,
+      " must define a named list mapping class names to method expressions.",
+      call. = FALSE
+    )
+  }
+
+  out <- list()
+  for (i in seq_along(args)) {
+    class_name <- trimws(nms[[i]])
+    out[[class_name]] <- eval_character_literal(
+      args[[i]],
+      source_name = source_name,
+      label = paste0("`", class_name, "`")
+    )
+  }
+  out
+}
+
+extract_class_map_expr <- function(exprs) {
+  if (length(exprs) == 0L) return(NULL)
+
+  for (expr in exprs) {
+    if (is.call(expr) &&
+        as.character(expr[[1L]]) %in% c("<-", "=") &&
+        is.symbol(expr[[2L]]) &&
+        as.character(expr[[2L]]) %in% c("snapshot_method_by_class", "method_by_class")) {
+      return(expr[[3L]])
+    }
+  }
+
+  if (length(exprs) == 1L) return(exprs[[1L]])
+  NULL
+}
+
 read_method_defaults_from_r_file <- function(path, source_name) {
   if (!is.character(path) || length(path) != 1L || is.na(path) || trimws(path) == "") {
     return(list())
@@ -346,23 +418,12 @@ read_method_defaults_from_r_file <- function(path, source_name) {
     stop("Configured snapshot defaults file does not exist: ", path, call. = FALSE)
   }
 
-  env <- new.env(parent = baseenv())
-  source_result <- source(path, local = env)
-  get_first_existing <- function(envir, names) {
-    for (nm in names) {
-      if (exists(nm, envir = envir, inherits = FALSE)) {
-        return(get(nm, envir = envir, inherits = FALSE))
-      }
-    }
-    NULL
+  exprs <- parse(file = path, keep.source = FALSE)
+  class_expr <- extract_class_map_expr(exprs)
+  if (is.null(class_expr)) {
+    return(list())
   }
-
-  class_map <- get_first_existing(env, c("snapshot_method_by_class", "method_by_class"))
-  if (is.null(class_map) && is.list(source_result$value) && !is.null(source_result$value$method_by_class)) {
-    class_map <- source_result$value$method_by_class
-  } else if (is.null(class_map) && is.list(source_result$value) && !is.null(names(source_result$value))) {
-    class_map <- source_result$value
-  }
+  class_map <- eval_class_map_expr(class_expr, source_name = source_name)
 
   coerce_class_override_map(class_map, source = source_name)
 }
@@ -806,7 +867,8 @@ warn_snapshot_write <- function(snapshot_file) {
 #' \code{snapshot.method_by_class}. Optional class defaults can also be loaded
 #' from an R file using \code{snapshot.method_defaults_file}. Method strings in
 #' config (for example \code{"print + str"} or \code{"stats::coef"}) are
-#' resolved to callable functions.
+#' resolved to callable functions. In config expressions, \code{"+"} is treated
+#' as the method delimiter.
 #'
 #' @param value The R object to snapshot (e.g., plot, table, model output).
 #' @param name Character. A descriptive name for this snapshot.

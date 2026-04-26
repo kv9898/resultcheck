@@ -43,7 +43,8 @@ organized by script name, and configurable via \code{snapshot.dir} in
 \code{snapshot.method_by_class}. Optional class defaults can also be loaded
 from an R file using \code{snapshot.method_defaults_file}. Method strings in
 config (for example \code{"print + str"} or \code{"stats::coef"}) are
-resolved to callable functions.
+resolved to callable functions. In config expressions, \code{"+"} is treated
+as the method delimiter.
 }
 \examples{
 with_example({

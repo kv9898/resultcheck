@@ -652,13 +652,16 @@ test_that("snapshot uses global method default when method is omitted", {
   )
 
   withr::with_dir(temp_project, {
-    snapshot(letters[1:3], "global_default_test", script_name = "analysis")
+    model <- lm(mpg ~ wt, data = mtcars)
+    snapshot(model, "global_default_test", script_name = "analysis")
     content <- readLines(
       file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "global_default_test.md"),
       warn = FALSE
     )
     headers <- content[grepl("^## ", content)]
     expect_equal(headers, c("## summary", "## print"))
+    expect_true(any(grepl("^Coefficients:$", content)))
+    expect_true(any(grepl("^Call:$", content)))
   })
 })
 
