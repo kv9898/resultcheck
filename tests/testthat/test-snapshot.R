@@ -238,6 +238,12 @@ test_that("coerce_snapshot_methods validates function-based methods", {
   guessed <- resultcheck:::coerce_snapshot_methods(list(print, str))
   expect_equal(unname(vapply(guessed, `[[`, character(1), "label")), c("print", "str"))
 
+  namespaced <- resultcheck:::coerce_snapshot_methods(
+    stats::coef,
+    method_expr = substitute(stats::coef)
+  )
+  expect_equal(unname(vapply(namespaced, `[[`, character(1), "label")), "stats::coef")
+
   fallback <- resultcheck:::coerce_snapshot_methods(list(function(x) x))
   expect_equal(unname(vapply(fallback, `[[`, character(1), "label")), "unnamed_method_1")
 })
@@ -516,7 +522,7 @@ test_that("snapshot rejects character method values", {
   })
 })
 
-test_that("snapshot method config keys are ignored", {
+test_that("snapshot uses class default methods from _resultcheck.yml", {
   temp_project <- tempfile()
   dir.create(temp_project)
   dir.create(file.path(temp_project, ".git"))
@@ -525,8 +531,100 @@ test_that("snapshot method config keys are ignored", {
   writeLines(
     c(
       "snapshot:",
-      "  method: summary",
-      "  method_defaults_file: snapshot-method-overrides.yml",
+      "  method_by_class:",
+      "    lm: summary"
+    ),
+    file.path(temp_project, "_resultcheck.yml")
+  )
+
+  withr::with_dir(temp_project, {
+    model <- lm(mpg ~ wt, data = mtcars)
+    snapshot(model, "class_default_test", script_name = "analysis")
+    content <- readLines(
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "class_default_test.md"),
+      warn = FALSE
+    )
+    expect_true(any(grepl("^## summary$", content)))
+    expect_false(any(grepl("^## print$", content)))
+  })
+})
+
+test_that("explicit method overrides class default methods", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  writeLines(
+    c(
+      "snapshot:",
+      "  method_by_class:",
+      "    lm: summary"
+    ),
+    file.path(temp_project, "_resultcheck.yml")
+  )
+
+  withr::with_dir(temp_project, {
+    model <- lm(mpg ~ wt, data = mtcars)
+    snapshot(model, "class_override_test", script_name = "analysis", method = print)
+    content <- readLines(
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "class_override_test.md"),
+      warn = FALSE
+    )
+    expect_true(any(grepl("^## print$", content)))
+    expect_false(any(grepl("^## summary$", content)))
+  })
+})
+
+test_that("snapshot can read class defaults from separate R defaults file", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  defaults_path <- file.path(temp_project, "snapshot-method-overrides.R")
+  writeLines(
+    "method_by_class <- list(lm = 'summary')",
+    defaults_path
+  )
+  writeLines(
+    c(
+      "snapshot:",
+      "  method_defaults_file: snapshot-method-overrides.R"
+    ),
+    file.path(temp_project, "_resultcheck.yml")
+  )
+
+  withr::with_dir(temp_project, {
+    cfg <- resultcheck:::read_resultcheck_config()
+    expect_equal(cfg$snapshot$method_by_class$lm[[1]]$label, "summary")
+
+    model <- lm(mpg ~ wt, data = mtcars)
+    snapshot(model, "class_file_default_test", script_name = "analysis")
+    content <- readLines(
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "class_file_default_test.md"),
+      warn = FALSE
+    )
+    expect_true(any(grepl("^## summary$", content)))
+    expect_false(any(grepl("^## print$", content)))
+  })
+})
+
+test_that("inline class overrides take precedence over defaults file", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  defaults_path <- file.path(temp_project, "snapshot-method-overrides.R")
+  writeLines(
+    "method_by_class <- list(lm = 'print')",
+    defaults_path
+  )
+  writeLines(
+    c(
+      "snapshot:",
+      "  method_defaults_file: snapshot-method-overrides.R",
       "  method_by_class:",
       "    lm: summary"
     ),
@@ -535,17 +633,48 @@ test_that("snapshot method config keys are ignored", {
 
   withr::with_dir(temp_project, {
     cfg <- resultcheck:::read_resultcheck_config()
-    expect_null(cfg$snapshot$method)
-    expect_null(cfg$snapshot$method_defaults_file)
-    expect_null(cfg$snapshot$method_by_class)
+    expect_equal(cfg$snapshot$method_by_class$lm[[1]]$label, "summary")
+  })
+})
 
-    model <- lm(mpg ~ wt, data = mtcars)
-    snapshot(model, "config_ignored_test", script_name = "analysis")
+test_that("snapshot uses global method default when method is omitted", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  writeLines(
+    c(
+      "snapshot:",
+      "  method: summary + print"
+    ),
+    file.path(temp_project, "_resultcheck.yml")
+  )
+
+  withr::with_dir(temp_project, {
+    snapshot(letters[1:3], "global_default_test", script_name = "analysis")
     content <- readLines(
-      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "config_ignored_test.md"),
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "global_default_test.md"),
       warn = FALSE
     )
-    expect_true(any(grepl("^## print$", content)))
-    expect_true(any(grepl("^## str$", content)))
+    headers <- content[grepl("^## ", content)]
+    expect_equal(headers, c("## summary", "## print"))
+  })
+})
+
+test_that("snapshot labels namespaced methods from expression", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  withr::with_dir(temp_project, {
+    model <- lm(mpg ~ wt, data = mtcars)
+    snapshot(model, "namespaced_method_test", script_name = "analysis", method = stats::coef)
+    content <- readLines(
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "namespaced_method_test.md"),
+      warn = FALSE
+    )
+    expect_true(any(grepl("^## stats::coef$", content)))
   })
 })

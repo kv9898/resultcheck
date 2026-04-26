@@ -103,6 +103,10 @@ You can override the default snapshot directory in `_resultcheck.yml`:
 ```yaml
 snapshot:
   dir: "custom/snapshots/path"
+  method: "print + str"
+  method_defaults_file: "snapshot-method-overrides.R"
+  method_by_class:
+    lm: "summary"
 ```
 
 The `method` argument controls how the object is serialized:
@@ -113,10 +117,30 @@ The `method` argument controls how the object is serialized:
 | `print` | Only `print()` output is captured |
 | `str` | Only `str()` output is captured |
 | `length` | Any callable function can be used |
+| `stats::coef` | Namespaced callables are supported |
 | `list(print = print, summary = summary)` | Runs multiple functions in order |
 
 When a list of methods is used, section headers are taken directly from the
 method names (or list names), e.g. `## print`, `## summary`.
+
+If `method` is omitted, defaults are resolved as:
+
+1. class override from `snapshot.method_by_class`,
+2. global default from `snapshot.method`,
+3. fallback to `list(print = print, str = str)`.
+
+Config methods are parsed from strings in `_resultcheck.yml`, so values like
+`"print + str"` or `"stats::coef"` are converted to callable methods.
+
+You can also define class defaults in a separate R file:
+
+```r
+# snapshot-method-overrides.R
+method_by_class <- list(
+  lm = "summary",
+  glm = "summary"
+)
+```
 
 Snapshots are plain text and intended to be committed to version control.
 
