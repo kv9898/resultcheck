@@ -136,12 +136,13 @@ test_that("compare_snapshot_text ignores .Environment differences", {
 })
 
 
-test_that("serialize_value respects method = 'print'", {
+test_that("serialize_value respects selected methods", {
   val <- list(a = 1:3, b = "hello")
 
-  out_both  <- resultcheck:::serialize_value(val, method = "both")
-  out_print <- resultcheck:::serialize_value(val, method = "print")
-  out_str   <- resultcheck:::serialize_value(val, method = "str")
+  out_both  <- resultcheck:::serialize_value(val, methods = c("print", "str"))
+  out_print <- resultcheck:::serialize_value(val, methods = "print")
+  out_str   <- resultcheck:::serialize_value(val, methods = "str")
+  out_multi <- resultcheck:::serialize_value(val, methods = c("summary", "print", "summary"))
 
   # "print" output contains the "## Object" header but not "## Structure"
   expect_true(any(grepl("## Object", out_print)))
@@ -152,10 +153,14 @@ test_that("serialize_value respects method = 'print'", {
   expect_true(any(grepl("## Structure", out_str)))
   expect_false(any(grepl("## Object", out_str)))
 
-  # "both" includes print output and structure output
+  # "both" alias behavior includes print output and structure output
   expect_true(any(grepl("## Object", out_both)))
   expect_true(any(grepl("^## Structure$", out_both)))
   expect_false(any(grepl("## List Structure", out_both)))
+
+  # methods are applied in ordered unique order
+  headers <- out_multi[grepl("^## ", out_multi)]
+  expect_equal(headers, c("## Summary", "## Object"))
 })
 
 
@@ -171,6 +176,11 @@ test_that("snapshot respects method parameter", {
 
     snapshot(val, "snap_print", script_name = "analysis", method = "print")
     snapshot(val, "snap_str",   script_name = "analysis", method = "str")
+    snapshot(val, "snap_expr",  script_name = "analysis", method = "print + summary + print")
+    expect_warning(
+      snapshot(val, "snap_both", script_name = "analysis", method = "both"),
+      "`both` is deprecated"
+    )
 
     content_print <- readLines(
       file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "snap_print.md"),
@@ -178,6 +188,14 @@ test_that("snapshot respects method parameter", {
     )
     content_str <- readLines(
       file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "snap_str.md"),
+      warn = FALSE
+    )
+    content_expr <- readLines(
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "snap_expr.md"),
+      warn = FALSE
+    )
+    content_both <- readLines(
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "snap_both.md"),
       warn = FALSE
     )
 
@@ -189,7 +207,32 @@ test_that("snapshot respects method parameter", {
     # Neither should contain headers belonging to the other method
     expect_false(any(grepl("## Structure", content_print)))
     expect_false(any(grepl("## Object", content_str)))
+
+    expect_true(any(grepl("^## Object$", content_expr)))
+    expect_true(any(grepl("^## Summary$", content_expr)))
+
+    both_headers <- content_both[grepl("^## ", content_both)]
+    expect_equal(both_headers, c("## Object", "## Structure"))
   })
+})
+
+test_that("normalize_snapshot_methods validates and normalizes expressions and vectors", {
+  expect_equal(
+    resultcheck:::normalize_snapshot_methods("print + str + print"),
+    c("print", "str")
+  )
+  expect_equal(
+    resultcheck:::normalize_snapshot_methods(c("summary", "print + str")),
+    c("summary", "print", "str")
+  )
+  expect_error(
+    resultcheck:::normalize_snapshot_methods("print + nope"),
+    "Unsupported snapshot method\\(s\\)"
+  )
+  expect_warning(
+    resultcheck:::normalize_snapshot_methods("both", deprecated_both = TRUE),
+    "`both` is deprecated"
+  )
 })
 
 
@@ -290,7 +333,7 @@ test_that("mask_ignored_lines preserves [ignored] marker in masked new_text", {
 
     old_text <- readLines(snap_file)
     val2 <- c(99.0, 2.0, 3.0)
-    new_text <- resultcheck:::serialize_value(val2, method = "both")
+    new_text <- resultcheck:::serialize_value(val2, methods = c("print", "str"))
     new_text <- resultcheck:::normalize_snapshot_text(new_text)
 
     masked <- resultcheck:::mask_ignored_lines(old_text, new_text)
@@ -416,5 +459,156 @@ test_that("read_resultcheck_config returns empty list when no yml exists", {
     cfg <- resultcheck:::read_resultcheck_config()
     expect_type(cfg, "list")
     expect_length(cfg, 0L)
+  })
+})
+
+test_that("snapshot uses class default methods from _resultcheck.yml", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  writeLines(
+    c(
+      "snapshot:",
+      "  method_by_class:",
+      "    lm: summary"
+    ),
+    file.path(temp_project, "_resultcheck.yml")
+  )
+
+  withr::with_dir(temp_project, {
+    model <- lm(mpg ~ wt, data = mtcars)
+    snapshot(model, "class_default_test", script_name = "analysis")
+
+    content <- readLines(
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "class_default_test.md"),
+      warn = FALSE
+    )
+    expect_true(any(grepl("^## Summary$", content)))
+    expect_false(any(grepl("^## Object$", content)))
+    expect_false(any(grepl("^## Structure$", content)))
+  })
+})
+
+test_that("explicit method overrides class default methods", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  writeLines(
+    c(
+      "snapshot:",
+      "  method_by_class:",
+      "    lm: summary"
+    ),
+    file.path(temp_project, "_resultcheck.yml")
+  )
+
+  withr::with_dir(temp_project, {
+    model <- lm(mpg ~ wt, data = mtcars)
+    snapshot(model, "class_override_test", script_name = "analysis", method = "print")
+
+    content <- readLines(
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "class_override_test.md"),
+      warn = FALSE
+    )
+    expect_true(any(grepl("^## Object$", content)))
+    expect_false(any(grepl("^## Summary$", content)))
+  })
+})
+
+test_that("snapshot can read class defaults from separate defaults file", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  defaults_path <- file.path(temp_project, "snapshot-method-overrides.yml")
+  writeLines(
+    c(
+      "method_by_class:",
+      "  lm: summary"
+    ),
+    defaults_path
+  )
+
+  writeLines(
+    c(
+      "snapshot:",
+      "  method_defaults_file: snapshot-method-overrides.yml"
+    ),
+    file.path(temp_project, "_resultcheck.yml")
+  )
+
+  withr::with_dir(temp_project, {
+    cfg <- resultcheck:::read_resultcheck_config()
+    expect_equal(cfg$snapshot$method_by_class$lm, "summary")
+
+    model <- lm(mpg ~ wt, data = mtcars)
+    snapshot(model, "class_file_default_test", script_name = "analysis")
+    content <- readLines(
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "class_file_default_test.md"),
+      warn = FALSE
+    )
+    expect_true(any(grepl("^## Summary$", content)))
+    expect_false(any(grepl("^## Object$", content)))
+  })
+})
+
+test_that("inline class overrides take precedence over defaults file", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  defaults_path <- file.path(temp_project, "snapshot-method-overrides.yml")
+  writeLines(
+    c(
+      "method_by_class:",
+      "  lm: print"
+    ),
+    defaults_path
+  )
+
+  writeLines(
+    c(
+      "snapshot:",
+      "  method_defaults_file: snapshot-method-overrides.yml",
+      "  method_by_class:",
+      "    lm: summary"
+    ),
+    file.path(temp_project, "_resultcheck.yml")
+  )
+
+  withr::with_dir(temp_project, {
+    cfg <- resultcheck:::read_resultcheck_config()
+    expect_equal(cfg$snapshot$method_by_class$lm, "summary")
+  })
+})
+
+test_that("snapshot uses global method default when method is omitted", {
+  temp_project <- tempfile()
+  dir.create(temp_project)
+  dir.create(file.path(temp_project, ".git"))
+  on.exit(unlink(temp_project, recursive = TRUE))
+
+  writeLines(
+    c(
+      "snapshot:",
+      "  method: summary"
+    ),
+    file.path(temp_project, "_resultcheck.yml")
+  )
+
+  withr::with_dir(temp_project, {
+    snapshot(letters[1:3], "global_default_test", script_name = "analysis")
+    content <- readLines(
+      file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "global_default_test.md"),
+      warn = FALSE
+    )
+    expect_true(any(grepl("^## Summary$", content)))
+    expect_false(any(grepl("^## Object$", content)))
   })
 })

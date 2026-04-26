@@ -89,7 +89,7 @@ resultcheck::with_example({
 
 ## Function Reference
 
-### `snapshot(value, name, script_name = NULL, method = c("both", "print", "str"))`
+### `snapshot(value, name, script_name = NULL, method = NULL)`
 
 Creates or verifies a snapshot of any R object.
 
@@ -103,15 +103,43 @@ You can override the default snapshot directory in `_resultcheck.yml`:
 ```yaml
 snapshot:
   dir: "custom/snapshots/path"
+  method: "print + str"
+  method_defaults_file: "snapshot-method-overrides.yml"
+  method_by_class:
+    lm: summary
 ```
 
 The `method` argument controls how the object is serialized:
 
 | Value | Behavior |
 |-------|-----------|
-| `"both"` (default) | Type-specific logic using both `print()` and `str()` |
+| `"print + str"` (default fallback) | Captures both `print()` and `str()` |
 | `"print"` | Only `print()` output is captured |
 | `"str"` | Only `str()` output is captured |
+| `"summary"` | Only `summary()` output is captured |
+| `c("print", "summary")` | Ordered method list with duplicate removal |
+| `"both"` | Deprecated alias for `"print + str"` |
+
+If `method` is omitted in `snapshot()`, defaults are resolved as:
+
+1. class override from `snapshot.method_by_class`,
+2. global default from `snapshot.method`,
+3. fallback to `print + str`.
+
+You can keep class overrides in a separate file for easy PR-based maintenance:
+
+```yaml
+# _resultcheck.yml
+snapshot:
+  method_defaults_file: "snapshot-method-overrides.yml"
+```
+
+```yaml
+# snapshot-method-overrides.yml
+method_by_class:
+  lm: summary
+  glm: summary
+```
 
 Use `"print"` or `"str"` when one serialization method produces volatile output that should be excluded from the snapshot (e.g. objects that embed session-specific file paths or random IDs in their `str()` representation).
 

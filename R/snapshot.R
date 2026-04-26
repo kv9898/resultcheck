@@ -186,8 +186,221 @@ read_resultcheck_config <- function() {
     }
     if (!file.exists(config_path)) return(list())
     config <- yaml::read_yaml(config_path)
-    if (is.null(config)) list() else config
+    if (is.null(config)) {
+      config <- list()
+    }
+    config[["snapshot"]] <- normalize_snapshot_config(config[["snapshot"]], root = root)
+    config
   }, error = function(e) list())
+}
+
+
+DEFAULT_SNAPSHOT_METHODS <- c("print", "str")
+SNAPSHOT_METHOD_DEFAULTS_FILE <- "snapshot-method-defaults.yml"
+
+read_yaml_safely <- function(path) {
+  if (!is.character(path) || length(path) != 1L || is.na(path) || trimws(path) == "") {
+    return(list())
+  }
+  if (!file.exists(path)) {
+    stop("Configured snapshot defaults file does not exist: ", path, call. = FALSE)
+  }
+  parsed <- yaml::read_yaml(path)
+  if (is.null(parsed)) list() else parsed
+}
+
+resolve_snapshot_defaults_file <- function(path, root) {
+  if (!is.character(path) || length(path) != 1L || is.na(path)) {
+    stop("snapshot.method_defaults_file must be a non-empty string.", call. = FALSE)
+  }
+
+  path <- trimws(path)
+  if (path == "") {
+    stop("snapshot.method_defaults_file must be a non-empty string.", call. = FALSE)
+  }
+
+  is_absolute <- startsWith(path, "/") || grepl("^[A-Za-z]:[\\\\/]", path)
+  if (is_absolute) {
+    return(path)
+  }
+  file.path(root, path)
+}
+
+coerce_class_override_map <- function(x, source = "snapshot.method_by_class") {
+  if (is.null(x)) return(list())
+  if (!is.list(x)) {
+    stop(source, " must be a named list mapping class names to method values.", call. = FALSE)
+  }
+  nms <- names(x)
+  if (is.null(nms) || anyNA(nms) || any(trimws(nms) == "")) {
+    stop(source, " must be a named list mapping class names to method values.", call. = FALSE)
+  }
+
+  out <- list()
+  for (nm in nms) {
+    key <- trimws(nm)
+    if (key == "") {
+      next
+    }
+    out[[key]] <- normalize_snapshot_methods(
+      x[[nm]],
+      arg_name = paste0(source, "$", key),
+      deprecated_both = TRUE
+    )
+  }
+  out
+}
+
+normalize_snapshot_config <- function(snapshot_cfg, root) {
+  defaults <- list(
+    method = DEFAULT_SNAPSHOT_METHODS,
+    method_by_class = list()
+  )
+  if (is.null(snapshot_cfg)) {
+    return(defaults)
+  }
+  if (!is.list(snapshot_cfg)) {
+    stop("`snapshot` configuration must be a list.", call. = FALSE)
+  }
+
+  cfg <- snapshot_cfg
+
+  pkg_defaults_path <- system.file("extdata", SNAPSHOT_METHOD_DEFAULTS_FILE, package = "resultcheck")
+  pkg_defaults <- if (nzchar(pkg_defaults_path)) read_yaml_safely(pkg_defaults_path) else list()
+  pkg_class_map <- coerce_class_override_map(pkg_defaults[["method_by_class"]],
+                                             source = "built-in snapshot method defaults")
+
+  project_file_path <- cfg[["method_defaults_file"]]
+  project_file_cfg <- list()
+  if (!is.null(project_file_path)) {
+    project_file_cfg <- read_yaml_safely(resolve_snapshot_defaults_file(project_file_path, root))
+  }
+  project_class_map <- coerce_class_override_map(project_file_cfg[["method_by_class"]],
+                                                 source = "snapshot.method_defaults_file")
+
+  inline_class_map <- coerce_class_override_map(cfg[["method_by_class"]],
+                                                source = "snapshot.method_by_class")
+
+  merged_class_map <- pkg_class_map
+  for (nm in names(project_class_map)) {
+    merged_class_map[[nm]] <- project_class_map[[nm]]
+  }
+  for (nm in names(inline_class_map)) {
+    merged_class_map[[nm]] <- inline_class_map[[nm]]
+  }
+
+  cfg[["method"]] <- if (is.null(cfg[["method"]])) {
+    DEFAULT_SNAPSHOT_METHODS
+  } else {
+    normalize_snapshot_methods(cfg[["method"]], arg_name = "snapshot.method", deprecated_both = TRUE)
+  }
+
+  cfg[["method_by_class"]] <- merged_class_map
+  cfg
+}
+
+deprecate_both_method <- function(arg_name = "method") {
+  warning(
+    "`both` is deprecated and will be removed in a future major release; use `print + str` instead",
+    call. = FALSE
+  )
+}
+
+normalize_snapshot_methods <- function(method,
+                                       arg_name = "method",
+                                       deprecated_both = FALSE) {
+  if (is.null(method)) {
+    return(character())
+  }
+  if (!is.character(method)) {
+    stop("`", arg_name, "` must be a character string or character vector.", call. = FALSE)
+  }
+
+  if (length(method) == 0L) {
+    stop("`", arg_name, "` must include at least one method.", call. = FALSE)
+  }
+
+  parts <- unlist(strsplit(method, "\\+", perl = TRUE), use.names = FALSE)
+  parts <- trimws(parts)
+  parts <- parts[!is.na(parts) & nzchar(parts)]
+  if (length(parts) == 0L) {
+    stop("`", arg_name, "` must include at least one method.", call. = FALSE)
+  }
+
+  parts <- tolower(parts)
+  if ("both" %in% parts) {
+    if (deprecated_both) {
+      deprecate_both_method(arg_name = arg_name)
+    }
+    expanded <- character()
+    for (part in parts) {
+      if (identical(part, "both")) {
+        expanded <- c(expanded, DEFAULT_SNAPSHOT_METHODS)
+      } else {
+        expanded <- c(expanded, part)
+      }
+    }
+    parts <- expanded
+  }
+
+  parts <- unique(parts)
+  valid_methods <- names(get_snapshot_method_registry())
+  unknown <- setdiff(parts, valid_methods)
+  if (length(unknown) > 0L) {
+    stop(
+      "Unsupported snapshot method(s) in `", arg_name, "`: ",
+      paste0("`", unknown, "`", collapse = ", "),
+      ". Supported methods: ",
+      paste0("`", valid_methods, "`", collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+
+  parts
+}
+
+get_snapshot_method_registry <- function() {
+  list(
+    print = list(
+      header = "## Object",
+      capture = function(value) utils::capture.output(print(value))
+    ),
+    str = list(
+      header = "## Structure",
+      capture = function(value) utils::capture.output(str(value))
+    ),
+    summary = list(
+      header = "## Summary",
+      capture = function(value) utils::capture.output(summary(value))
+    )
+  )
+}
+
+resolve_snapshot_methods <- function(value, method, config, method_missing) {
+  if (!isTRUE(method_missing)) {
+    return(normalize_snapshot_methods(method, deprecated_both = TRUE))
+  }
+
+  cls <- class(value)
+  class_methods <- NULL
+  by_class <- config[["snapshot"]][["method_by_class"]]
+  if (is.list(by_class) && length(cls) > 0L) {
+    for (cl in cls) {
+      if (!is.null(by_class[[cl]])) {
+        class_methods <- by_class[[cl]]
+        break
+      }
+    }
+  }
+  if (!is.null(class_methods)) return(class_methods)
+
+  global_methods <- config[["snapshot"]][["method"]]
+  if (is.character(global_methods) && length(global_methods) > 0L) {
+    return(global_methods)
+  }
+
+  DEFAULT_SNAPSHOT_METHODS
 }
 
 
@@ -294,17 +507,14 @@ SNAPSHOT_OUTPUT_WIDTH <- 110L
 #' Converts an R object to a human-readable text representation for snapshots.
 #'
 #' @param value The R object to serialize.
-#' @param method Character. Controls which serialization method(s) are used.
-#'   \code{"both"} (default) uses both \code{print()} and \code{str()}.
-#'   \code{"print"} uses only \code{print()}.
-#'   \code{"str"} uses only \code{str()}.
-#'
+#' @param methods Character vector of normalized method names to apply in order.
+#' 
 #' @return A character vector with the text representation.
 #'
 #' @keywords internal
-serialize_value <- function(value, method = c("both", "print", "str")) {
-  method <- match.arg(method)
-
+serialize_value <- function(value, methods = DEFAULT_SNAPSHOT_METHODS) {
+  methods <- normalize_snapshot_methods(methods, arg_name = "methods", deprecated_both = FALSE)
+  registry <- get_snapshot_method_registry()
   # Create a text representation using various methods
   output <- character()
   
@@ -315,18 +525,31 @@ serialize_value <- function(value, method = c("both", "print", "str")) {
   # Use a fixed large width so that snapshot output is consistent regardless
   # of the R session's console width setting.
   withr::with_options(list(width = SNAPSHOT_OUTPUT_WIDTH, pillar.advice = TRUE), {
-    if (method == "print") {
-      output <- c(output, "## Object")
-      output <- c(output, utils::capture.output(print(value)))
-    } else if (method == "str") {
-      output <- c(output, "## Structure")
-      output <- c(output, utils::capture.output(str(value)))
-    } else {
-      # method == "both": include both print() and str() output
-      output <- c(output, "## Object")
-      output <- c(output, utils::capture.output(print(value)))
-      output <- c(output, "", "## Structure")
-      output <- c(output, utils::capture.output(str(value)))
+    for (i in seq_along(methods)) {
+      method_name <- methods[[i]]
+      method_def <- registry[[method_name]]
+      if (is.null(method_def)) {
+        stop("No snapshot method dispatcher registered for `", method_name, "`.", call. = FALSE)
+      }
+
+      section <- tryCatch(
+        method_def$capture(value),
+        error = function(e) {
+          obj_class <- class(value)
+          if (length(obj_class) == 0L) obj_class <- typeof(value)
+          stop(
+            "Snapshot method `", method_name, "` is not available for class `",
+            obj_class[[1]], "`: ", conditionMessage(e),
+            call. = FALSE
+          )
+        }
+      )
+
+      if (i > 1L) {
+        output <- c(output, "")
+      }
+      output <- c(output, method_def$header)
+      output <- c(output, section)
     }
   })
   
@@ -452,20 +675,26 @@ warn_snapshot_write <- function(snapshot_file) {
 #'
 #' Snapshots are stored under \code{tests/_resultcheck_snaps/} by default,
 #' organized by script name, and configurable via \code{snapshot.dir} in
-#' \code{_resultcheck.yml}.
+#' \code{_resultcheck.yml}. Method defaults can also be configured via
+#' \code{snapshot.method}, class overrides via \code{snapshot.method_by_class},
+#' and optional external class defaults via
+#' \code{snapshot.method_defaults_file}.
 #'
 #' @param value The R object to snapshot (e.g., plot, table, model output).
 #' @param name Character. A descriptive name for this snapshot.
 #' @param script_name Optional. The name of the script creating the snapshot.
 #'   If NULL, attempts to auto-detect from the call stack.
-#' @param method Character. Controls which serialization method(s) are used
-#'   when capturing the snapshot. \code{"both"} (default) applies
-#'   type-specific logic that uses both \code{print()} and \code{str()}.
-#'   \code{"print"} uses only \code{print()}, and \code{"str"} uses only
-#'   \code{str()}. Use \code{"print"} or \code{"str"} when one of the
-#'   methods produces volatile output that should be excluded from the
-#'   snapshot (e.g. objects that embed session-specific paths or IDs in
-#'   their \code{str()} representation).
+#' @param method Optional character method selector. Supports:
+#'   (1) a string expression like \code{"print"}, \code{"str"},
+#'   \code{"summary"}, or \code{"print + str"}; or
+#'   (2) a character vector of method names like
+#'   \code{c("print", "summary")}. Methods are normalized to ordered unique
+#'   values. \code{"both"} is still accepted as a deprecated alias for
+#'   \code{"print + str"}.
+#'   If omitted, defaults are resolved in this order:
+#'   \code{snapshot.method_by_class} (matched by object class) then
+#'   \code{snapshot.method} from \code{_resultcheck.yml}, then
+#'   \code{"print + str"}.
 #'
 #' @return Invisible TRUE if snapshot matches or was updated.
 #'   In testing mode, throws an error if snapshot is missing or doesn't match.
@@ -475,7 +704,8 @@ warn_snapshot_write <- function(snapshot_file) {
 #' @examples
 #' with_example({
 #'   model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
-#'   snapshot(model, "model_both", script_name = "analysis", method = "both")
+#'   snapshot(model, "model_default", script_name = "analysis")
+#'   snapshot(model, "model_multi", script_name = "analysis", method = "print + summary")
 #'   snapshot(model, "model_print", script_name = "analysis", method = "print")
 #'   snapshot(model, "model_str", script_name = "analysis", method = "str")
 #' })
@@ -491,19 +721,24 @@ warn_snapshot_write <- function(snapshot_file) {
 #'   on.exit(cleanup_sandbox(sandbox), add = TRUE)
 #'   run_in_sandbox("analysis.R", sandbox)
 #' }, mismatch = TRUE)
-snapshot <- function(value, name, script_name = NULL, method = c("both", "print", "str")) {
-  method <- match.arg(method)
-
+snapshot <- function(value, name, script_name = NULL, method = NULL) {
   # Get snapshot file path (.md extension)
   snapshot_file <- get_snapshot_path(name, script_name, ext = "md")
   
-  # Serialize the value to text
-  new_text <- serialize_value(value, method = method)
-  new_text <- normalize_snapshot_text(new_text)
-
   # Read project configuration for optional precision rounding
   config    <- read_resultcheck_config()
   precision <- config[["snapshot"]][["precision"]]
+  methods <- resolve_snapshot_methods(
+    value = value,
+    method = method,
+    config = config,
+    method_missing = missing(method)
+  )
+
+  # Serialize the value to text
+  new_text <- serialize_value(value, methods = methods)
+  new_text <- normalize_snapshot_text(new_text)
+
   if (!is.null(precision)) {
     new_text <- round_snapshot_numbers(new_text, as.integer(precision))
   }

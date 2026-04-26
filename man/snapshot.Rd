@@ -4,7 +4,7 @@
 \alias{snapshot}
 \title{Interactive Snapshot Testing}
 \usage{
-snapshot(value, name, script_name = NULL, method = c("both", "print", "str"))
+snapshot(value, name, script_name = NULL, method = NULL)
 }
 \arguments{
 \item{value}{The R object to snapshot (e.g., plot, table, model output).}
@@ -14,14 +14,17 @@ snapshot(value, name, script_name = NULL, method = c("both", "print", "str"))
 \item{script_name}{Optional. The name of the script creating the snapshot.
 If NULL, attempts to auto-detect from the call stack.}
 
-\item{method}{Character. Controls which serialization method(s) are used
-when capturing the snapshot. \code{"both"} (default) applies
-type-specific logic that uses both \code{print()} and \code{str()}.
-\code{"print"} uses only \code{print()}, and \code{"str"} uses only
-\code{str()}. Use \code{"print"} or \code{"str"} when one of the
-methods produces volatile output that should be excluded from the
-snapshot (e.g. objects that embed session-specific paths or IDs in
-their \code{str()} representation).}
+\item{method}{Optional character method selector. Supports:
+(1) a string expression like \code{"print"}, \code{"str"},
+\code{"summary"}, or \code{"print + str"}; or
+(2) a character vector of method names like
+\code{c("print", "summary")}. Methods are normalized to ordered unique
+values. \code{"both"} is still accepted as a deprecated alias for
+\code{"print + str"}.
+If omitted, defaults are resolved in this order:
+\code{snapshot.method_by_class} (matched by object class) then
+\code{snapshot.method} from \code{_resultcheck.yml}, then
+\code{"print + str"}.}
 }
 \value{
 Invisible TRUE if snapshot matches or was updated.
@@ -39,12 +42,16 @@ run_in_sandbox), throws an error if snapshot doesn't exist or doesn't match.
 
 Snapshots are stored under \code{tests/_resultcheck_snaps/} by default,
 organized by script name, and configurable via \code{snapshot.dir} in
-\code{_resultcheck.yml}.
+\code{_resultcheck.yml}. Method defaults can also be configured via
+\code{snapshot.method}, class overrides via \code{snapshot.method_by_class},
+and optional external class defaults via
+\code{snapshot.method_defaults_file}.
 }
 \examples{
 with_example({
   model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
-  snapshot(model, "model_both", script_name = "analysis", method = "both")
+  snapshot(model, "model_default", script_name = "analysis")
+  snapshot(model, "model_multi", script_name = "analysis", method = "print + summary")
   snapshot(model, "model_print", script_name = "analysis", method = "print")
   snapshot(model, "model_str", script_name = "analysis", method = "str")
 })
