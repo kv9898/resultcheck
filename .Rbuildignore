@@ -11,3 +11,4 @@
 ^pkgdown$
 ^\.vscode$
 ^CRAN-SUBMISSION$
+^.intent-engine$
