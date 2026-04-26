@@ -156,7 +156,7 @@ resultcheck::snapshot(
 ```
 
 In config, method strings like `"print + str"` or `"stats::coef"` are parsed
-to callable functions automatically.
+into callable function objects automatically.
 
 Class defaults can also live in a separate R file:
 

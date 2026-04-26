@@ -347,17 +347,21 @@ read_method_defaults_from_r_file <- function(path, source_name) {
   }
 
   env <- new.env(parent = baseenv())
-  sourced <- source(path, local = env)
+  source_result <- source(path, local = env)
+  get_first_existing <- function(envir, names) {
+    for (nm in names) {
+      if (exists(nm, envir = envir, inherits = FALSE)) {
+        return(get(nm, envir = envir, inherits = FALSE))
+      }
+    }
+    NULL
+  }
 
-  class_map <- NULL
-  if (exists("snapshot_method_by_class", envir = env, inherits = FALSE)) {
-    class_map <- get("snapshot_method_by_class", envir = env, inherits = FALSE)
-  } else if (exists("method_by_class", envir = env, inherits = FALSE)) {
-    class_map <- get("method_by_class", envir = env, inherits = FALSE)
-  } else if (is.list(sourced$value) && !is.null(sourced$value$method_by_class)) {
-    class_map <- sourced$value$method_by_class
-  } else if (is.list(sourced$value) && !is.null(names(sourced$value))) {
-    class_map <- sourced$value
+  class_map <- get_first_existing(env, c("snapshot_method_by_class", "method_by_class"))
+  if (is.null(class_map) && is.list(source_result$value) && !is.null(source_result$value$method_by_class)) {
+    class_map <- source_result$value$method_by_class
+  } else if (is.null(class_map) && is.list(source_result$value) && !is.null(names(source_result$value))) {
+    class_map <- source_result$value
   }
 
   coerce_class_override_map(class_map, source = source_name)
