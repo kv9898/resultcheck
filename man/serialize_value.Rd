@@ -9,7 +9,12 @@ serialize_value(value, methods = DEFAULT_SNAPSHOT_METHODS)
 \arguments{
 \item{value}{The R object to serialize.}
 
-\item{methods}{Character vector of normalized method names to apply in order.}
+\item{methods}{Character vector of normalized method names to apply in order.
+Supported names are \code{"print"}, \code{"str"}, and \code{"summary"}.
+\code{DEFAULT_SNAPSHOT_METHODS} resolves to \code{c("print", "str")}.
+Inputs are normalized by splitting \code{"+"}-separated expressions,
+trimming whitespace, lowercasing, applying aliases, and removing duplicates
+while preserving order.}
 }
 \value{
 A character vector with the text representation.
