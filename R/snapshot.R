@@ -144,7 +144,7 @@ get_snapshot_path <- function(name, script_name = NULL, ext = "md") {
   }
   snapshot_base <- trimws(snapshot_base)
   is_absolute <- startsWith(snapshot_base, "/") ||
-    grepl("^[A-Za-z]:[\\\\/]", snapshot_base)
+    grepl("^[A-Za-z]:[/\\\\]", snapshot_base)
   snapshot_root <- if (is_absolute) snapshot_base else file.path(root, snapshot_base)
 
   # Construct snapshot directory path
@@ -219,7 +219,7 @@ resolve_snapshot_defaults_file <- function(path, root) {
     stop("snapshot.method_defaults_file must be a non-empty string.", call. = FALSE)
   }
 
-  is_absolute <- startsWith(path, "/") || grepl("^[A-Za-z]:[\\\\/]", path)
+  is_absolute <- startsWith(path, "/") || grepl("^[A-Za-z]:[/\\\\]", path)
   if (is_absolute) {
     return(path)
   }
@@ -301,7 +301,7 @@ normalize_snapshot_config <- function(snapshot_cfg, root) {
 
 deprecate_both_method <- function(arg_name = "method") {
   warning(
-    "`both` is deprecated and will be removed in a future major release; use `print + str` instead",
+    "`both` in `", arg_name, "` is deprecated and will be removed in a future major release; use `print + str` instead",
     call. = FALSE
   )
 }
@@ -508,7 +508,7 @@ SNAPSHOT_OUTPUT_WIDTH <- 110L
 #'
 #' @param value The R object to serialize.
 #' @param methods Character vector of normalized method names to apply in order.
-#' 
+#'
 #' @return A character vector with the text representation.
 #'
 #' @keywords internal
@@ -525,8 +525,8 @@ serialize_value <- function(value, methods = DEFAULT_SNAPSHOT_METHODS) {
   # Use a fixed large width so that snapshot output is consistent regardless
   # of the R session's console width setting.
   withr::with_options(list(width = SNAPSHOT_OUTPUT_WIDTH, pillar.advice = TRUE), {
-    for (i in seq_along(methods)) {
-      method_name <- methods[[i]]
+    first_method <- TRUE
+    for (method_name in methods) {
       method_def <- registry[[method_name]]
       if (is.null(method_def)) {
         stop("No snapshot method dispatcher registered for `", method_name, "`.", call. = FALSE)
@@ -536,20 +536,21 @@ serialize_value <- function(value, methods = DEFAULT_SNAPSHOT_METHODS) {
         method_def$capture(value),
         error = function(e) {
           obj_class <- class(value)
-          if (length(obj_class) == 0L) obj_class <- typeof(value)
+          if (length(obj_class) == 0L) obj_class <- as.character(typeof(value))
           stop(
             "Snapshot method `", method_name, "` is not available for class `",
-            obj_class[[1]], "`: ", conditionMessage(e),
+            obj_class[1L], "`: ", conditionMessage(e),
             call. = FALSE
           )
         }
       )
 
-      if (i > 1L) {
+      if (!first_method) {
         output <- c(output, "")
       }
       output <- c(output, method_def$header)
       output <- c(output, section)
+      first_method <- FALSE
     }
   })
   

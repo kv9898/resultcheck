@@ -179,7 +179,7 @@ test_that("snapshot respects method parameter", {
     snapshot(val, "snap_expr",  script_name = "analysis", method = "print + summary + print")
     expect_warning(
       snapshot(val, "snap_both", script_name = "analysis", method = "both"),
-      "`both` is deprecated"
+      "both.*deprecated"
     )
 
     content_print <- readLines(
@@ -231,7 +231,20 @@ test_that("normalize_snapshot_methods validates and normalizes expressions and v
   )
   expect_warning(
     resultcheck:::normalize_snapshot_methods("both", deprecated_both = TRUE),
-    "`both` is deprecated"
+    "both.*deprecated"
+  )
+})
+
+test_that("serialize_value reports method execution failures clearly", {
+  assign("summary.fail_summary", function(object, ...) {
+    stop("summary failed intentionally")
+  }, envir = .GlobalEnv)
+  on.exit(rm("summary.fail_summary", envir = .GlobalEnv), add = TRUE)
+
+  x <- structure(list(a = 1), class = "fail_summary")
+  expect_error(
+    resultcheck:::serialize_value(x, methods = "summary"),
+    "Snapshot method `summary` is not available for class `fail_summary`: summary failed intentionally"
   )
 })
 
