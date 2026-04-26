@@ -4,15 +4,13 @@
 \alias{serialize_value}
 \title{Serialize Value to Human-Readable Text}
 \usage{
-serialize_value(value, method = c("both", "print", "str"))
+serialize_value(value, methods = DEFAULT_SNAPSHOT_METHODS)
 }
 \arguments{
 \item{value}{The R object to serialize.}
 
-\item{method}{Character. Controls which serialization method(s) are used.
-\code{"both"} (default) uses both \code{print()} and \code{str()}.
-\code{"print"} uses only \code{print()}.
-\code{"str"} uses only \code{str()}.}
+\item{methods}{A function or a non-empty list of functions applied in order.
+Defaults to \code{list(print = base::print, str = utils::str)}.}
 }
 \value{
 A character vector with the text representation.
