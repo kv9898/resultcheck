@@ -584,7 +584,7 @@ test_that("snapshot can read class defaults from separate R defaults file", {
 
   defaults_path <- file.path(temp_project, "snapshot-method-overrides.R")
   writeLines(
-    "method_by_class <- list(lm = 'summary')",
+    "method_by_class <- list(lm = \"summary\")",
     defaults_path
   )
   writeLines(
@@ -618,7 +618,7 @@ test_that("inline class overrides take precedence over defaults file", {
 
   defaults_path <- file.path(temp_project, "snapshot-method-overrides.R")
   writeLines(
-    "method_by_class <- list(lm = 'print')",
+    "method_by_class <- list(lm = \"print\")",
     defaults_path
   )
   writeLines(

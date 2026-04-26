@@ -211,7 +211,7 @@ resolve_snapshot_defaults_file <- function(path, root) {
     stop("snapshot.method_defaults_file must be a non-empty string.", call. = FALSE)
   }
 
-  is_absolute <- startsWith(path, "/") || grepl("^[A-Za-z]:[/\\\\]", path)
+  is_absolute <- startsWith(path, "/") || grepl("^[A-Za-z]:[\\\\/]", path)
   if (is_absolute) {
     return(path)
   }
@@ -342,7 +342,7 @@ eval_character_literal <- function(expr, source_name, label) {
   if (is.character(expr)) {
     return(expr)
   }
-  if (is.call(expr) && as.character(expr[[1L]]) == "c") {
+  if (is.call(expr) && identical(expr[[1L]], quote(c))) {
     args <- as.list(expr)[-1L]
     vals <- vapply(args, function(arg) {
       if (!is.character(arg) || length(arg) != 1L) {
@@ -364,7 +364,7 @@ eval_character_literal <- function(expr, source_name, label) {
 }
 
 eval_class_map_expr <- function(expr, source_name) {
-  if (!is.call(expr) || as.character(expr[[1L]]) != "list") {
+  if (!is.call(expr) || !identical(expr[[1L]], quote(list))) {
     stop(
       source_name,
       " must define `method_by_class` as a named list of character method expressions.",
@@ -399,7 +399,7 @@ extract_class_map_expr <- function(exprs) {
 
   for (expr in exprs) {
     if (is.call(expr) &&
-        as.character(expr[[1L]]) %in% c("<-", "=") &&
+        (identical(expr[[1L]], quote(`<-`)) || identical(expr[[1L]], quote(`=`))) &&
         is.symbol(expr[[2L]]) &&
         as.character(expr[[2L]]) %in% c("snapshot_method_by_class", "method_by_class")) {
       return(expr[[3L]])
