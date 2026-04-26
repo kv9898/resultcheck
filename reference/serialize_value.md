@@ -6,7 +6,7 @@ snapshots.
 ## Usage
 
 ``` r
-serialize_value(value, method = c("both", "print", "str"))
+serialize_value(value, methods = DEFAULT_SNAPSHOT_METHODS)
 ```
 
 ## Arguments
@@ -15,13 +15,10 @@ serialize_value(value, method = c("both", "print", "str"))
 
   The R object to serialize.
 
-- method:
+- methods:
 
-  Character. Controls which serialization method(s) are used. `"both"`
-  (default) uses both [`print()`](https://rdrr.io/r/base/print.html) and
-  [`str()`](https://rdrr.io/r/utils/str.html). `"print"` uses only
-  [`print()`](https://rdrr.io/r/base/print.html). `"str"` uses only
-  [`str()`](https://rdrr.io/r/utils/str.html).
+  A function or a non-empty list of functions applied in order. Defaults
+  to `list(print = base::print, str = utils::str)`.
 
 ## Value
 

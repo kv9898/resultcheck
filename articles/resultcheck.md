@@ -96,6 +96,10 @@ For example:
 snapshot:
   precision: 10
   dir: "tests/_resultcheck_snaps"
+  method: "print + str"
+  method_defaults_file: "snapshot-method-overrides.R"
+  method_by_class:
+    lm: "summary"
 ```
 
 `precision`
@@ -157,13 +161,39 @@ automated testing (see [GitHub Tests](#github-tests)).
 
 By default,
 [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
-automatically chooses a representation for the object.
+resolves methods in this order:
 
-You can override this using the `method` argument:
+1.  explicit `method=` argument,
+2.  class override from `_resultcheck.yml` (`snapshot.method_by_class`),
+3.  global default from `_resultcheck.yml` (`snapshot.method`),
+4.  fallback to [`print()`](https://rdrr.io/r/base/print.html) +
+    [`str()`](https://rdrr.io/r/utils/str.html).
+
+You can override this using a function or a list of functions:
 
 ``` r
-resultcheck::snapshot(model, "model", method = "print")
-resultcheck::snapshot(model, "model", method = "str")
+resultcheck::snapshot(model, "model", method = print)
+resultcheck::snapshot(model, "model", method = str)
+resultcheck::snapshot(model, "model", method = length)
+resultcheck::snapshot(model, "model", method = stats::coef)
+resultcheck::snapshot(
+  model,
+  "model",
+  method = list(summary = summary, print = print)
+)
+```
+
+In config, method strings like `"print + str"` or `"stats::coef"` are
+parsed into callable function objects automatically.
+
+Class defaults can also live in a separate R file:
+
+``` r
+# snapshot-method-overrides.R
+method_by_class <- list(
+  lm = "summary",
+  glm = "summary"
+)
 ```
 
 ### Tip: snapshot before writing outputs

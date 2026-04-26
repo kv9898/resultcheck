@@ -168,7 +168,11 @@ your project root.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># _resultcheck.yml</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">snapshot</span><span class="kw">:</span></span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="at">  </span><span class="fu">precision</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="at">  </span><span class="fu">dir</span><span class="kw">:</span><span class="at"> </span><span class="st">"tests/_resultcheck_snaps"</span></span></code></pre></div>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="at">  </span><span class="fu">dir</span><span class="kw">:</span><span class="at"> </span><span class="st">"tests/_resultcheck_snaps"</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="at">  </span><span class="fu">method</span><span class="kw">:</span><span class="at"> </span><span class="st">"print + str"</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="at">  </span><span class="fu">method_defaults_file</span><span class="kw">:</span><span class="at"> </span><span class="st">"snapshot-method-overrides.R"</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="at">  </span><span class="fu">method_by_class</span><span class="kw">:</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="at">    </span><span class="fu">lm</span><span class="kw">:</span><span class="at"> </span><span class="st">"summary"</span></span></code></pre></div>
 <p><code>precision</code></p>
 <p>Controls how many digits are used when comparing numeric values.</p>
 <ul>
@@ -217,12 +221,37 @@ Tests</a>).</p>
 <div class="section level3">
 <h3 id="snapshot-representation">Snapshot representation<a class="anchor" aria-label="anchor" href="#snapshot-representation"></a>
 </h3>
-<p>By default, <code><a href="../reference/snapshot.html">snapshot()</a></code> automatically chooses a
-representation for the object.</p>
-<p>You can override this using the <code>method</code> argument:</p>
+<p>By default, <code><a href="../reference/snapshot.html">snapshot()</a></code> resolves methods in this
+order:</p>
+<ol style="list-style-type: decimal">
+<li>explicit <code>method=</code> argument,</li>
+<li>class override from <code>_resultcheck.yml</code>
+(<code>snapshot.method_by_class</code>),</li>
+<li>global default from <code>_resultcheck.yml</code>
+(<code>snapshot.method</code>),</li>
+<li>fallback to <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> + <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code>.</li>
+</ol>
+<p>You can override this using a function or a list of functions:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">resultcheck</span><span class="fu">::</span><span class="fu"><a href="../reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="va">model</span>, <span class="st">"model"</span>, method <span class="op">=</span> <span class="st">"print"</span><span class="op">)</span></span>
-<span><span class="fu">resultcheck</span><span class="fu">::</span><span class="fu"><a href="../reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="va">model</span>, <span class="st">"model"</span>, method <span class="op">=</span> <span class="st">"str"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">resultcheck</span><span class="fu">::</span><span class="fu"><a href="../reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="va">model</span>, <span class="st">"model"</span>, method <span class="op">=</span> <span class="va">print</span><span class="op">)</span></span>
+<span><span class="fu">resultcheck</span><span class="fu">::</span><span class="fu"><a href="../reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="va">model</span>, <span class="st">"model"</span>, method <span class="op">=</span> <span class="va">str</span><span class="op">)</span></span>
+<span><span class="fu">resultcheck</span><span class="fu">::</span><span class="fu"><a href="../reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="va">model</span>, <span class="st">"model"</span>, method <span class="op">=</span> <span class="va">length</span><span class="op">)</span></span>
+<span><span class="fu">resultcheck</span><span class="fu">::</span><span class="fu"><a href="../reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="va">model</span>, <span class="st">"model"</span>, method <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">)</span></span>
+<span><span class="fu">resultcheck</span><span class="fu">::</span><span class="fu"><a href="../reference/snapshot.html">snapshot</a></span><span class="op">(</span></span>
+<span>  <span class="va">model</span>,</span>
+<span>  <span class="st">"model"</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>summary <span class="op">=</span> <span class="va">summary</span>, print <span class="op">=</span> <span class="va">print</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>In config, method strings like <code>"print + str"</code> or
+<code>"stats::coef"</code> are parsed into callable function objects
+automatically.</p>
+<p>Class defaults can also live in a separate R file:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># snapshot-method-overrides.R</span></span>
+<span><span class="va">method_by_class</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  lm <span class="op">=</span> <span class="st">"summary"</span>,</span>
+<span>  glm <span class="op">=</span> <span class="st">"summary"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="tip-snapshot-before-writing-outputs">Tip: snapshot before writing outputs<a class="anchor" aria-label="anchor" href="#tip-snapshot-before-writing-outputs"></a>
@@ -237,7 +266,7 @@ and</li>
 file</strong></li>
 </ul>
 <p>For example:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">wt</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># snapshot the object</span></span>
@@ -262,25 +291,25 @@ would consider part of your final outputs.</p>
 <p>On subsequent runs, <code><a href="../reference/snapshot.html">snapshot()</a></code> compares the current
 value of the object against the stored snapshot.</p>
 <p>If the results match, you will see:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="sc">&gt;</span> resultcheck<span class="sc">::</span><span class="fu">snapshot</span>(model, <span class="st">"model"</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>✓ Snapshot matches<span class="sc">:</span> model</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="sc">&gt;</span> resultcheck<span class="sc">::</span><span class="fu">snapshot</span>(model, <span class="st">"model"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>✓ Snapshot matches<span class="sc">:</span> model</span></code></pre></div>
 <p>If the results differ, you will see a message indicating the
 differences:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="sc">&gt;</span> resultcheck<span class="sc">::</span><span class="fu">snapshot</span>(model, <span class="st">"model"</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>Warning<span class="sc">:</span> </span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>Snapshot differences found <span class="cf">for</span><span class="sc">:</span> model</span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>File<span class="sc">:</span> path<span class="sc">/</span>to<span class="sc">/</span>your<span class="sc">/</span>project<span class="sc">/</span>tests<span class="sc">/</span>_resultcheck_snaps<span class="sc">/</span>analysis<span class="sc">/</span>model.md</span>
-<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a></span>
-<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>Differences<span class="sc">:</span></span>
-<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>old[<span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>] vs new[<span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>]</span>
-<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  <span class="st">"# Snapshot: lm"</span></span>
-<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  <span class="st">""</span></span>
-<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  <span class="st">"## List Structure"</span></span>
-<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="sc">-</span> <span class="st">"List of 13"</span></span>
-<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="sc">+</span> <span class="st">"List of 12"</span></span>
-<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>  <span class="st">" $ coefficients : Named num [1:2] 37.29 -5.34"</span></span>
-<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>  <span class="st">"  ..- attr(*, </span><span class="sc">\"</span><span class="st">names</span><span class="sc">\"</span><span class="st">)= chr [1:2] </span><span class="sc">\"</span><span class="st">(Intercept)</span><span class="sc">\"</span><span class="st"> </span><span class="sc">\"</span><span class="st">wt</span><span class="sc">\"</span><span class="st">"</span></span>
-<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>  <span class="st">" $ residuals    : Named num [1:32] -2.28 -0.92 -2.09 1.3 -0.2 ..."</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="sc">&gt;</span> resultcheck<span class="sc">::</span><span class="fu">snapshot</span>(model, <span class="st">"model"</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>Warning<span class="sc">:</span> </span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>Snapshot differences found <span class="cf">for</span><span class="sc">:</span> model</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>File<span class="sc">:</span> path<span class="sc">/</span>to<span class="sc">/</span>your<span class="sc">/</span>project<span class="sc">/</span>tests<span class="sc">/</span>_resultcheck_snaps<span class="sc">/</span>analysis<span class="sc">/</span>model.md</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>Differences<span class="sc">:</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>old[<span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>] vs new[<span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>]</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="st">"# Snapshot: lm"</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  <span class="st">""</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="st">"## List Structure"</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="sc">-</span> <span class="st">"List of 13"</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="sc">+</span> <span class="st">"List of 12"</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>  <span class="st">" $ coefficients : Named num [1:2] 37.29 -5.34"</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>  <span class="st">"  ..- attr(*, </span><span class="sc">\"</span><span class="st">names</span><span class="sc">\"</span><span class="st">)= chr [1:2] </span><span class="sc">\"</span><span class="st">(Intercept)</span><span class="sc">\"</span><span class="st"> </span><span class="sc">\"</span><span class="st">wt</span><span class="sc">\"</span><span class="st">"</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>  <span class="st">" $ residuals    : Named num [1:32] -2.28 -0.92 -2.09 1.3 -0.2 ..."</span></span></code></pre></div>
 <p>In interactive use, you will be prompted:</p>
 <pre><code>Update snapshot? (y/n):</code></pre>
 <ul>
@@ -306,7 +335,7 @@ these checks automatically.</p>
 <p>For example, to test <code>analysis.R</code>, create a file
 <code>tests/testthat/test-analysis.R</code> with the following
 content:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://testthat.r-lib.org" class="external-link">testthat</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/kv9898/resultcheck/" class="external-link">resultcheck</a></span><span class="op">)</span></span>
 <span></span>
@@ -325,7 +354,7 @@ content:</p>
 <p>You can extend your tests to verify that your script produces the
 expected output files.</p>
 <p>For example:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>  <span class="fu"><a href="https://testthat.r-lib.org/reference/logical-expectations.html" class="external-link">expect_true</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">sandbox</span><span class="op">$</span><span class="va">path</span>, <span class="st">"output/regModels.RData"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    info <span class="op">=</span> <span class="st">"regModels.RData not found"</span></span>
@@ -341,13 +370,13 @@ session.</p>
 scripts), you need to include those files when setting up the
 sandbox.</p>
 <p>For example:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sandbox</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setup_sandbox.html">setup_sandbox</a></span><span class="op">(</span><span class="st">"data/weather.csv"</span><span class="op">)</span></span></code></pre></div>
 <p>You can include multiple files:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sandbox</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setup_sandbox.html">setup_sandbox</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"data/income.csv"</span>, <span class="st">"data/weather.csv"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Or entire directories:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sandbox</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setup_sandbox.html">setup_sandbox</a></span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span></code></pre></div>
 <p><code>resultcheck</code> will copy these files into the sandbox while
 preserving their relative structure.</p>

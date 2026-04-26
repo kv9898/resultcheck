@@ -7,7 +7,7 @@ On subsequent uses, compares the current object to the saved snapshot.
 ## Usage
 
 ``` r
-snapshot(value, name, script_name = NULL, method = c("both", "print", "str"))
+snapshot(value, name, script_name = NULL, method = NULL)
 ```
 
 ## Arguments
@@ -27,16 +27,12 @@ snapshot(value, name, script_name = NULL, method = c("both", "print", "str"))
 
 - method:
 
-  Character. Controls which serialization method(s) are used when
-  capturing the snapshot. `"both"` (default) applies type-specific logic
-  that uses both [`print()`](https://rdrr.io/r/base/print.html) and
-  [`str()`](https://rdrr.io/r/utils/str.html). `"print"` uses only
-  [`print()`](https://rdrr.io/r/base/print.html), and `"str"` uses only
-  [`str()`](https://rdrr.io/r/utils/str.html). Use `"print"` or `"str"`
-  when one of the methods produces volatile output that should be
-  excluded from the snapshot (e.g. objects that embed session-specific
-  paths or IDs in their [`str()`](https://rdrr.io/r/utils/str.html)
-  representation).
+  Optional function or non-empty list of functions used to serialize
+  `value`. Functions are executed in order and each section header is
+  taken from the method expression or list name. If omitted, method
+  defaults are resolved in this order: `snapshot.method_by_class`
+  (matched by object class), then `snapshot.method`, then
+  `list(print = base::print, str = utils::str)`.
 
 ## Value
 
@@ -52,20 +48,31 @@ match.
 
 Snapshots are stored under `tests/_resultcheck_snaps/` by default,
 organized by script name, and configurable via `snapshot.dir` in
-`_resultcheck.yml`.
+`_resultcheck.yml`. Method defaults can be configured via
+`snapshot.method` and class-specific defaults via
+`snapshot.method_by_class`. Optional class defaults can also be loaded
+from an R file using `snapshot.method_defaults_file`. Method strings in
+config (for example `"print + str"` or `"stats::coef"`) are resolved to
+callable functions. In config expressions, `"+"` is treated as the
+method delimiter.
 
 ## Examples
 
 ``` r
 with_example({
   model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
-  snapshot(model, "model_both", script_name = "analysis", method = "both")
-  snapshot(model, "model_print", script_name = "analysis", method = "print")
-  snapshot(model, "model_str", script_name = "analysis", method = "str")
+  snapshot(model, "model_default", script_name = "analysis")
+  snapshot(model, "model_multi", script_name = "analysis",
+           method = list(summary = summary, print = print))
+  snapshot(model, "model_print", script_name = "analysis", method = print)
+  snapshot(model, "model_ns", script_name = "analysis", method = stats::coef)
+  snapshot(model, "model_length", script_name = "analysis", method = length)
 })
-#> ✓ New snapshot saved: analysis/model_both.md
+#> ✓ New snapshot saved: analysis/model_default.md
+#> ✓ New snapshot saved: analysis/model_multi.md
 #> ✓ New snapshot saved: analysis/model_print.md
-#> ✓ New snapshot saved: analysis/model_str.md
+#> ✓ New snapshot saved: analysis/model_ns.md
+#> ✓ New snapshot saved: analysis/model_length.md
 
 with_example({
   sandbox <- setup_sandbox()

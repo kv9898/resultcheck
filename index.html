@@ -152,8 +152,8 @@
 <h2 id="function-reference">Function Reference<a class="anchor" aria-label="anchor" href="#function-reference"></a>
 </h2>
 <div class="section level3">
-<h3 id="snapshotvalue-name-script_name--null-method--cboth-print-str">
-<code>snapshot(value, name, script_name = NULL, method = c("both", "print", "str"))</code><a class="anchor" aria-label="anchor" href="#snapshotvalue-name-script_name--null-method--cboth-print-str"></a>
+<h3 id="snapshotvalue-name-script_name--null-method--null">
+<code>snapshot(value, name, script_name = NULL, method = NULL)</code><a class="anchor" aria-label="anchor" href="#snapshotvalue-name-script_name--null-method--null"></a>
 </h3>
 <p>Creates or verifies a snapshot of any R object.</p>
 <ul>
@@ -168,7 +168,11 @@
 </ul>
 <p>You can override the default snapshot directory in <code>_resultcheck.yml</code>:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">snapshot</span><span class="kw">:</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="at">  </span><span class="fu">dir</span><span class="kw">:</span><span class="at"> </span><span class="st">"custom/snapshots/path"</span></span></code></pre></div>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="at">  </span><span class="fu">dir</span><span class="kw">:</span><span class="at"> </span><span class="st">"custom/snapshots/path"</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="at">  </span><span class="fu">method</span><span class="kw">:</span><span class="at"> </span><span class="st">"print + str"</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="at">  </span><span class="fu">method_defaults_file</span><span class="kw">:</span><span class="at"> </span><span class="st">"snapshot-method-overrides.R"</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="at">  </span><span class="fu">method_by_class</span><span class="kw">:</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="at">    </span><span class="fu">lm</span><span class="kw">:</span><span class="at"> </span><span class="st">"summary"</span></span></code></pre></div>
 <p>The <code>method</code> argument controls how the object is serialized:</p>
 <table class="table">
 <colgroup>
@@ -182,21 +186,47 @@
 <tbody>
 <tr class="odd">
 <td>
-<code>"both"</code> (default)</td>
-<td>Type-specific logic using both <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> and <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code>
+<code>NULL</code> (default)</td>
+<td>Captures both <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> and <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code>
 </td>
 </tr>
 <tr class="even">
-<td><code>"print"</code></td>
+<td><code>print</code></td>
 <td>Only <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> output is captured</td>
 </tr>
 <tr class="odd">
-<td><code>"str"</code></td>
+<td><code>str</code></td>
 <td>Only <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code> output is captured</td>
+</tr>
+<tr class="even">
+<td><code>length</code></td>
+<td>Any callable function can be used</td>
+</tr>
+<tr class="odd">
+<td><code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">stats::coef</a></code></td>
+<td>Namespaced callables are supported</td>
+</tr>
+<tr class="even">
+<td><code>list(print = print, summary = summary)</code></td>
+<td>Runs multiple functions in order</td>
 </tr>
 </tbody>
 </table>
-<p>Use <code>"print"</code> or <code>"str"</code> when one serialization method produces volatile output that should be excluded from the snapshot (e.g. objects that embed session-specific file paths or random IDs in their <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code> representation).</p>
+<p>When a list of methods is used, section headers are taken directly from the method names (or list names), e.g. <code>## print</code>, <code>## summary</code>.</p>
+<p>If <code>method</code> is omitted, defaults are resolved as:</p>
+<ol style="list-style-type: decimal">
+<li>class override from <code>snapshot.method_by_class</code>,</li>
+<li>global default from <code>snapshot.method</code>,</li>
+<li>fallback to <code>list(print = print, str = str)</code>.</li>
+</ol>
+<p>Config methods are parsed from strings in <code>_resultcheck.yml</code>, so values like <code>"print + str"</code> or <code>"stats::coef"</code> are converted to callable methods.</p>
+<p>You can also define class defaults in a separate R file:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># snapshot-method-overrides.R</span></span>
+<span><span class="va">method_by_class</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  lm <span class="op">=</span> <span class="st">"summary"</span>,</span>
+<span>  glm <span class="op">=</span> <span class="st">"summary"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>Snapshots are plain text and intended to be committed to version control.</p>
 </div>
 <div class="section level3">
@@ -224,7 +254,7 @@
 </h3>
 <p>Locates the project root by searching upward for a <code>_resultcheck.yml</code> (or legacy <code>resultcheck.yml</code>), <code>.Rproj</code>, or <code>.git</code> marker. Called automatically by <code><a href="reference/snapshot.html">snapshot()</a></code> and <code><a href="reference/setup_sandbox.html">setup_sandbox()</a></code>.</p>
 <p>Place an empty <code>_resultcheck.yml</code> at your project root to make detection reliable:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># _resultcheck.yml</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># _resultcheck.yml</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="with_examplecode-mismatch--false">
