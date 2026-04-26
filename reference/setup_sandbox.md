@@ -51,5 +51,5 @@ with_example({
   print(sandbox$path)
   cleanup_sandbox(sandbox)
 })
-#> [1] "/tmp/RtmpjMm93j/sandbox_20260426_105240_78yvg5fi193c1c05b3e2"
+#> [1] "/tmp/Rtmp7QIJm4/sandbox_20260426_111305_78yvg5fi19fbf7b4d40"
 ```
