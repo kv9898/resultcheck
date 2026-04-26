@@ -232,6 +232,14 @@ test_that("coerce_snapshot_methods validates function-based methods", {
 
   methods <- resultcheck:::coerce_snapshot_methods(list(print = print, str = str))
   expect_equal(unname(vapply(methods, `[[`, character(1), "label")), c("print", "str"))
+  expect_identical(methods[[1]]$fn, print)
+  expect_identical(methods[[2]]$fn, str)
+
+  guessed <- resultcheck:::coerce_snapshot_methods(list(print, str))
+  expect_equal(unname(vapply(guessed, `[[`, character(1), "label")), c("print", "str"))
+
+  fallback <- resultcheck:::coerce_snapshot_methods(list(function(x) x))
+  expect_equal(unname(vapply(fallback, `[[`, character(1), "label")), "unnamed_method_1")
 })
 
 test_that("serialize_value reports method execution failures clearly", {

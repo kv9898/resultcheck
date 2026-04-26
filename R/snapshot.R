@@ -265,7 +265,13 @@ coerce_snapshot_methods <- function(method,
   }
 
   guess_function_name <- function(fn) {
-    envs <- c(list(globalenv()), lapply(search(), as.environment), list(baseenv()))
+    envs <- list(
+      globalenv(),
+      baseenv(),
+      asNamespace("base"),
+      asNamespace("utils"),
+      asNamespace("stats")
+    )
     for (env in envs) {
       nms <- tryCatch(ls(env, all.names = TRUE), error = function(e) character())
       for (nm in nms) {
@@ -289,7 +295,7 @@ coerce_snapshot_methods <- function(method,
 
   missing_labels <- which(trimws(labels) == "")
   if (length(missing_labels) > 0L) {
-    labels[missing_labels] <- paste0("method_", missing_labels)
+    labels[missing_labels] <- paste0("unnamed_method_", missing_labels)
   }
 
   Map(function(fn, label) {
@@ -410,7 +416,7 @@ SNAPSHOT_OUTPUT_WIDTH <- 110L
 #' @param value The R object to serialize.
 #' @param methods A function or a non-empty list of functions applied in order.
 #'   Defaults to \code{list(print = base::print, str = utils::str)}.
-#' 
+#'
 #' @return A character vector with the text representation.
 #'
 #' @keywords internal
