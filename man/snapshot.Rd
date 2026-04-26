@@ -14,17 +14,10 @@ snapshot(value, name, script_name = NULL, method = NULL)
 \item{script_name}{Optional. The name of the script creating the snapshot.
 If NULL, attempts to auto-detect from the call stack.}
 
-\item{method}{Optional character method selector. Supports:
-(1) a string expression like \code{"print"}, \code{"str"},
-\code{"summary"}, or \code{"print + str"}; or
-(2) a character vector of method names like
-\code{c("print", "summary")}. Methods are normalized to ordered unique
-values. \code{"both"} is still accepted as a deprecated alias for
-\code{"print + str"}.
-If omitted, defaults are resolved in this order:
-\code{snapshot.method_by_class} (matched by object class) then
-\code{snapshot.method} from \code{_resultcheck.yml}, then
-\code{"print + str"}.}
+\item{method}{Optional function or non-empty list of functions used to
+serialize \code{value}. Functions are executed in order and each section
+header is taken from the method expression or list name. If omitted,
+defaults to \code{list(print = base::print, str = utils::str)}.}
 }
 \value{
 Invisible TRUE if snapshot matches or was updated.
@@ -42,18 +35,16 @@ run_in_sandbox), throws an error if snapshot doesn't exist or doesn't match.
 
 Snapshots are stored under \code{tests/_resultcheck_snaps/} by default,
 organized by script name, and configurable via \code{snapshot.dir} in
-\code{_resultcheck.yml}. Method defaults can also be configured via
-\code{snapshot.method}, class overrides via \code{snapshot.method_by_class},
-and optional external class defaults via
-\code{snapshot.method_defaults_file}.
+\code{_resultcheck.yml}.
 }
 \examples{
 with_example({
   model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
   snapshot(model, "model_default", script_name = "analysis")
-  snapshot(model, "model_multi", script_name = "analysis", method = "print + summary")
-  snapshot(model, "model_print", script_name = "analysis", method = "print")
-  snapshot(model, "model_str", script_name = "analysis", method = "str")
+  snapshot(model, "model_multi", script_name = "analysis",
+           method = list(summary = summary, print = print))
+  snapshot(model, "model_print", script_name = "analysis", method = print)
+  snapshot(model, "model_length", script_name = "analysis", method = length)
 })
 
 with_example({

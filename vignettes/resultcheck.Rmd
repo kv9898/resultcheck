@@ -84,10 +84,6 @@ For example:
 snapshot:
   precision: 10
   dir: "tests/_resultcheck_snaps"
-  method: "print + str"
-  method_defaults_file: "snapshot-method-overrides.yml"
-  method_by_class:
-    lm: summary
 ```
 `precision`
 
@@ -134,23 +130,19 @@ Snapshots should be committed to **version control**. This allows you to track c
 
 ### Snapshot representation
 
-By default, `snapshot()` resolves methods in this order:
-
-1. explicit `method=` argument,
-2. class override from `_resultcheck.yml` (`snapshot.method_by_class`),
-3. global default from `_resultcheck.yml` (`snapshot.method`),
-4. fallback to `print + str`
-
-You can override this using the `method` argument:
+By default, `snapshot()` uses both `print()` and `str()` methods.
+You can override this using a function or a list of functions:
 
 ```r
-resultcheck::snapshot(model, "model", method = "print")
-resultcheck::snapshot(model, "model", method = "str")
-resultcheck::snapshot(model, "model", method = "print + summary")
-resultcheck::snapshot(model, "model", method = c("summary", "print"))
+resultcheck::snapshot(model, "model", method = print)
+resultcheck::snapshot(model, "model", method = str)
+resultcheck::snapshot(model, "model", method = length)
+resultcheck::snapshot(
+  model,
+  "model",
+  method = list(summary = summary, print = print)
+)
 ```
-
-`"both"` is still accepted as a deprecated alias for `"print + str"`.
 
 ### Tip: snapshot before writing outputs
 
