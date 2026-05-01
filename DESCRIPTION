@@ -19,6 +19,7 @@ Imports:
     rprojroot,
     yaml
 Suggests:
+    broom,
     knitr,
     rmarkdown,
     rstudioapi,

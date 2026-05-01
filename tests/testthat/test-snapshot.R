@@ -495,8 +495,9 @@ test_that("snapshot defaults to print and str when method is omitted", {
   on.exit(unlink(temp_project, recursive = TRUE))
 
   withr::with_dir(temp_project, {
-    model <- lm(mpg ~ wt, data = mtcars)
-    snapshot(model, "default_methods_test", script_name = "analysis")
+    # Use a plain named list which has no built-in class default
+    val <- list(a = 1L, b = "hello")
+    snapshot(val, "default_methods_test", script_name = "analysis")
 
     content <- readLines(
       file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "default_methods_test.md"),
@@ -652,16 +653,17 @@ test_that("snapshot uses global method default when method is omitted", {
   )
 
   withr::with_dir(temp_project, {
-    model <- lm(mpg ~ wt, data = mtcars)
-    snapshot(model, "global_default_test", script_name = "analysis")
+    # Use a numeric vector (no class default) - global method is used
+    vec <- c(1, 2, 3)
+    snapshot(vec, "global_default_test", script_name = "analysis")
     content <- readLines(
       file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "global_default_test.md"),
       warn = FALSE
     )
     headers <- content[grepl("^## ", content)]
+    # Global method is used when no class default exists
     expect_equal(headers, c("## summary", "## print"))
-    expect_true(any(grepl("^Coefficients:$", content)))
-    expect_true(any(grepl("^Call:$", content)))
+    expect_true(any(grepl("Min.", content)))
   })
 })
 

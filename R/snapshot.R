@@ -112,14 +112,34 @@ detect_script_name <- function() {
     return(basename(path))
   }
 
-  # Fallback: walk the call stack for source references
-  for (i in seq_len(min(10, sys.nframe()))) {
+  # Fallback: walk the call stack for source references,
+  # skipping any that point to files within the resultcheck package itself.
+  # When loaded via pkgload (development), internal functions have source refs;
+  # we find the package R directory from this function's own source filename.
+  pkg_r_dir <- tryCatch({
+    f <- utils::getSrcFilename(detect_script_name, full.names = TRUE)
+    if (!is.null(f) && length(f) > 0L && nzchar(f[[1L]]))
+      dirname(normalizePath(f[[1L]], mustWork = FALSE))
+    else
+      ""
+  }, error = function(e) "")
+  # Use a larger depth (20) than the old limit (10) to reliably skip several
+  # internal resultcheck frames (detect_script_name, get_snapshot_path, snapshot,
+  # run_in_sandbox, withr layers, ...) before reaching user-script frames.
+  max_frames <- 20L
+  for (i in seq_len(min(max_frames, sys.nframe()))) {
     srcref <- tryCatch(getSrcref(sys.call(-i)), error = function(e) NULL)
     if (is.null(srcref)) next
     srcfile <- attr(srcref, "srcfile")
-    if (!is.null(srcfile) && !is.null(srcfile$filename) && nzchar(srcfile$filename)) {
-      return(basename(srcfile$filename))
+    if (is.null(srcfile) || is.null(srcfile$filename) || !nzchar(srcfile$filename)) next
+    if (nzchar(pkg_r_dir)) {
+      fn <- tryCatch(
+        normalizePath(srcfile$filename, mustWork = FALSE),
+        error = function(e) srcfile$filename
+      )
+      if (startsWith(fn, pkg_r_dir)) next
     }
+    return(basename(srcfile$filename))
   }
 
   "interactive"
@@ -333,7 +353,8 @@ coerce_snapshot_methods_from_config <- function(method, arg_name = "snapshot.met
   coerce_snapshot_methods(method, arg_name = arg_name)
 }
 
-coerce_class_override_map <- function(x, source = "snapshot.method_by_class") {
+coerce_class_override_map <- function(x, source = "snapshot.method_by_class",
+                                      skip_errors = FALSE) {
   if (is.null(x)) return(list())
   if (!is.list(x)) {
     stop(source, " must be a named list mapping class names to method values.", call. = FALSE)
@@ -349,10 +370,21 @@ coerce_class_override_map <- function(x, source = "snapshot.method_by_class") {
   for (nm in nms) {
     class_name <- trimws(nm)
     if (!nzchar(class_name)) next
-    out[[class_name]] <- coerce_snapshot_methods_from_config(
-      x[[nm]],
-      arg_name = paste0(source, "$", class_name)
-    )
+    if (skip_errors) {
+      entry <- tryCatch(
+        coerce_snapshot_methods_from_config(
+          x[[nm]],
+          arg_name = paste0(source, "$", class_name)
+        ),
+        error = function(e) NULL
+      )
+      if (!is.null(entry)) out[[class_name]] <- entry
+    } else {
+      out[[class_name]] <- coerce_snapshot_methods_from_config(
+        x[[nm]],
+        arg_name = paste0(source, "$", class_name)
+      )
+    }
   }
   out
 }
@@ -429,7 +461,7 @@ extract_class_map_expr <- function(exprs) {
   NULL
 }
 
-read_method_defaults_from_r_file <- function(path, source_name) {
+read_method_defaults_from_r_file <- function(path, source_name, skip_errors = FALSE) {
   if (!is.character(path) || length(path) != 1L || is.na(path) || trimws(path) == "") {
     return(list())
   }
@@ -444,7 +476,7 @@ read_method_defaults_from_r_file <- function(path, source_name) {
   }
   class_map <- eval_class_map_expr(class_expr, source_name = source_name)
 
-  coerce_class_override_map(class_map, source = source_name)
+  coerce_class_override_map(class_map, source = source_name, skip_errors = skip_errors)
 }
 
 normalize_snapshot_config <- function(snapshot_cfg, root) {
@@ -463,7 +495,11 @@ normalize_snapshot_config <- function(snapshot_cfg, root) {
 
   pkg_defaults_path <- system.file("extdata", SNAPSHOT_METHOD_DEFAULTS_FILE, package = "resultcheck")
   pkg_class_map <- if (nzchar(pkg_defaults_path)) {
-    read_method_defaults_from_r_file(pkg_defaults_path, source_name = "built-in snapshot method defaults")
+    read_method_defaults_from_r_file(
+      pkg_defaults_path,
+      source_name = "built-in snapshot method defaults",
+      skip_errors = TRUE
+    )
   } else {
     list()
   }
@@ -723,7 +759,21 @@ SNAPSHOT_OUTPUT_WIDTH <- 110L
 #' @return A character vector with the text representation.
 #'
 #' @keywords internal
-serialize_value <- function(value, methods = DEFAULT_SNAPSHOT_METHODS) {
+serialize_value <- function(value, methods = NULL, use_class_defaults = TRUE) {
+  if (is.null(methods) && use_class_defaults) {
+    config <- tryCatch(
+      read_resultcheck_config(),
+      error = function(e) list(snapshot = list())
+    )
+    methods <- resolve_snapshot_methods(
+      value = value,
+      method = NULL,
+      config = config,
+      method_missing = TRUE
+    )
+  } else if (is.null(methods)) {
+    methods <- DEFAULT_SNAPSHOT_METHODS
+  }
   methods <- coerce_snapshot_methods(methods, arg_name = "methods")
   # Create a text representation using various methods
   output <- character()
@@ -888,6 +938,12 @@ warn_snapshot_write <- function(snapshot_file) {
 #' config (for example \code{"print + str"} or \code{"stats::coef"}) are
 #' resolved to callable functions. In config expressions, \code{"+"} is treated
 #' as the method delimiter.
+#'
+#' Built-in class defaults (loaded from inst/extdata/snapshot-method-defaults.R)
+#' use broom functions for many statistical model classes. The default method
+#' is typically broom::tidy, with broom::glance and/or broom::augment
+#' added where supported (per the broom available-methods table at
+#' https://broom.tidymodels.org/articles/available-methods.html).
 #'
 #' @param value The R object to snapshot (e.g., plot, table, model output).
 #' @param name Character. A descriptive name for this snapshot.
