@@ -17,12 +17,14 @@ local testing.
 ### Latest Stable Version
 
 ``` r
+
 install.packages("resultcheck")
 ```
 
 ### Latest Development Version (Unstable)
 
 ``` r
+
 # install.packages("devtools")
 devtools::install_github("kv9898/resultcheck")
 ```
@@ -69,6 +71,7 @@ can generate this layout for documentation/testing under
 ### `analysis.R` — snapshot key results
 
 ``` r
+
 model <- lm(mpg ~ wt, data = mtcars)
 resultcheck::snapshot(model, "model")
 ```
@@ -76,6 +79,7 @@ resultcheck::snapshot(model, "model")
 ### `tests/testthat/test-analysis.R` — automated test
 
 ``` r
+
 library(testthat)
 library(resultcheck)
 
@@ -90,6 +94,7 @@ test_that("analysis produces stable results", {
 To try this quickly without creating files in your current project:
 
 ``` r
+
 resultcheck::with_example({
   sandbox <- setup_sandbox()
   on.exit(cleanup_sandbox(sandbox), add = TRUE)
@@ -128,14 +133,14 @@ snapshot:
 
 The `method` argument controls how the object is serialized:
 
-| Value                                              | Behavior                                                                                                     |
-|----------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| `NULL` (default)                                   | Captures both [`print()`](https://rdrr.io/r/base/print.html) and [`str()`](https://rdrr.io/r/utils/str.html) |
-| `print`                                            | Only [`print()`](https://rdrr.io/r/base/print.html) output is captured                                       |
-| `str`                                              | Only [`str()`](https://rdrr.io/r/utils/str.html) output is captured                                          |
-| `length`                                           | Any callable function can be used                                                                            |
-| [`stats::coef`](https://rdrr.io/r/stats/coef.html) | Namespaced callables are supported                                                                           |
-| `list(print = print, summary = summary)`           | Runs multiple functions in order                                                                             |
+| Value | Behavior |
+|----|----|
+| `NULL` (default) | Captures both [`print()`](https://rdrr.io/r/base/print.html) and [`str()`](https://rdrr.io/r/utils/str.html) |
+| `print` | Only [`print()`](https://rdrr.io/r/base/print.html) output is captured |
+| `str` | Only [`str()`](https://rdrr.io/r/utils/str.html) output is captured |
+| `length` | Any callable function can be used |
+| [`stats::coef`](https://rdrr.io/r/stats/coef.html) | Namespaced callables are supported |
+| `list(print = print, summary = summary)` | Runs multiple functions in order |
 
 When a list of methods is used, section headers are taken directly from
 the method names (or list names), e.g. `## print`, `## summary`.
@@ -153,6 +158,7 @@ methods.
 You can also define class defaults in a separate R file:
 
 ``` r
+
 # snapshot-method-overrides.R
 method_by_class <- list(
   lm = "summary",

@@ -2,6 +2,10 @@
 
 ## resultcheck (development version)
 
+- [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
+  now uses `rstudioapi::getSourceEditorContext()$path` (in RStudio) as
+  the primary method to detect the calling script name, falling back to
+  the call stack and then `"interactive"`.
 - Add “Get Started” and FAQ vignettes to clarify workflow and common
   questions.
 

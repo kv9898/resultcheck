@@ -21,6 +21,7 @@ whether they change when your analysis is rerun.
 1.  **Object level**
 
 ``` r
+
 snapshot(model, "main_model")
 ```
 
@@ -32,6 +33,7 @@ On subsequent runs, you will be notified if it changes.
 2.  **Script/project level**
 
 ``` r
+
 run_in_sandbox("analysis.R", sandbox)
 ```
 
@@ -160,6 +162,7 @@ You do **not** need to manually save anything to disk.
 `resultcheck` snapshots objects directly as `.md` files, for example:
 
 ``` r
+
 model <- lm(mpg ~ wt, data = mtcars)
 snapshot(model, "main_model")
 ```

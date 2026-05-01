@@ -13,11 +13,11 @@ replication repository](https://github.com/IMFPaper/IMF).
 
 ## Why each piece matters
 
-| Tool           | Role                                                                          |
-|----------------|-------------------------------------------------------------------------------|
-| `resultcheck`  | Captures named snapshots of R objects; errors in CI when a snapshot changes   |
-| `testthat`     | Test harness that runs the snapshots and reports failures                     |
-| `renv`         | Locks every package to an exact version so the environment is reproducible    |
+| Tool | Role |
+|----|----|
+| `resultcheck` | Captures named snapshots of R objects; errors in CI when a snapshot changes |
+| `testthat` | Test harness that runs the snapshots and reports failures |
+| `renv` | Locks every package to an exact version so the environment is reproducible |
 | GitHub Actions | Runs the test suite automatically on push/PR across Windows, macOS, and Linux |
 
 Without `renv`, a routine package update could silently change a
@@ -63,6 +63,7 @@ to locate the project:
 Inside R, with your project open:
 
 ``` r
+
 install.packages("renv")
 renv::init()
 ```
@@ -70,6 +71,7 @@ renv::init()
 Install the packages your project needs, then snapshot the environment:
 
 ``` r
+
 renv::install(c("resultcheck", "testthat"))
 # ... install any other packages your analysis uses ...
 renv::snapshot()
@@ -90,6 +92,7 @@ you run the script interactively the snapshot is saved; on all
 subsequent runs it is compared against the saved version.
 
 ``` r
+
 # code/analysis.R
 data  <- readRDS("data/panel_data.rds")
 model <- lm(y ~ x1 + x2, data = data)
@@ -108,6 +111,7 @@ review them, then commit them to version control.
 ## Step 4 — Write a testthat test
 
 ``` r
+
 # tests/testthat/test-analysis.R
 library(testthat)
 library(resultcheck)
@@ -124,6 +128,7 @@ test_that("analysis produces stable results", {
 Run locally to confirm everything passes before pushing:
 
 ``` r
+
 testthat::test_dir("tests/testthat")
 ```
 

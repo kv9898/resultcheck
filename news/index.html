@@ -48,7 +48,9 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="resultcheck-development-version">resultcheck (development version)<a class="anchor" aria-label="anchor" href="#resultcheck-development-version"></a></h2>
-<ul><li>Add “Get Started” and FAQ vignettes to clarify workflow and common questions.</li>
+<ul><li>
+<code><a href="../reference/snapshot.html">snapshot()</a></code> now uses <code>rstudioapi::getSourceEditorContext()$path</code> (in RStudio) as the primary method to detect the calling script name, falling back to the call stack and then <code>"interactive"</code>.</li>
+<li>Add “Get Started” and FAQ vignettes to clarify workflow and common questions.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.4" id="resultcheck-014">resultcheck 0.1.4<a class="anchor" aria-label="anchor" href="#resultcheck-014"></a></h2><p class="text-muted">CRAN release: 2026-04-21</p>
