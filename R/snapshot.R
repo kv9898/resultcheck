@@ -903,6 +903,12 @@ warn_snapshot_write <- function(snapshot_file) {
 #' resolved to callable functions. In config expressions, \code{"+"} is treated
 #' as the method delimiter.
 #'
+#' Built-in class defaults (loaded from inst/extdata/snapshot-method-defaults.R)
+#' use broom functions for many statistical model classes. The default method
+#' is typically broom::tidy, with broom::glance and/or broom::augment
+#' added where supported (per the broom available-methods table at
+#' https://broom.tidymodels.org/articles/available-methods.html).
+#'
 #' @param value The R object to snapshot (e.g., plot, table, model output).
 #' @param name Character. A descriptive name for this snapshot.
 #' @param script_name Optional. The name of the script creating the snapshot.
