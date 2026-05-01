@@ -93,6 +93,38 @@ get_start_path_for_find_root <- function() {
 }
 
 
+#' Detect the calling script name
+#'
+#' Tries to identify the script file that is calling snapshot().
+#' Uses \code{rstudioapi::getSourceEditorContext()$path} when running in RStudio,
+#' falling back to walking the call stack for source references, and finally
+#' to \code{"interactive"}.
+#'
+#' @return Character string with the detected script basename (without path).
+#' @keywords internal
+detect_script_name <- function() {
+  # RStudio: use the active source editor path
+  path <- tryCatch(
+    rstudioapi::getSourceEditorContext()$path,
+    error = function(e) NULL
+  )
+  if (is.character(path) && nzchar(path) && path != "") {
+    return(basename(path))
+  }
+
+  # Fallback: walk the call stack for source references
+  for (i in seq_len(min(10, sys.nframe()))) {
+    srcref <- tryCatch(getSrcref(sys.call(-i)), error = function(e) NULL)
+    if (is.null(srcref)) next
+    srcfile <- attr(srcref, "srcfile")
+    if (!is.null(srcfile) && !is.null(srcfile$filename) && nzchar(srcfile$filename)) {
+      return(basename(srcfile$filename))
+    }
+  }
+
+  "interactive"
+}
+
 #' Get Snapshot File Path
 #'
 #' Constructs the path to a snapshot file within the project's snapshot directory.
@@ -102,7 +134,9 @@ get_start_path_for_find_root <- function() {
 #'
 #' @param name Character. The name of the snapshot (without extension).
 #' @param script_name Optional. The name of the script file creating the snapshot.
-#'   If NULL, attempts to detect from the call stack.
+#'   If NULL, detects from the active RStudio source editor via
+#'   \code{rstudioapi::getSourceEditorContext()$path}, falling back to the call
+#'   stack, then to \code{"interactive"}.
 #' @param ext Character. The file extension for the snapshot file (default: "md").
 #'
 #' @return The full path to the snapshot file.
@@ -111,27 +145,12 @@ get_start_path_for_find_root <- function() {
 get_snapshot_path <- function(name, script_name = NULL, ext = "md") {
   root <- find_root()
   config <- read_resultcheck_config()
-  
-  # If script_name not provided, try to detect from call stack
+
+  # If script_name not provided, try to detect the source file
   if (is.null(script_name)) {
-    # Get the calling script from the call stack
-    for (i in 1:min(10, sys.nframe())) {
-      srcref <- getSrcref(sys.call(-i))
-      if (!is.null(srcref)) {
-        srcfile <- attr(srcref, "srcfile")
-        if (!is.null(srcfile) && !is.null(srcfile$filename)) {
-          script_name <- basename(srcfile$filename)
-          break
-        }
-      }
-    }
-    
-    # Fallback to "interactive" if we can't detect
-    if (is.null(script_name) || script_name == "") {
-      script_name <- "interactive"
-    }
+    script_name <- detect_script_name()
   }
-  
+
   # Clean up script name (remove extension)
   script_name <- sub("\\.[Rr]$", "", script_name)
   
@@ -873,7 +892,8 @@ warn_snapshot_write <- function(snapshot_file) {
 #' @param value The R object to snapshot (e.g., plot, table, model output).
 #' @param name Character. A descriptive name for this snapshot.
 #' @param script_name Optional. The name of the script creating the snapshot.
-#'   If NULL, attempts to auto-detect from the call stack.
+#'   If NULL, auto-detects via \code{rstudioapi::getSourceEditorContext()$path}
+#'   (in RStudio), falling back to the call stack, then to \code{"interactive"}.
 #' @param method Optional function or non-empty list of functions used to
 #'   serialize \code{value}. Functions are executed in order and each section
 #'   header is taken from the method expression or list name. If omitted,
