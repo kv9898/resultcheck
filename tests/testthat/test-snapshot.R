@@ -495,8 +495,9 @@ test_that("snapshot defaults to print and str when method is omitted", {
   on.exit(unlink(temp_project, recursive = TRUE))
 
   withr::with_dir(temp_project, {
-    model <- lm(mpg ~ wt, data = mtcars)
-    snapshot(model, "default_methods_test", script_name = "analysis")
+    # Use a plain named list which has no built-in class default
+    val <- list(a = 1L, b = "hello")
+    snapshot(val, "default_methods_test", script_name = "analysis")
 
     content <- readLines(
       file.path(temp_project, "tests/_resultcheck_snaps", "analysis", "default_methods_test.md"),
