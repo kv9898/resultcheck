@@ -194,5 +194,5 @@ method_by_class <- list(
   # Binomial design
   binDesign  = c("broom::tidy", "broom::glance"),
   binWidth   = "broom::tidy",
-  power.htest = "broom::tidy",
+  power.htest = "broom::tidy"
 )
