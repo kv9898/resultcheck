@@ -9,24 +9,8 @@
 # - etc. (any function accessible via name or pkg::name syntax)
 method_by_class <- list(
   # Linear models - summary() gives useful coefficients table
-  lm         = "summary",
-  glm        = "summary",
-  aov        = "summary",
-  manova     = "summary",
-
-  # Summary objects from models
-  "summary.lm"  = "summary",
-  "summary.glm" = "summary",
-
-  # Test objects - print gives nice output
-  htest       = "print",
-
-  # Data frames and tibbles - str shows structure
-  tbl_df      = "str",
-  tbl         = "str",
-  data.frame  = "str",
-
-  # Matrix/array - str shows dimensions
-  matrix      = "str",
-  array       = "str"
+  lm         = "broom::tidy",
+  glm        = "broom::tidy",
+  aov        = "broom::tidy",
+  manova     = "broom::tidy",
 )
