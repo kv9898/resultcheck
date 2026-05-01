@@ -21,6 +21,7 @@ Imports:
 Suggests:
     knitr,
     rmarkdown,
+    rstudioapi,
     testthat (>= 3.0.0),
     waldo
 URL: https://github.com/kv9898/resultcheck/, https://kv9898.github.io/resultcheck/
