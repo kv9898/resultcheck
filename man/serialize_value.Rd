@@ -4,7 +4,7 @@
 \alias{serialize_value}
 \title{Serialize Value to Human-Readable Text}
 \usage{
-serialize_value(value, methods = DEFAULT_SNAPSHOT_METHODS)
+serialize_value(value, methods = NULL, use_class_defaults = TRUE)
 }
 \arguments{
 \item{value}{The R object to serialize.}

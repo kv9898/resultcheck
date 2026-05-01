@@ -12,7 +12,8 @@ snapshot(value, name, script_name = NULL, method = NULL)
 \item{name}{Character. A descriptive name for this snapshot.}
 
 \item{script_name}{Optional. The name of the script creating the snapshot.
-If NULL, attempts to auto-detect from the call stack.}
+If NULL, auto-detects via \code{rstudioapi::getSourceEditorContext()$path}
+(in RStudio), falling back to the call stack, then to \code{"interactive"}.}
 
 \item{method}{Optional function or non-empty list of functions used to
 serialize \code{value}. Functions are executed in order and each section
@@ -45,6 +46,12 @@ from an R file using \code{snapshot.method_defaults_file}. Method strings in
 config (for example \code{"print + str"} or \code{"stats::coef"}) are
 resolved to callable functions. In config expressions, \code{"+"} is treated
 as the method delimiter.
+
+Built-in class defaults (loaded from inst/extdata/snapshot-method-defaults.R)
+use broom functions for many statistical model classes. The default method
+is typically broom::tidy, with broom::glance and/or broom::augment
+added where supported (per the broom available-methods table at
+https://broom.tidymodels.org/articles/available-methods.html).
 }
 \examples{
 with_example({
