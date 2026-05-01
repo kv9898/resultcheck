@@ -6,6 +6,24 @@
   now uses `rstudioapi::getSourceEditorContext()$path` (in RStudio) as
   the primary method to detect the calling script name, falling back to
   the call stack and then `"interactive"`.
+- [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
+  and
+  [`serialize_value()`](https://kv9898.github.io/resultcheck/reference/serialize_value.md)
+  now apply built-in class-based method defaults automatically when no
+  explicit `method` argument is provided. Statistical model classes
+  (e.g. `lm`, `glm`, `coxph`, `kmeans`) are serialized using
+  [`broom::tidy`](https://generics.r-lib.org/reference/tidy.html),
+  [`broom::glance`](https://generics.r-lib.org/reference/glance.html),
+  and/or
+  [`broom::augment`](https://generics.r-lib.org/reference/augment.html)
+  when the `broom` package is available.
+- When `broom` is not installed, built-in class defaults that rely on it
+  are silently skipped and the `print` + `str` fallback is used.
+  User-configured class defaults that reference unavailable packages
+  still raise an error.
+- The full list of supported classes is in
+  `inst/extdata/snapshot-method-defaults.R`.
+- Added `broom` to `Suggests` to enable the new built-in class defaults.
 - Add “Get Started” and FAQ vignettes to clarify workflow and common
   questions.
 

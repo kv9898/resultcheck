@@ -23,7 +23,8 @@ snapshot(value, name, script_name = NULL, method = NULL)
 - script_name:
 
   Optional. The name of the script creating the snapshot. If NULL,
-  attempts to auto-detect from the call stack.
+  auto-detects via `rstudioapi::getSourceEditorContext()$path` (in
+  RStudio), falling back to the call stack, then to `"interactive"`.
 
 - method:
 
@@ -55,6 +56,13 @@ from an R file using `snapshot.method_defaults_file`. Method strings in
 config (for example `"print + str"` or `"stats::coef"`) are resolved to
 callable functions. In config expressions, `"+"` is treated as the
 method delimiter.
+
+Built-in class defaults (loaded from
+inst/extdata/snapshot-method-defaults.R) use broom functions for many
+statistical model classes. The default method is typically broom::tidy,
+with broom::glance and/or broom::augment added where supported (per the
+broom available-methods table at
+https://broom.tidymodels.org/articles/available-methods.html).
 
 ## Examples
 

@@ -76,7 +76,8 @@ On subsequent uses, compares the current object to the saved snapshot.</p>
 
 <dt id="arg-script-name">script_name<a class="anchor" aria-label="anchor" href="#arg-script-name"></a></dt>
 <dd><p>Optional. The name of the script creating the snapshot.
-If NULL, attempts to auto-detect from the call stack.</p></dd>
+If NULL, auto-detects via <code>rstudioapi::getSourceEditorContext()$path</code>
+(in RStudio), falling back to the call stack, then to <code>"interactive"</code>.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -108,6 +109,11 @@ from an R file using <code>snapshot.method_defaults_file</code>. Method strings 
 config (for example <code>"print + str"</code> or <code>"stats::coef"</code>) are
 resolved to callable functions. In config expressions, <code>"+"</code> is treated
 as the method delimiter.</p>
+<p>Built-in class defaults (loaded from inst/extdata/snapshot-method-defaults.R)
+use broom functions for many statistical model classes. The default method
+is typically broom::tidy, with broom::glance and/or broom::augment
+added where supported (per the broom available-methods table at
+https://broom.tidymodels.org/articles/available-methods.html).</p>
     </div>
 
     <div class="section level2">

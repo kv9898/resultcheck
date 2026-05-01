@@ -20,7 +20,9 @@ get_snapshot_path(name, script_name = NULL, ext = "md")
 - script_name:
 
   Optional. The name of the script file creating the snapshot. If NULL,
-  attempts to detect from the call stack.
+  detects from the active RStudio source editor via
+  `rstudioapi::getSourceEditorContext()$path`, falling back to the call
+  stack, then to `"interactive"`.
 
 - ext:
 

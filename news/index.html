@@ -50,6 +50,11 @@
 <h2 class="pkg-version" data-toc-text="development version" id="resultcheck-development-version">resultcheck (development version)<a class="anchor" aria-label="anchor" href="#resultcheck-development-version"></a></h2>
 <ul><li>
 <code><a href="../reference/snapshot.html">snapshot()</a></code> now uses <code>rstudioapi::getSourceEditorContext()$path</code> (in RStudio) as the primary method to detect the calling script name, falling back to the call stack and then <code>"interactive"</code>.</li>
+<li>
+<code><a href="../reference/snapshot.html">snapshot()</a></code> and <code><a href="../reference/serialize_value.html">serialize_value()</a></code> now apply built-in class-based method defaults automatically when no explicit <code>method</code> argument is provided. Statistical model classes (e.g. <code>lm</code>, <code>glm</code>, <code>coxph</code>, <code>kmeans</code>) are serialized using <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy</a></code>, <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance</a></code>, and/or <code><a href="https://generics.r-lib.org/reference/augment.html" class="external-link">broom::augment</a></code> when the <code>broom</code> package is available.</li>
+<li>When <code>broom</code> is not installed, built-in class defaults that rely on it are silently skipped and the <code>print</code> + <code>str</code> fallback is used. User-configured class defaults that reference unavailable packages still raise an error.</li>
+<li>The full list of supported classes is in <code>inst/extdata/snapshot-method-defaults.R</code>.</li>
+<li>Added <code>broom</code> to <code>Suggests</code> to enable the new built-in class defaults.</li>
 <li>Add “Get Started” and FAQ vignettes to clarify workflow and common questions.</li>
 </ul></div>
     <div class="section level2">
