@@ -123,7 +123,11 @@ detect_script_name <- function() {
     else
       ""
   }, error = function(e) "")
-  for (i in seq_len(min(20, sys.nframe()))) {
+  # Use a larger depth (20) than the old limit (10) to reliably skip several
+  # internal resultcheck frames (detect_script_name, get_snapshot_path, snapshot,
+  # run_in_sandbox, withr layers, ...) before reaching user-script frames.
+  max_frames <- 20L
+  for (i in seq_len(min(max_frames, sys.nframe()))) {
     srcref <- tryCatch(getSrcref(sys.call(-i)), error = function(e) NULL)
     if (is.null(srcref)) next
     srcfile <- attr(srcref, "srcfile")
