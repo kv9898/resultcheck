@@ -9,9 +9,9 @@
 # - etc. (any function accessible via name or pkg::name syntax)
 method_by_class <- list(
   # Linear models - broom::tidy gives useful coefficients table
-  lm         = "broom::tidy",
-  glm        = "broom::tidy",
-  aov        = "broom::tidy",
+  lm         = c("broom::tidy", "broom::glance", "broom::augment"),
+  glm        = c("broom::tidy", "broom::glance", "broom::augment"),
+  aov        = c("broom::tidy", "broom::glance"),
   manova     = "broom::tidy",
 
   # Extended linear models (broom supports tidy + glance for all)
