@@ -60,36 +60,43 @@ with_example <- function(code, mismatch = FALSE) {
     file.path(example_root, "analysis.R")
   )
 
-  model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
-  matching_snapshot_text <- serialize_value(model)
+  # Create reference snapshots from inside the example project so that
+  # find_root() resolves to example_root and serialize_value() picks up the
+  # same built-in method defaults (e.g. broom for lm) that snapshot() will
+  # see when run inside the sandbox.
   snapshot_path <- file.path(
     example_root, "tests", "_resultcheck_snaps", "analysis", "model.md"
   )
   mismatch_path <- file.path(
     example_root, "tests", "_resultcheck_snaps", "analysis", "model_mismatch.md"
   )
-  writeLines(matching_snapshot_text, snapshot_path)
 
-  mismatch_text <- matching_snapshot_text
-  # Intentionally alter the first numeric token so the mismatch demo fails.
-  numeric_pattern <- "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?"
-  first_numeric_line <- which(grepl(numeric_pattern, mismatch_text, perl = TRUE))[1]
-  if (!is.na(first_numeric_line)) {
-    line <- mismatch_text[first_numeric_line]
-    m <- regexpr(numeric_pattern, line, perl = TRUE)
-    if (m[1] != -1L) {
-      matched <- regmatches(line, m)
-      digits <- if (grepl("\\.", matched)) nchar(sub(".*\\.", "", matched)) else 0L
-      altered_number <- format(
-        round(as.numeric(matched) + 1, digits),
-        nsmall = digits,
-        scientific = FALSE
-      )
-      regmatches(line, m) <- altered_number
-      mismatch_text[first_numeric_line] <- line
+  withr::with_dir(example_root, {
+    model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
+    matching_snapshot_text <- serialize_value(model)
+    writeLines(matching_snapshot_text, snapshot_path)
+
+    mismatch_text <- matching_snapshot_text
+    # Intentionally alter the first numeric token so the mismatch demo fails.
+    numeric_pattern <- "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?"
+    first_numeric_line <- which(grepl(numeric_pattern, mismatch_text, perl = TRUE))[1]
+    if (!is.na(first_numeric_line)) {
+      line <- mismatch_text[first_numeric_line]
+      m <- regexpr(numeric_pattern, line, perl = TRUE)
+      if (m[1] != -1L) {
+        matched <- regmatches(line, m)
+        digits <- if (grepl("\\.", matched)) nchar(sub(".*\\.", "", matched)) else 0L
+        altered_number <- format(
+          round(as.numeric(matched) + 1, digits),
+          nsmall = digits,
+          scientific = FALSE
+        )
+        regmatches(line, m) <- altered_number
+        mismatch_text[first_numeric_line] <- line
+      }
     }
-  }
-  writeLines(mismatch_text, mismatch_path)
+    writeLines(mismatch_text, mismatch_path)
+  })
 
   writeLines(
     c(

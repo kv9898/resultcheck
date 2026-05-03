@@ -119,7 +119,7 @@ detect_script_name <- function() {
   pkg_r_dir <- tryCatch({
     f <- utils::getSrcFilename(detect_script_name, full.names = TRUE)
     if (!is.null(f) && length(f) > 0L && nzchar(f[[1L]]))
-      dirname(normalizePath(f[[1L]], mustWork = FALSE))
+      dirname(normalizePath(f[[1L]], mustWork = FALSE, winslash = "/"))
     else
       ""
   }, error = function(e) "")
@@ -134,7 +134,7 @@ detect_script_name <- function() {
     if (is.null(srcfile) || is.null(srcfile$filename) || !nzchar(srcfile$filename)) next
     if (nzchar(pkg_r_dir)) {
       fn <- tryCatch(
-        normalizePath(srcfile$filename, mustWork = FALSE),
+        normalizePath(srcfile$filename, mustWork = FALSE, winslash = "/"),
         error = function(e) srcfile$filename
       )
       if (startsWith(fn, pkg_r_dir)) next
