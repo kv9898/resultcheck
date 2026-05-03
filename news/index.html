@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">resultcheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,9 +47,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="resultcheck-development-version">resultcheck (development version)<a class="anchor" aria-label="anchor" href="#resultcheck-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.2.0" id="resultcheck-020">resultcheck 0.2.0<a class="anchor" aria-label="anchor" href="#resultcheck-020"></a></h2><p class="text-muted">CRAN release: 2026-05-03</p>
 <ul><li>
-<code><a href="../reference/snapshot.html">snapshot()</a></code> now uses <code>rstudioapi::getSourceEditorContext()$path</code> (in RStudio) as the primary method to detect the calling script name, falling back to the call stack and then <code>"interactive"</code>.</li>
+<code><a href="../reference/snapshot.html">snapshot()</a></code> now uses <code>rstudioapi::getSourceEditorContext()$path</code> (in RStudio/Positron) as the primary method to detect the calling script name, falling back to the call stack and then <code>"interactive"</code>.</li>
 <li>
 <code><a href="../reference/snapshot.html">snapshot()</a></code> and <code><a href="../reference/serialize_value.html">serialize_value()</a></code> now apply built-in class-based method defaults automatically when no explicit <code>method</code> argument is provided. Statistical model classes (e.g. <code>lm</code>, <code>glm</code>, <code>coxph</code>, <code>kmeans</code>) are serialized using <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy</a></code>, <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance</a></code>, and/or <code><a href="https://generics.r-lib.org/reference/augment.html" class="external-link">broom::augment</a></code> when the <code>broom</code> package is available.</li>
 <li>When <code>broom</code> is not installed, built-in class defaults that rely on it are silently skipped and the <code>print</code> + <code>str</code> fallback is used. User-configured class defaults that reference unavailable packages still raise an error.</li>

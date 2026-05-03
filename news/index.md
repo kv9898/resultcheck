@@ -1,11 +1,13 @@
 # Changelog
 
-## resultcheck (development version)
+## resultcheck 0.2.0
+
+CRAN release: 2026-05-03
 
 - [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
-  now uses `rstudioapi::getSourceEditorContext()$path` (in RStudio) as
-  the primary method to detect the calling script name, falling back to
-  the call stack and then `"interactive"`.
+  now uses `rstudioapi::getSourceEditorContext()$path` (in
+  RStudio/Positron) as the primary method to detect the calling script
+  name, falling back to the call stack and then `"interactive"`.
 - [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
   and
   [`serialize_value()`](https://kv9898.github.io/resultcheck/reference/serialize_value.md)
