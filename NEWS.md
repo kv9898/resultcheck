@@ -1,4 +1,4 @@
-# resultcheck (development version)
+# resultcheck 0.2.0
 
 * `snapshot()` now uses `rstudioapi::getSourceEditorContext()$path` (in RStudio/Positron) as the primary method to detect the calling script name, falling back to the call stack and then `"interactive"`.
 * `snapshot()` and `serialize_value()` now apply built-in class-based method defaults automatically when no explicit `method` argument is provided. Statistical model classes (e.g. `lm`, `glm`, `coxph`, `kmeans`) are serialized using `broom::tidy`, `broom::glance`, and/or `broom::augment` when the `broom` package is available.
