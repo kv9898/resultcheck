@@ -1,28 +1,23 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
+0 errors | 0 warnings | 0 notes
 
-* This is a new release.
+## Release summary
 
-## Response to CRAN reviewer comments
+This is an update (0.1.4 → 0.2.0) that adds built-in class-based snapshot method defaults, improved script name detection, and fixes two Windows-specific bugs that caused test failures only under `R CMD check` (not via `testthat::test_local()` with pkgload).
 
-> If there are references describing the methods in your package, please add
-> these in the description field of your DESCRIPTION file in the form
-> authors (year) <doi:...>
+## Key changes since 0.1.4
 
-The package implements an original snapshot-testing workflow for empirical R projects. To the best of our knowledge, there are no published references (papers, preprints, or books) describing these methods. Therefore, no references have been added to the Description field.
+* `snapshot()` and `serialize_value()` now apply built-in class-based method defaults automatically when no explicit `method` argument is provided. Statistical model classes (e.g. `lm`, `glm`, `coxph`, `kmeans`) use `broom::tidy`, `broom::glance`, and/or `broom::augment` when broom is available. If broom is not installed, these defaults are silently skipped and the `print` + `str` fallback is used. User-configured class defaults that reference unavailable packages still raise an error. The full list of supported classes is in `inst/extdata/snapshot-method-defaults.R`.
 
-> Please replace `\\dontrun{}` wrappers for executable examples and avoid writing
-> by default/in examples to the user's home filespace.
+* `snapshot()` now defaults to both `print` and `str` when no method is specified and no class-based default applies.
 
-Addressed. Examples no longer write to the user’s home directory and no longer use \dontrun{}.
+* Improved script name detection: `snapshot()` now uses `rstudioapi::getSourceEditorContext()$path` (in RStudio/Positron) as the primary method to detect the calling script name, falling back to a call-stack walk and then `"interactive"`.
 
-* Replaced prior `\dontrun{}` examples with executable examples that run inside
-  `with_example()`, which creates and uses a temporary project under `tempdir()`
-  and cleans up automatically.
-* Added support for empty sandboxes via `setup_sandbox()` (no argument needed),
-  and updated examples/docs accordingly.
-* During examples, all snapshot writes are confined to the temporary project created under `tempdir()`.
-* Outside examples, snapshot files are only written in interactive use. In such cases, the user is explicitly notified of the target file path before any write or update occurs.
-* The snapshot directory is user-configurable via `_resultcheck.yml` using `snapshot.dir` (default: `tests/_resultcheck_snaps` under the project root).
-* Interactive mismatch demonstrations remain behind `if (interactive())`.
+* Added "Get Started" vignette covering the typical workflow (project setup, snapshot creation/update, sandbox testing).
+
+* Added FAQ vignette covering common questions (tracking snapshot changes over time, dependency-driven result drift, git integration).
+
+* Fixed a Windows-specific bug in `detect_script_name()` where `normalizePath()` produced backslash separators that did not match the forward-slash paths produced by `dirname()`, causing the call-stack frame filter to never skip package-internal frames. Tests now pass identically on Windows and Linux/macOS.
+
+* Fixed a bug in `with_example()` where reference snapshots were serialized outside the example project directory, causing `find_root()` to fail and skip the built-in class defaults. This produced a method-resolution mismatch between the reference snapshot and the snapshot created by `snapshot()` inside the sandbox.
