@@ -12,3 +12,4 @@
 ^\.vscode$
 ^CRAN-SUBMISSION$
 ^.intent-engine$
+^.claude$
