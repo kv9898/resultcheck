@@ -3,6 +3,7 @@
 ^LICENSE\.md$
 ^tests/_resultcheck_snaps$
 ^\.github$
+^AGENTS\.md$
 ^_resultcheck\.yml$
 ^resultcheck\.yml$
 ^cran-comments\.md$
@@ -11,5 +12,5 @@
 ^pkgdown$
 ^\.vscode$
 ^CRAN-SUBMISSION$
-^.intent-engine$
-^.claude$
+^\.intent-engine$
+^\.claude$
