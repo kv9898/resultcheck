@@ -42,5 +42,5 @@ with_example({
   root <- find_root()
   print(root)
 })
-#> [1] "/tmp/Rtmp1ermWA/resultcheck-example-19a025236630"
+#> [1] "/tmp/RtmpOPVUU8/resultcheck-example-198e263fe32e"
 ```
