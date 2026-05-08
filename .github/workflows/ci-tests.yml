@@ -56,6 +56,14 @@ jobs:
         with:
           extra-packages: any::rcmdcheck
 
+      - name: Install Air
+        if: runner.os == 'Linux' && matrix.config.r == 'release'
+        uses: posit-dev/setup-air@v1
+
+      - name: Check formatting
+        if: runner.os == 'Linux' && matrix.config.r == 'release'
+        run: air format . --check
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
