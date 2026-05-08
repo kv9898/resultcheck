@@ -1,6 +1,6 @@
 # Changelog
 
-## resultcheck (development version)
+## resultcheck 0.2.1
 
 - [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
   now improves script-name detection in non-interactive and test
