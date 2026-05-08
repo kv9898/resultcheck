@@ -1,5 +1,7 @@
 # resultcheck (development version)
 
+* `snapshot()` now improves script-name detection in non-interactive and test contexts by skipping editor-context lookup there and relying on call-stack source references before falling back to `"interactive"`.
+
 # resultcheck 0.2.0
 
 * `snapshot()` now uses `rstudioapi::getSourceEditorContext()$path` (in RStudio/Positron) as the primary method to detect the calling script name, falling back to the call stack and then `"interactive"`.
