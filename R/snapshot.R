@@ -21,48 +21,59 @@
 #' })
 find_root <- function(start_path = NULL) {
   if (!requireNamespace("rprojroot", quietly = TRUE)) {
-    stop("Package 'rprojroot' is required but not installed. ",
-         "Please install it with: install.packages('rprojroot')")
+    stop(
+      "Package 'rprojroot' is required but not installed. ",
+      "Please install it with: install.packages('rprojroot')"
+    )
   }
-  
+
   # Determine start_path if not provided
   if (is.null(start_path)) {
     start_path <- get_start_path_for_find_root()
   }
-  
+
   # Validate and normalize start_path
   if (!dir.exists(start_path)) {
     stop("Start path does not exist: ", start_path, call. = FALSE)
   }
-  
+
   # Normalize the path to avoid issues with rprojroot
   start_path <- normalizePath(start_path, winslash = "/", mustWork = TRUE)
-  
+
   # Define criteria for finding project root
   # Try multiple criteria in order of preference
   criteria <- rprojroot::has_file("_resultcheck.yml") |
     rprojroot::has_file("resultcheck.yml") |
     rprojroot::has_file_pattern("[.]Rproj$") |
     rprojroot::is_git_root
-  
-  tryCatch({
-    root <- rprojroot::find_root(criteria, path = start_path)
-    return(root)
-  }, error = function(e) {
-    stop("Could not find project root from path: ", start_path, ". ",
-         "Please ensure you are in a project directory ",
-         "with either a _resultcheck.yml (or legacy resultcheck.yml), ",
-         ".Rproj file, or .git directory. ",
-         "Original error: ", e$message, call. = FALSE)
-  })
+
+  tryCatch(
+    {
+      root <- rprojroot::find_root(criteria, path = start_path)
+      return(root)
+    },
+    error = function(e) {
+      stop(
+        "Could not find project root from path: ",
+        start_path,
+        ". ",
+        "Please ensure you are in a project directory ",
+        "with either a _resultcheck.yml (or legacy resultcheck.yml), ",
+        ".Rproj file, or .git directory. ",
+        "Original error: ",
+        e$message,
+        call. = FALSE
+      )
+    }
+  )
 }
 
 
 #' Get start path for find_root
-#' 
+#'
 #' Helper function to determine the starting path for find_root().
 #' Checks for stored sandbox WD first, then falls back to getwd().
-#' 
+#'
 #' @return Character path to start searching from
 #' @keywords internal
 get_start_path_for_find_root <- function() {
@@ -73,22 +84,33 @@ get_start_path_for_find_root <- function() {
     if (!is.null(start_path) && dir.exists(start_path)) {
       return(start_path)
     } else if (!is.null(start_path)) {
-      warning("Stored original WD no longer exists: ", start_path, 
-              ". Falling back to getwd().", immediate. = TRUE)
+      warning(
+        "Stored original WD no longer exists: ",
+        start_path,
+        ". Falling back to getwd().",
+        immediate. = TRUE
+      )
     }
   }
-  
+
   # Try to get current working directory
   start_path <- tryCatch(getwd(), error = function(e) NULL)
-  
+
   # If getwd() fails or returns NULL
-  if (is.null(start_path) || length(start_path) == 0 || start_path == "" || is.na(start_path)) {
-    stop("Could not determine current working directory. ",
-         "This may happen if the current directory has been deleted. ",
-         "Please ensure you are in a valid directory.",
-         call. = FALSE)
+  if (
+    is.null(start_path) ||
+      length(start_path) == 0 ||
+      start_path == "" ||
+      is.na(start_path)
+  ) {
+    stop(
+      "Could not determine current working directory. ",
+      "This may happen if the current directory has been deleted. ",
+      "Please ensure you are in a valid directory.",
+      call. = FALSE
+    )
   }
-  
+
   return(start_path)
 }
 
@@ -104,34 +126,46 @@ get_start_path_for_find_root <- function() {
 #' @keywords internal
 detect_script_name <- function() {
   # RStudio: use the active source editor path
-  path <- tryCatch(
-    rstudioapi::getSourceEditorContext()$path,
-    error = function(e) NULL
-  )
-  if (is.character(path) && nzchar(path) && path != "") {
-    return(basename(path))
+  if (interactive() && !is_testing()) {
+    path <- tryCatch(
+      rstudioapi::getSourceEditorContext()$path,
+      error = function(e) NULL
+    )
+    if (is.character(path) && nzchar(path) && path != "") {
+      return(basename(path))
+    }
   }
 
   # Fallback: walk the call stack for source references,
   # skipping any that point to files within the resultcheck package itself.
   # When loaded via pkgload (development), internal functions have source refs;
   # we find the package R directory from this function's own source filename.
-  pkg_r_dir <- tryCatch({
-    f <- utils::getSrcFilename(detect_script_name, full.names = TRUE)
-    if (!is.null(f) && length(f) > 0L && nzchar(f[[1L]]))
-      dirname(normalizePath(f[[1L]], mustWork = FALSE, winslash = "/"))
-    else
-      ""
-  }, error = function(e) "")
+  pkg_r_dir <- tryCatch(
+    {
+      f <- utils::getSrcFilename(detect_script_name, full.names = TRUE)
+      if (!is.null(f) && length(f) > 0L && nzchar(f[[1L]])) {
+        dirname(normalizePath(f[[1L]], mustWork = FALSE, winslash = "/"))
+      } else {
+        ""
+      }
+    },
+    error = function(e) ""
+  )
   # Use a larger depth (20) than the old limit (10) to reliably skip several
   # internal resultcheck frames (detect_script_name, get_snapshot_path, snapshot,
   # run_in_sandbox, withr layers, ...) before reaching user-script frames.
   max_frames <- 20L
   for (i in seq_len(min(max_frames, sys.nframe()))) {
     srcref <- tryCatch(getSrcref(sys.call(-i)), error = function(e) NULL)
-    if (is.null(srcref)) next
+    if (is.null(srcref)) {
+      next
+    }
     srcfile <- attr(srcref, "srcfile")
-    if (is.null(srcfile) || is.null(srcfile$filename) || !nzchar(srcfile$filename)) next
+    if (
+      is.null(srcfile) || is.null(srcfile$filename) || !nzchar(srcfile$filename)
+    ) {
+      next
+    }
     if (nzchar(pkg_r_dir)) {
       fn <- tryCatch(
         normalizePath(srcfile$filename, mustWork = FALSE, winslash = "/"),
@@ -173,27 +207,33 @@ get_snapshot_path <- function(name, script_name = NULL, ext = "md") {
 
   # Clean up script name (remove extension)
   script_name <- sub("\\.[Rr]$", "", script_name)
-  
+
   snapshot_base <- config[["snapshot"]][["dir"]]
-  if (!is.character(snapshot_base) ||
+  if (
+    !is.character(snapshot_base) ||
       length(snapshot_base) != 1L ||
       is.na(snapshot_base) ||
-      trimws(snapshot_base) == "") {
+      trimws(snapshot_base) == ""
+  ) {
     snapshot_base <- "tests/_resultcheck_snaps"
   }
   snapshot_base <- trimws(snapshot_base)
   is_absolute <- startsWith(snapshot_base, "/") ||
     grepl("^[A-Za-z]:[/\\\\]", snapshot_base)
-  snapshot_root <- if (is_absolute) snapshot_base else file.path(root, snapshot_base)
+  snapshot_root <- if (is_absolute) {
+    snapshot_base
+  } else {
+    file.path(root, snapshot_base)
+  }
 
   # Construct snapshot directory path
   snapshot_dir <- file.path(snapshot_root, script_name)
-  
+
   # Create directory if it doesn't exist
   if (!dir.exists(snapshot_dir)) {
     dir.create(snapshot_dir, recursive = TRUE, showWarnings = FALSE)
   }
-  
+
   # Return full path to snapshot file
   snapshot_file <- file.path(snapshot_dir, paste0(name, ".", ext))
   return(snapshot_file)
@@ -216,21 +256,33 @@ IGNORED_MARKER <- "[ignored]"
 #'
 #' @keywords internal
 read_resultcheck_config <- function() {
-  tryCatch({
-    root <- find_root()
-    config_path <- file.path(root, "_resultcheck.yml")
-    if (!file.exists(config_path)) {
-      legacy_path <- file.path(root, "resultcheck.yml")
-      config_path <- if (file.exists(legacy_path)) legacy_path else config_path
-    }
-    if (!file.exists(config_path)) return(list())
-    config <- yaml::read_yaml(config_path)
-    if (is.null(config)) {
-      config <- list()
-    }
-    config[["snapshot"]] <- normalize_snapshot_config(config[["snapshot"]], root = root)
-    config
-  }, error = function(e) list())
+  tryCatch(
+    {
+      root <- find_root()
+      config_path <- file.path(root, "_resultcheck.yml")
+      if (!file.exists(config_path)) {
+        legacy_path <- file.path(root, "resultcheck.yml")
+        config_path <- if (file.exists(legacy_path)) {
+          legacy_path
+        } else {
+          config_path
+        }
+      }
+      if (!file.exists(config_path)) {
+        return(list())
+      }
+      config <- yaml::read_yaml(config_path)
+      if (is.null(config)) {
+        config <- list()
+      }
+      config[["snapshot"]] <- normalize_snapshot_config(
+        config[["snapshot"]],
+        root = root
+      )
+      config
+    },
+    error = function(e) list()
+  )
 }
 
 
@@ -243,11 +295,17 @@ SNAPSHOT_METHOD_DEFAULTS_FILE <- "snapshot-method-defaults.R"
 
 resolve_snapshot_defaults_file <- function(path, root) {
   if (!is.character(path) || length(path) != 1L || is.na(path)) {
-    stop("snapshot.method_defaults_file must be a non-empty string.", call. = FALSE)
+    stop(
+      "snapshot.method_defaults_file must be a non-empty string.",
+      call. = FALSE
+    )
   }
   path <- trimws(path)
   if (path == "") {
-    stop("snapshot.method_defaults_file must be a non-empty string.", call. = FALSE)
+    stop(
+      "snapshot.method_defaults_file must be a non-empty string.",
+      call. = FALSE
+    )
   }
 
   is_absolute <- startsWith(path, "/") || grepl("^[A-Za-z]:[\\\\/]", path)
@@ -266,7 +324,14 @@ resolve_config_method_token <- function(token, arg_name) {
   if (grepl(":::", token, fixed = TRUE)) {
     parts <- strsplit(token, ":::", fixed = TRUE)[[1]]
     if (length(parts) != 2L || any(trimws(parts) == "")) {
-      stop("Invalid namespaced method token `", token, "` in `", arg_name, "`.", call. = FALSE)
+      stop(
+        "Invalid namespaced method token `",
+        token,
+        "` in `",
+        arg_name,
+        "`.",
+        call. = FALSE
+      )
     }
     pkg <- trimws(parts[1L])
     fn_name <- trimws(parts[2L])
@@ -274,14 +339,25 @@ resolve_config_method_token <- function(token, arg_name) {
       utils::getFromNamespace(fn_name, pkg),
       error = function(e) {
         stop(
-          "Could not resolve `", token, "` in `", arg_name, "`: ",
+          "Could not resolve `",
+          token,
+          "` in `",
+          arg_name,
+          "`: ",
           conditionMessage(e),
           call. = FALSE
         )
       }
     )
     if (!is.function(fn)) {
-      stop("`", token, "` in `", arg_name, "` does not resolve to a function.", call. = FALSE)
+      stop(
+        "`",
+        token,
+        "` in `",
+        arg_name,
+        "` does not resolve to a function.",
+        call. = FALSE
+      )
     }
     return(list(fn = fn, label = token))
   }
@@ -289,7 +365,14 @@ resolve_config_method_token <- function(token, arg_name) {
   if (grepl("::", token, fixed = TRUE)) {
     parts <- strsplit(token, "::", fixed = TRUE)[[1]]
     if (length(parts) != 2L || any(trimws(parts) == "")) {
-      stop("Invalid namespaced method token `", token, "` in `", arg_name, "`.", call. = FALSE)
+      stop(
+        "Invalid namespaced method token `",
+        token,
+        "` in `",
+        arg_name,
+        "`.",
+        call. = FALSE
+      )
     }
     pkg <- trimws(parts[1L])
     fn_name <- trimws(parts[2L])
@@ -297,14 +380,25 @@ resolve_config_method_token <- function(token, arg_name) {
       getExportedValue(pkg, fn_name),
       error = function(e) {
         stop(
-          "Could not resolve `", token, "` in `", arg_name, "`: ",
+          "Could not resolve `",
+          token,
+          "` in `",
+          arg_name,
+          "`: ",
           conditionMessage(e),
           call. = FALSE
         )
       }
     )
     if (!is.function(fn)) {
-      stop("`", token, "` in `", arg_name, "` does not resolve to a function.", call. = FALSE)
+      stop(
+        "`",
+        token,
+        "` in `",
+        arg_name,
+        "` does not resolve to a function.",
+        call. = FALSE
+      )
     }
     return(list(fn = fn, label = token))
   }
@@ -313,63 +407,114 @@ resolve_config_method_token <- function(token, arg_name) {
     get(token, mode = "function", inherits = TRUE),
     error = function(e) {
       stop(
-        "Could not resolve method `", token, "` in `", arg_name, "`: ",
+        "Could not resolve method `",
+        token,
+        "` in `",
+        arg_name,
+        "`: ",
         conditionMessage(e),
         call. = FALSE
       )
     }
   )
   if (!is.function(fn)) {
-    stop("`", token, "` in `", arg_name, "` does not resolve to a function.", call. = FALSE)
+    stop(
+      "`",
+      token,
+      "` in `",
+      arg_name,
+      "` does not resolve to a function.",
+      call. = FALSE
+    )
   }
   list(fn = fn, label = token)
 }
 
-parse_config_method_expression <- function(method, arg_name = "snapshot.method") {
+parse_config_method_expression <- function(
+  method,
+  arg_name = "snapshot.method"
+) {
   if (!is.character(method)) {
-    stop("`", arg_name, "` must be a character method expression or vector.", call. = FALSE)
+    stop(
+      "`",
+      arg_name,
+      "` must be a character method expression or vector.",
+      call. = FALSE
+    )
   }
   if (length(method) == 0L) {
-    stop("`", arg_name, "` must include at least one method token.", call. = FALSE)
+    stop(
+      "`",
+      arg_name,
+      "` must include at least one method token.",
+      call. = FALSE
+    )
   }
 
   parts <- unlist(strsplit(method, "\\+", perl = TRUE), use.names = FALSE)
   parts <- trimws(parts)
   parts <- parts[!is.na(parts) & nzchar(parts)]
   if (length(parts) == 0L) {
-    stop("`", arg_name, "` must include at least one method token.", call. = FALSE)
+    stop(
+      "`",
+      arg_name,
+      "` must include at least one method token.",
+      call. = FALSE
+    )
   }
 
-  method_specs <- lapply(parts, function(token) resolve_config_method_token(token, arg_name))
+  method_specs <- lapply(parts, function(token) {
+    resolve_config_method_token(token, arg_name)
+  })
   labels <- vapply(method_specs, `[[`, character(1), "label")
   dedup_idx <- !duplicated(labels)
   method_specs[dedup_idx]
 }
 
-coerce_snapshot_methods_from_config <- function(method, arg_name = "snapshot.method") {
+coerce_snapshot_methods_from_config <- function(
+  method,
+  arg_name = "snapshot.method"
+) {
   if (is.character(method)) {
     return(parse_config_method_expression(method, arg_name = arg_name))
   }
   coerce_snapshot_methods(method, arg_name = arg_name)
 }
 
-coerce_class_override_map <- function(x, source = "snapshot.method_by_class",
-                                      skip_errors = FALSE) {
-  if (is.null(x)) return(list())
-  if (!is.list(x)) {
-    stop(source, " must be a named list mapping class names to method values.", call. = FALSE)
+coerce_class_override_map <- function(
+  x,
+  source = "snapshot.method_by_class",
+  skip_errors = FALSE
+) {
+  if (is.null(x)) {
+    return(list())
   }
-  if (length(x) == 0L) return(list())
+  if (!is.list(x)) {
+    stop(
+      source,
+      " must be a named list mapping class names to method values.",
+      call. = FALSE
+    )
+  }
+  if (length(x) == 0L) {
+    return(list())
+  }
 
   nms <- names(x)
   if (is.null(nms) || anyNA(nms) || any(trimws(nms) == "")) {
-    stop(source, " must be a named list mapping class names to method values.", call. = FALSE)
+    stop(
+      source,
+      " must be a named list mapping class names to method values.",
+      call. = FALSE
+    )
   }
 
   out <- list()
   for (nm in nms) {
     class_name <- trimws(nm)
-    if (!nzchar(class_name)) next
+    if (!nzchar(class_name)) {
+      next
+    }
     if (skip_errors) {
       entry <- tryCatch(
         coerce_snapshot_methods_from_config(
@@ -395,20 +540,28 @@ eval_character_literal <- function(expr, source_name, label) {
   }
   if (is.call(expr) && identical(expr[[1L]], quote(c))) {
     args <- as.list(expr)[-1L]
-    vals <- vapply(args, function(arg) {
-      if (!is.character(arg) || length(arg) != 1L) {
-        stop(
-          source_name, " has unsupported value for ", label,
-          ". Use character method expressions only in defaults files.",
-          call. = FALSE
-        )
-      }
-      arg
-    }, character(1L))
+    vals <- vapply(
+      args,
+      function(arg) {
+        if (!is.character(arg) || length(arg) != 1L) {
+          stop(
+            source_name,
+            " has unsupported value for ",
+            label,
+            ". Use character method expressions only in defaults files.",
+            call. = FALSE
+          )
+        }
+        arg
+      },
+      character(1L)
+    )
     return(unname(vals))
   }
   stop(
-    source_name, " has unsupported value for ", label,
+    source_name,
+    " has unsupported value for ",
+    label,
     ". Use character method expressions only in defaults files.",
     call. = FALSE
   )
@@ -424,7 +577,9 @@ eval_class_map_expr <- function(expr, source_name) {
   }
   args <- as.list(expr)[-1L]
   nms <- names(args)
-  if (length(args) == 0L) return(list())
+  if (length(args) == 0L) {
+    return(list())
+  }
   if (is.null(nms) || anyNA(nms) || any(trimws(nms) == "")) {
     stop(
       source_name,
@@ -446,27 +601,48 @@ eval_class_map_expr <- function(expr, source_name) {
 }
 
 extract_class_map_expr <- function(exprs) {
-  if (length(exprs) == 0L) return(NULL)
+  if (length(exprs) == 0L) {
+    return(NULL)
+  }
 
   for (expr in exprs) {
-    if (is.call(expr) &&
-        (identical(expr[[1L]], quote(`<-`)) || identical(expr[[1L]], quote(`=`))) &&
+    if (
+      is.call(expr) &&
+        (identical(expr[[1L]], quote(`<-`)) ||
+          identical(expr[[1L]], quote(`=`))) &&
         is.symbol(expr[[2L]]) &&
-        as.character(expr[[2L]]) %in% c("snapshot_method_by_class", "method_by_class")) {
+        as.character(expr[[2L]]) %in%
+          c("snapshot_method_by_class", "method_by_class")
+    ) {
       return(expr[[3L]])
     }
   }
 
-  if (length(exprs) == 1L) return(exprs[[1L]])
+  if (length(exprs) == 1L) {
+    return(exprs[[1L]])
+  }
   NULL
 }
 
-read_method_defaults_from_r_file <- function(path, source_name, skip_errors = FALSE) {
-  if (!is.character(path) || length(path) != 1L || is.na(path) || trimws(path) == "") {
+read_method_defaults_from_r_file <- function(
+  path,
+  source_name,
+  skip_errors = FALSE
+) {
+  if (
+    !is.character(path) ||
+      length(path) != 1L ||
+      is.na(path) ||
+      trimws(path) == ""
+  ) {
     return(list())
   }
   if (!file.exists(path)) {
-    stop("Configured snapshot defaults file does not exist: ", path, call. = FALSE)
+    stop(
+      "Configured snapshot defaults file does not exist: ",
+      path,
+      call. = FALSE
+    )
   }
 
   exprs <- parse(file = path, keep.source = FALSE)
@@ -476,7 +652,11 @@ read_method_defaults_from_r_file <- function(path, source_name, skip_errors = FA
   }
   class_map <- eval_class_map_expr(class_expr, source_name = source_name)
 
-  coerce_class_override_map(class_map, source = source_name, skip_errors = skip_errors)
+  coerce_class_override_map(
+    class_map,
+    source = source_name,
+    skip_errors = skip_errors
+  )
 }
 
 normalize_snapshot_config <- function(snapshot_cfg, root) {
@@ -493,7 +673,11 @@ normalize_snapshot_config <- function(snapshot_cfg, root) {
 
   cfg <- utils::modifyList(defaults, snapshot_cfg)
 
-  pkg_defaults_path <- system.file("extdata", SNAPSHOT_METHOD_DEFAULTS_FILE, package = "resultcheck")
+  pkg_defaults_path <- system.file(
+    "extdata",
+    SNAPSHOT_METHOD_DEFAULTS_FILE,
+    package = "resultcheck"
+  )
   pkg_class_map <- if (nzchar(pkg_defaults_path)) {
     read_method_defaults_from_r_file(
       pkg_defaults_path,
@@ -519,13 +703,20 @@ normalize_snapshot_config <- function(snapshot_cfg, root) {
   )
 
   merged_class_map <- pkg_class_map
-  for (nm in names(project_class_map)) merged_class_map[[nm]] <- project_class_map[[nm]]
-  for (nm in names(inline_class_map)) merged_class_map[[nm]] <- inline_class_map[[nm]]
+  for (nm in names(project_class_map)) {
+    merged_class_map[[nm]] <- project_class_map[[nm]]
+  }
+  for (nm in names(inline_class_map)) {
+    merged_class_map[[nm]] <- inline_class_map[[nm]]
+  }
 
   cfg[["method"]] <- if (is.null(cfg[["method"]])) {
     NULL
   } else {
-    coerce_snapshot_methods_from_config(cfg[["method"]], arg_name = "snapshot.method")
+    coerce_snapshot_methods_from_config(
+      cfg[["method"]],
+      arg_name = "snapshot.method"
+    )
   }
   cfg[["method_by_class"]] <- merged_class_map
   cfg
@@ -538,37 +729,60 @@ extract_method_labels_from_expr <- function(method_expr) {
   if (is.symbol(method_expr)) {
     return(as.character(method_expr))
   }
-  if (is.call(method_expr) && as.character(method_expr[[1L]]) %in% c("::", ":::")) {
+  if (
+    is.call(method_expr) && as.character(method_expr[[1L]]) %in% c("::", ":::")
+  ) {
     return(paste(deparse(method_expr), collapse = ""))
   }
-  if (is.call(method_expr) && as.character(method_expr[[1L]]) %in% c("c", "list")) {
+  if (
+    is.call(method_expr) && as.character(method_expr[[1L]]) %in% c("c", "list")
+  ) {
     args <- as.list(method_expr)[-1L]
-    return(vapply(args, function(arg) paste(deparse(arg), collapse = ""), character(1L)))
+    return(vapply(
+      args,
+      function(arg) paste(deparse(arg), collapse = ""),
+      character(1L)
+    ))
   }
   NULL
 }
 
-coerce_snapshot_methods <- function(method,
-                                    arg_name = "method",
-                                    method_expr = NULL) {
+coerce_snapshot_methods <- function(
+  method,
+  arg_name = "method",
+  method_expr = NULL
+) {
   is_method_spec <- is.list(method) &&
     length(method) > 0L &&
-    all(vapply(method, function(x) {
-      is.list(x) &&
-        is.function(x[["fn"]]) &&
-        is.character(x[["label"]]) &&
-        length(x[["label"]]) == 1L
-    }, logical(1L)))
+    all(vapply(
+      method,
+      function(x) {
+        is.list(x) &&
+          is.function(x[["fn"]]) &&
+          is.character(x[["label"]]) &&
+          length(x[["label"]]) == 1L
+      },
+      logical(1L)
+    ))
   if (is_method_spec) {
     return(method)
   }
 
   method_list <- if (is.function(method)) {
     list(method)
-  } else if (is.list(method) && length(method) > 0L && all(vapply(method, is.function, logical(1L)))) {
+  } else if (
+    is.list(method) &&
+      length(method) > 0L &&
+      all(vapply(method, is.function, logical(1L)))
+  ) {
     method
   } else {
-    stop("`", arg_name, "` must be a function or a non-empty list of functions.", call. = FALSE)
+    stop(
+      "`",
+      arg_name,
+      "` must be a function or a non-empty list of functions.",
+      call. = FALSE
+    )
   }
 
   labels <- names(method_list)
@@ -593,9 +807,14 @@ coerce_snapshot_methods <- function(method,
       asNamespace("stats")
     )
     for (env in envs) {
-      nms <- tryCatch(ls(env, all.names = TRUE), error = function(e) character())
+      nms <- tryCatch(ls(env, all.names = TRUE), error = function(e) {
+        character()
+      })
       for (nm in nms) {
-        obj <- tryCatch(get(nm, envir = env, inherits = FALSE), error = function(e) NULL)
+        obj <- tryCatch(
+          get(nm, envir = env, inherits = FALSE),
+          error = function(e) NULL
+        )
         if (is.function(obj) && identical(obj, fn)) {
           return(nm)
         }
@@ -604,10 +823,14 @@ coerce_snapshot_methods <- function(method,
     NULL
   }
 
-  guessed <- vapply(method_list, function(fn) {
-    nm <- guess_function_name(fn)
-    if (is.null(nm)) "" else nm
-  }, character(1L))
+  guessed <- vapply(
+    method_list,
+    function(fn) {
+      nm <- guess_function_name(fn)
+      if (is.null(nm)) "" else nm
+    },
+    character(1L)
+  )
   fill_guess <- which(trimws(labels) == "" & nzchar(guessed))
   if (length(fill_guess) > 0L) {
     labels[fill_guess] <- guessed[fill_guess]
@@ -618,14 +841,28 @@ coerce_snapshot_methods <- function(method,
     labels[missing_labels] <- paste0("unnamed_method_", missing_labels)
   }
 
-  Map(function(fn, label) {
-    list(fn = fn, label = label)
-  }, method_list, labels)
+  Map(
+    function(fn, label) {
+      list(fn = fn, label = label)
+    },
+    method_list,
+    labels
+  )
 }
 
-resolve_snapshot_methods <- function(value, method, config, method_missing, method_expr = NULL) {
+resolve_snapshot_methods <- function(
+  value,
+  method,
+  config,
+  method_missing,
+  method_expr = NULL
+) {
   if (!isTRUE(method_missing)) {
-    return(coerce_snapshot_methods(method, arg_name = "method", method_expr = method_expr))
+    return(coerce_snapshot_methods(
+      method,
+      arg_name = "method",
+      method_expr = method_expr
+    ))
   }
 
   class_methods <- NULL
@@ -640,7 +877,9 @@ resolve_snapshot_methods <- function(value, method, config, method_missing, meth
       }
     }
   }
-  if (!is.null(class_methods)) return(class_methods)
+  if (!is.null(class_methods)) {
+    return(class_methods)
+  }
 
   global_methods <- cfg_snapshot[["method"]]
   if (is.list(global_methods) && length(global_methods) > 0L) {
@@ -677,39 +916,46 @@ round_snapshot_numbers <- function(text, digits) {
   #      Examples: 1e+07   -2E4
   pattern <- "[-+]?[0-9]*\\.[0-9]+([eE][-+]?[0-9]+)?|[-+]?[0-9]+[eE][-+]?[0-9]+"
 
-  vapply(text, function(line) {
-    m <- gregexpr(pattern, line, perl = TRUE)[[1]]
-    if (m[1] == -1L) return(line)
-
-    match_lengths <- attr(m, "match.length")
-    parts <- character(length(m) * 2L + 1L)
-    pos   <- 1L
-    j     <- 1L
-
-    for (i in seq_along(m)) {
-      start <- m[i]
-      end   <- start + match_lengths[i] - 1L
-
-      parts[j] <- substr(line, pos, start - 1L)
-      j <- j + 1L
-
-      num_str <- substr(line, start, end)
-      # The regex guarantees the matched string looks like a number; any failure
-      # to parse (e.g. an NA) is treated as a non-match and the original token
-      # is kept.  suppressWarnings avoids noisy NAs-introduced messages.
-      num_val <- suppressWarnings(as.numeric(num_str))
-      parts[j] <- if (!is.na(num_val)) {
-        as.character(round(num_val, digits))
-      } else {
-        num_str
+  vapply(
+    text,
+    function(line) {
+      m <- gregexpr(pattern, line, perl = TRUE)[[1]]
+      if (m[1] == -1L) {
+        return(line)
       }
-      j   <- j + 1L
-      pos <- end + 1L
-    }
 
-    parts[j] <- substr(line, pos, nchar(line))
-    paste(parts[seq_len(j)], collapse = "")
-  }, character(1L), USE.NAMES = FALSE)
+      match_lengths <- attr(m, "match.length")
+      parts <- character(length(m) * 2L + 1L)
+      pos <- 1L
+      j <- 1L
+
+      for (i in seq_along(m)) {
+        start <- m[i]
+        end <- start + match_lengths[i] - 1L
+
+        parts[j] <- substr(line, pos, start - 1L)
+        j <- j + 1L
+
+        num_str <- substr(line, start, end)
+        # The regex guarantees the matched string looks like a number; any failure
+        # to parse (e.g. an NA) is treated as a non-match and the original token
+        # is kept.  suppressWarnings avoids noisy NAs-introduced messages.
+        num_val <- suppressWarnings(as.numeric(num_str))
+        parts[j] <- if (!is.na(num_val)) {
+          as.character(round(num_val, digits))
+        } else {
+          num_str
+        }
+        j <- j + 1L
+        pos <- end + 1L
+      }
+
+      parts[j] <- substr(line, pos, nchar(line))
+      paste(parts[seq_len(j)], collapse = "")
+    },
+    character(1L),
+    USE.NAMES = FALSE
+  )
 }
 
 
@@ -777,38 +1023,47 @@ serialize_value <- function(value, methods = NULL, use_class_defaults = TRUE) {
   methods <- coerce_snapshot_methods(methods, arg_name = "methods")
   # Create a text representation using various methods
   output <- character()
-  
+
   # Add header with object type
   output <- c(output, paste0("# Snapshot: ", class(value)[1]))
   output <- c(output, "")
-  
+
   # Use a fixed large width so that snapshot output is consistent regardless
   # of the R session's console width setting.
-  withr::with_options(list(width = SNAPSHOT_OUTPUT_WIDTH, pillar.advice = TRUE), {
-    first_method <- TRUE
-    for (method_def in methods) {
-      section <- tryCatch(
-        utils::capture.output(method_def$fn(value)),
-        error = function(e) {
-          obj_class <- class(value)
-          if (length(obj_class) == 0L) obj_class <- as.character(typeof(value))
-          stop(
-            "Snapshot method `", method_def$label, "` is not available for class `",
-            obj_class[1L], "`: ", conditionMessage(e),
-            call. = FALSE
-          )
-        }
-      )
+  withr::with_options(
+    list(width = SNAPSHOT_OUTPUT_WIDTH, pillar.advice = TRUE),
+    {
+      first_method <- TRUE
+      for (method_def in methods) {
+        section <- tryCatch(
+          utils::capture.output(method_def$fn(value)),
+          error = function(e) {
+            obj_class <- class(value)
+            if (length(obj_class) == 0L) {
+              obj_class <- as.character(typeof(value))
+            }
+            stop(
+              "Snapshot method `",
+              method_def$label,
+              "` is not available for class `",
+              obj_class[1L],
+              "`: ",
+              conditionMessage(e),
+              call. = FALSE
+            )
+          }
+        )
 
-      if (!first_method) {
-        output <- c(output, "")
+        if (!first_method) {
+          output <- c(output, "")
+        }
+        output <- c(output, paste0("## ", method_def$label))
+        output <- c(output, section)
+        first_method <- FALSE
       }
-      output <- c(output, paste0("## ", method_def$label))
-      output <- c(output, section)
-      first_method <- FALSE
     }
-  })
-  
+  )
+
   return(output)
 }
 
@@ -843,33 +1098,38 @@ compare_snapshot_text <- function(old_text, new_text, precision = NULL) {
   if (identical(old_text, new_text)) {
     return(NULL)
   }
-  
+
   # Use waldo for comparison if available
   if (requireNamespace("waldo", quietly = TRUE)) {
-    comparison <- waldo::compare(old_text, new_text, x_arg = "old", y_arg = "new")
+    comparison <- waldo::compare(
+      old_text,
+      new_text,
+      x_arg = "old",
+      y_arg = "new"
+    )
     if (length(comparison) == 0) {
       return(NULL)
     }
     return(as.character(comparison))
   }
-  
+
   # Fallback to basic diff
   output <- character()
   output <- c(output, "Snapshots differ:")
-  
+
   # Show line-by-line differences
   max_len <- max(length(old_text), length(new_text))
   for (i in seq_len(max_len)) {
     old_line <- if (i <= length(old_text)) old_text[i] else "<missing>"
     new_line <- if (i <= length(new_text)) new_text[i] else "<missing>"
-    
+
     if (!identical(old_line, new_line)) {
       output <- c(output, sprintf("Line %d:", i))
       output <- c(output, sprintf("  - %s", old_line))
       output <- c(output, sprintf("  + %s", new_line))
     }
   }
-  
+
   return(output)
 }
 
@@ -907,14 +1167,18 @@ is_testing <- function() {
   # Check if we're in a sandbox context by looking at call stack
   # run_in_sandbox stores a flag in the package environment
   in_sandbox <- !is.null(.resultcheck_env$.resultcheck_original_wd)
-  
+
   return(in_sandbox)
 }
 
 warn_snapshot_write <- function(snapshot_file) {
   if (interactive()) {
-    warning("snapshot() will write a snapshot file to: ", snapshot_file,
-            call. = FALSE, immediate. = TRUE)
+    warning(
+      "snapshot() will write a snapshot file to: ",
+      snapshot_file,
+      call. = FALSE,
+      immediate. = TRUE
+    )
   }
 }
 
@@ -988,9 +1252,9 @@ warn_snapshot_write <- function(snapshot_file) {
 snapshot <- function(value, name, script_name = NULL, method = NULL) {
   # Get snapshot file path (.md extension)
   snapshot_file <- get_snapshot_path(name, script_name, ext = "md")
-  
+
   # Read project configuration for optional precision rounding
-  config    <- read_resultcheck_config()
+  config <- read_resultcheck_config()
   precision <- config[["snapshot"]][["precision"]]
   methods <- resolve_snapshot_methods(
     value = value,
@@ -1007,37 +1271,50 @@ snapshot <- function(value, name, script_name = NULL, method = NULL) {
   if (!is.null(precision)) {
     new_text <- round_snapshot_numbers(new_text, as.integer(precision))
   }
-  
+
   # Detect if we're in testing mode
   testing_mode <- is_testing()
-  
+
   # Check if snapshot exists
   if (!file.exists(snapshot_file)) {
     if (testing_mode) {
       # In testing mode, error if snapshot doesn't exist
       stop(
-        "Snapshot does not exist: ", name, "\n",
-        "File: ", snapshot_file, "\n",
+        "Snapshot does not exist: ",
+        name,
+        "\n",
+        "File: ",
+        snapshot_file,
+        "\n",
         "Run the script interactively first to create snapshots.",
         call. = FALSE
       )
     }
-    
+
     # First time: save the snapshot
     warn_snapshot_write(snapshot_file)
     writeLines(new_text, snapshot_file)
-    message("\u2713 New snapshot saved: ", basename(dirname(snapshot_file)), "/", basename(snapshot_file))
+    message(
+      "\u2713 New snapshot saved: ",
+      basename(dirname(snapshot_file)),
+      "/",
+      basename(snapshot_file)
+    )
     return(invisible(TRUE))
   }
-  
+
   # Load existing snapshot
   old_text <- readLines(snapshot_file, warn = FALSE)
-  
+
   # Compare snapshots (precision already applied to new_text above; also
   # applied to old_text inside compare_snapshot_text for backward compatibility
   # with snapshots stored before precision was configured).
-  differences <- compare_snapshot_text(old_text, new_text, precision = precision)
-  
+  differences <- compare_snapshot_text(
+    old_text,
+    new_text,
+    precision = precision
+  )
+
   if (is.null(differences)) {
     # No differences - snapshot matches
     if (!testing_mode) {
@@ -1045,28 +1322,36 @@ snapshot <- function(value, name, script_name = NULL, method = NULL) {
     }
     return(invisible(TRUE))
   }
-  
+
   # Differences found
   diff_msg <- paste0(
-    "\nSnapshot differences found for: ", name, "\n",
-    "File: ", snapshot_file, "\n\n",
+    "\nSnapshot differences found for: ",
+    name,
+    "\n",
+    "File: ",
+    snapshot_file,
+    "\n\n",
     "Differences:\n",
     paste(differences, collapse = "\n")
   )
-  
+
   if (testing_mode) {
     # In testing mode, throw an error
-    stop(diff_msg, "\n\nSnapshot does not match. Run interactively to review and update.", call. = FALSE)
+    stop(
+      diff_msg,
+      "\n\nSnapshot does not match. Run interactively to review and update.",
+      call. = FALSE
+    )
   }
-  
+
   # Interactive mode: show warning and prompt
   warning(diff_msg, call. = FALSE, immediate. = TRUE)
-  
+
   if (interactive()) {
     # Prompt user to update
     cat("\n")
     response <- readline(prompt = "Update snapshot? (y/n): ")
-    
+
     if (tolower(trimws(response)) == "y") {
       # Preserve any [ignored] markers from the stored snapshot
       warn_snapshot_write(snapshot_file)
