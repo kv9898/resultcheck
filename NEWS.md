@@ -1,3 +1,5 @@
+# resultcheck (development version)
+
 # resultcheck 0.2.0
 
 * `snapshot()` now uses `rstudioapi::getSourceEditorContext()$path` (in RStudio/Positron) as the primary method to detect the calling script name, falling back to the call stack and then `"interactive"`.
