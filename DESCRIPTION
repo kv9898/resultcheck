@@ -13,7 +13,6 @@ Description:
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports:
     withr,
     rprojroot,
@@ -28,3 +27,4 @@ Suggests:
 URL: https://github.com/kv9898/resultcheck/, https://kv9898.github.io/resultcheck/
 BugReports: https://github.com/kv9898/resultcheck/issues
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0
