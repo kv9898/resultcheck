@@ -1,16 +1,19 @@
 #' Get project root for sandbox operations
-#' 
+#'
 #' Internal helper to get project root, falling back to current directory
 #' if root cannot be determined.
-#' 
+#'
 #' @return Character path to project root or current working directory
 #' @keywords internal
 .get_project_root <- function() {
-  tryCatch({
-    find_root()
-  }, error = function(e) {
-    getwd()
-  })
+  tryCatch(
+    {
+      find_root()
+    },
+    error = function(e) {
+      getwd()
+    }
+  )
 }
 
 
@@ -44,13 +47,21 @@ with_example <- function(code, mismatch = FALSE) {
   dir.create(example_root, recursive = TRUE, showWarnings = FALSE)
   on.exit(unlink(example_root, recursive = TRUE, force = TRUE), add = TRUE)
 
-  dir.create(file.path(example_root, "tests", "_resultcheck_snaps", "analysis"),
-             recursive = TRUE, showWarnings = FALSE)
-  dir.create(file.path(example_root, "tests", "testthat"),
-             recursive = TRUE, showWarnings = FALSE)
+  dir.create(
+    file.path(example_root, "tests", "_resultcheck_snaps", "analysis"),
+    recursive = TRUE,
+    showWarnings = FALSE
+  )
+  dir.create(
+    file.path(example_root, "tests", "testthat"),
+    recursive = TRUE,
+    showWarnings = FALSE
+  )
 
-  writeLines("# Example project root marker",
-             file.path(example_root, "_resultcheck.yml"))
+  writeLines(
+    "# Example project root marker",
+    file.path(example_root, "_resultcheck.yml")
+  )
 
   writeLines(
     c(
@@ -65,10 +76,18 @@ with_example <- function(code, mismatch = FALSE) {
   # same built-in method defaults (e.g. broom for lm) that snapshot() will
   # see when run inside the sandbox.
   snapshot_path <- file.path(
-    example_root, "tests", "_resultcheck_snaps", "analysis", "model.md"
+    example_root,
+    "tests",
+    "_resultcheck_snaps",
+    "analysis",
+    "model.md"
   )
   mismatch_path <- file.path(
-    example_root, "tests", "_resultcheck_snaps", "analysis", "model_mismatch.md"
+    example_root,
+    "tests",
+    "_resultcheck_snaps",
+    "analysis",
+    "model_mismatch.md"
   )
 
   withr::with_dir(example_root, {
@@ -79,13 +98,21 @@ with_example <- function(code, mismatch = FALSE) {
     mismatch_text <- matching_snapshot_text
     # Intentionally alter the first numeric token so the mismatch demo fails.
     numeric_pattern <- "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?"
-    first_numeric_line <- which(grepl(numeric_pattern, mismatch_text, perl = TRUE))[1]
+    first_numeric_line <- which(grepl(
+      numeric_pattern,
+      mismatch_text,
+      perl = TRUE
+    ))[1]
     if (!is.na(first_numeric_line)) {
       line <- mismatch_text[first_numeric_line]
       m <- regexpr(numeric_pattern, line, perl = TRUE)
       if (m[1] != -1L) {
         matched <- regmatches(line, m)
-        digits <- if (grepl("\\.", matched)) nchar(sub(".*\\.", "", matched)) else 0L
+        digits <- if (grepl("\\.", matched)) {
+          nchar(sub(".*\\.", "", matched))
+        } else {
+          0L
+        }
         altered_number <- format(
           round(as.numeric(matched) + 1, digits),
           nsmall = digits,
@@ -118,8 +145,10 @@ with_example <- function(code, mismatch = FALSE) {
   }
 
   if (!requireNamespace("withr", quietly = TRUE)) {
-    stop("Package 'withr' is required but not installed. ",
-         "Please install it with: install.packages('withr')")
+    stop(
+      "Package 'withr' is required but not installed. ",
+      "Please install it with: install.packages('withr')"
+    )
   }
 
   expr <- substitute(code)
@@ -162,7 +191,10 @@ setup_sandbox <- function(files = NULL, temp_base = NULL) {
     files <- character(0)
   }
   if (!is.character(files)) {
-    stop("`files` must be a character vector of relative paths or NULL.", call. = FALSE)
+    stop(
+      "`files` must be a character vector of relative paths or NULL.",
+      call. = FALSE
+    )
   }
 
   # Generate unique ID for this sandbox
@@ -172,27 +204,30 @@ setup_sandbox <- function(files = NULL, temp_base = NULL) {
     "_",
     paste(sample(c(letters, 0:9), 8, replace = TRUE), collapse = "")
   )
-  
+
   # Create temp directory
   if (is.null(temp_base)) {
     temp_dir <- tempfile(pattern = sandbox_id)
   } else {
     temp_dir <- file.path(temp_base, sandbox_id)
   }
-  
+
   # Try to create the directory
-  tryCatch({
-    dir.create(temp_dir, recursive = TRUE, showWarnings = FALSE)
-    if (!dir.exists(temp_dir)) {
-      stop("Failed to create sandbox directory: ", temp_dir)
+  tryCatch(
+    {
+      dir.create(temp_dir, recursive = TRUE, showWarnings = FALSE)
+      if (!dir.exists(temp_dir)) {
+        stop("Failed to create sandbox directory: ", temp_dir)
+      }
+    },
+    error = function(e) {
+      stop("Failed to create sandbox directory: ", e$message)
     }
-  }, error = function(e) {
-    stop("Failed to create sandbox directory: ", e$message)
-  })
-  
+  )
+
   # Find project root to resolve file paths relative to it
   project_root <- .get_project_root()
-  
+
   # Copy files/directories while preserving path structure
   for (file in files) {
     # Validate that path is relative (no absolute paths allowed)
@@ -203,73 +238,96 @@ setup_sandbox <- function(files = NULL, temp_base = NULL) {
       # On Unix-like systems, check for leading slash
       is_absolute <- grepl("^/", file)
     }
-    
+
     if (is_absolute) {
-      stop("Absolute paths are not allowed. Please use relative paths only: ", file)
+      stop(
+        "Absolute paths are not allowed. Please use relative paths only: ",
+        file
+      )
     }
-    
+
     # Validate that path doesn't contain path traversal attempts
     # Split path and check each component for exactly ".."
     path_components <- strsplit(file, "[/\\\\]")[[1]]
     if (any(path_components == "..")) {
-      stop("Path traversal (e.g., '..') is not allowed for security reasons: ", file)
+      stop(
+        "Path traversal (e.g., '..') is not allowed for security reasons: ",
+        file
+      )
     }
-    
+
     # Resolve path relative to project root
     full_file_path <- file.path(project_root, file)
-    
+
     if (dir.exists(full_file_path)) {
       # Copy directory recursively, preserving the relative path structure
-      all_sub_files <- list.files(full_file_path, recursive = TRUE,
-                                  all.files = TRUE, full.names = FALSE)
+      all_sub_files <- list.files(
+        full_file_path,
+        recursive = TRUE,
+        all.files = TRUE,
+        full.names = FALSE
+      )
       for (subfile in all_sub_files) {
         src <- file.path(full_file_path, subfile)
-        if (dir.exists(src)) next  # skip directory entries
+        if (dir.exists(src)) {
+          next
+        } # skip directory entries
         dst <- file.path(temp_dir, file, subfile)
         if (!dir.exists(dirname(dst))) {
           dir.create(dirname(dst), recursive = TRUE, showWarnings = FALSE)
         }
-        tryCatch({
-          file.copy(src, dst, overwrite = TRUE)
-        }, error = function(e) {
-          warning("Failed to copy file ", file.path(file, subfile), ": ", e$message)
-        })
+        tryCatch(
+          {
+            file.copy(src, dst, overwrite = TRUE)
+          },
+          error = function(e) {
+            warning(
+              "Failed to copy file ",
+              file.path(file, subfile),
+              ": ",
+              e$message
+            )
+          }
+        )
       }
     } else if (file.exists(full_file_path)) {
       # Determine the target path
       target_path <- file.path(temp_dir, file)
-      
+
       # Create parent directories if needed
       target_dir <- dirname(target_path)
       if (!dir.exists(target_dir)) {
         dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
       }
-      
+
       # Copy the file
       # Note: file.copy() follows symlinks and copies the target file's content,
       # not the symlink itself. This means even if 'file' is a symlink pointing
       # outside the current directory, the copied content will be in the sandbox.
       # This is the desired behavior for creating isolated test environments.
-      tryCatch({
-        file.copy(full_file_path, target_path, overwrite = TRUE)
-      }, error = function(e) {
-        warning("Failed to copy file ", file, ": ", e$message)
-      })
+      tryCatch(
+        {
+          file.copy(full_file_path, target_path, overwrite = TRUE)
+        },
+        error = function(e) {
+          warning("Failed to copy file ", file, ": ", e$message)
+        }
+      )
     } else {
       warning("File not found, skipping: ", file)
     }
   }
-  
+
   # Create and return sandbox object
   sandbox <- list(
     path = temp_dir,
     id = sandbox_id
   )
   class(sandbox) <- c("resultcheck_sandbox", "list")
-  
+
   # Store in package environment for later retrieval
   .resultcheck_env$last_sandbox <- sandbox
-  
+
   return(sandbox)
 }
 
@@ -297,35 +355,43 @@ setup_sandbox <- function(files = NULL, temp_base = NULL) {
 #'   on.exit(cleanup_sandbox(sandbox), add = TRUE)
 #'   run_in_sandbox("analysis.R", sandbox)
 #' })
-run_in_sandbox <- function(script_path, 
-                           sandbox = NULL, 
-                           suppress_messages = TRUE,
-                           suppress_warnings = TRUE,
-                           capture_output = TRUE) {
+run_in_sandbox <- function(
+  script_path,
+  sandbox = NULL,
+  suppress_messages = TRUE,
+  suppress_warnings = TRUE,
+  capture_output = TRUE
+) {
   # Get sandbox
   if (is.null(sandbox)) {
     if (is.null(.resultcheck_env$last_sandbox)) {
-      stop("No sandbox specified and no previous sandbox found. ",
-           "Please create a sandbox with setup_sandbox() first.")
+      stop(
+        "No sandbox specified and no previous sandbox found. ",
+        "Please create a sandbox with setup_sandbox() first."
+      )
     }
     sandbox <- .resultcheck_env$last_sandbox
   }
-  
+
   # Validate sandbox
   if (!inherits(sandbox, "resultcheck_sandbox")) {
-    stop("Invalid sandbox object. Please provide a sandbox created by setup_sandbox().")
+    stop(
+      "Invalid sandbox object. Please provide a sandbox created by setup_sandbox()."
+    )
   }
-  
+
   if (!dir.exists(sandbox$path)) {
     stop("Sandbox directory does not exist: ", sandbox$path)
   }
-  
+
   # Check if withr is available
   if (!requireNamespace("withr", quietly = TRUE)) {
-    stop("Package 'withr' is required but not installed. ",
-         "Please install it with: install.packages('withr')")
+    stop(
+      "Package 'withr' is required but not installed. ",
+      "Please install it with: install.packages('withr')"
+    )
   }
-  
+
   # Check if script exists in sandbox (preferred) or in project root
   script_in_sandbox <- file.path(sandbox$path, script_path)
   if (file.exists(script_in_sandbox)) {
@@ -335,7 +401,7 @@ run_in_sandbox <- function(script_path,
     # Try to find script in project root
     project_root <- .get_project_root()
     script_in_root <- file.path(project_root, script_path)
-    
+
     if (file.exists(script_in_root)) {
       # Copy script to sandbox before running, preserving directory structure
       target_path <- file.path(sandbox$path, script_path)
@@ -353,7 +419,7 @@ run_in_sandbox <- function(script_path,
       } else {
         grepl("^/", script_path)
       }
-      
+
       if (is_absolute) {
         # For absolute paths, copy to sandbox root with basename only
         target_path <- file.path(sandbox$path, basename(script_path))
@@ -373,47 +439,53 @@ run_in_sandbox <- function(script_path,
       stop("Script file not found: ", script_path)
     }
   }
-  
+
   # Build the execution expression
   exec_expr <- quote(source(script_to_run, keep.source = TRUE))
-  
+
   if (capture_output) {
     exec_expr <- bquote(capture.output(.(exec_expr)))
   }
-  
+
   if (suppress_warnings) {
     exec_expr <- bquote(suppressWarnings(.(exec_expr)))
   }
-  
+
   if (suppress_messages) {
     exec_expr <- bquote(suppressMessages(.(exec_expr)))
   }
-  
+
   # Store original working directory for snapshot functions
   original_wd <- getwd()
-  
+
   # Execute in sandbox directory with graphics suppressed
-  tryCatch({
-    withr::with_dir(sandbox$path, {
-      # Store original WD in package environment so snapshot() can find project root
-      .resultcheck_env$.resultcheck_original_wd <- original_wd
-      on.exit({
-        .resultcheck_env$.resultcheck_original_wd <- NULL
-      }, add = TRUE)
-      
-      pdf(NULL)
-      eval(exec_expr)
-      dev.off()
-    })
-  }, error = function(e) {
-    # Ensure cleanup happens even on error
-    .resultcheck_env$.resultcheck_original_wd <- NULL
-    stop("Error executing script in sandbox: ", e$message)
-  })
-  
+  tryCatch(
+    {
+      withr::with_dir(sandbox$path, {
+        # Store original WD in package environment so snapshot() can find project root
+        .resultcheck_env$.resultcheck_original_wd <- original_wd
+        on.exit(
+          {
+            .resultcheck_env$.resultcheck_original_wd <- NULL
+          },
+          add = TRUE
+        )
+
+        pdf(NULL)
+        eval(exec_expr)
+        dev.off()
+      })
+    },
+    error = function(e) {
+      # Ensure cleanup happens even on error
+      .resultcheck_env$.resultcheck_original_wd <- NULL
+      stop("Error executing script in sandbox: ", e$message)
+    }
+  )
+
   # Ensure cleanup (redundant but safe)
   .resultcheck_env$.resultcheck_original_wd <- NULL
-  
+
   invisible(TRUE)
 }
 
@@ -441,40 +513,49 @@ cleanup_sandbox <- function(sandbox = NULL, force = TRUE) {
   # Get sandbox
   if (is.null(sandbox)) {
     if (is.null(.resultcheck_env$last_sandbox)) {
-      warning("No sandbox specified and no previous sandbox found. Nothing to clean up.")
+      warning(
+        "No sandbox specified and no previous sandbox found. Nothing to clean up."
+      )
       return(invisible(FALSE))
     }
     sandbox <- .resultcheck_env$last_sandbox
   }
-  
+
   # Validate sandbox
   if (!inherits(sandbox, "resultcheck_sandbox")) {
-    stop("Invalid sandbox object. Please provide a sandbox created by setup_sandbox().")
+    stop(
+      "Invalid sandbox object. Please provide a sandbox created by setup_sandbox()."
+    )
   }
-  
+
   temp_dir <- sandbox$path
-  
+
   # Check if directory exists
   if (!dir.exists(temp_dir)) {
     warning("Sandbox directory does not exist: ", temp_dir)
     return(invisible(FALSE))
   }
-  
+
   # Remove the directory
-  tryCatch({
-    unlink(temp_dir, recursive = TRUE, force = force)
-    
-    # Clear from package environment if it's the last sandbox
-    if (!is.null(.resultcheck_env$last_sandbox) && 
-        identical(.resultcheck_env$last_sandbox$path, temp_dir)) {
-      .resultcheck_env$last_sandbox <- NULL
+  tryCatch(
+    {
+      unlink(temp_dir, recursive = TRUE, force = force)
+
+      # Clear from package environment if it's the last sandbox
+      if (
+        !is.null(.resultcheck_env$last_sandbox) &&
+          identical(.resultcheck_env$last_sandbox$path, temp_dir)
+      ) {
+        .resultcheck_env$last_sandbox <- NULL
+      }
+
+      return(invisible(TRUE))
+    },
+    error = function(e) {
+      warning("Failed to clean up sandbox directory: ", e$message)
+      return(invisible(FALSE))
     }
-    
-    return(invisible(TRUE))
-  }, error = function(e) {
-    warning("Failed to clean up sandbox directory: ", e$message)
-    return(invisible(FALSE))
-  })
+  )
 }
 
 
