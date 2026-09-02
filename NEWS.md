@@ -1,3 +1,5 @@
+# resultcheck (development version)
+
 # resultcheck 0.2.1
 
 * `snapshot()` now improves script-name detection in non-interactive and test contexts by skipping editor-context lookup there and relying on call-stack source references before falling back to `"interactive"`.
