@@ -1,5 +1,7 @@
 # resultcheck (development version)
 
+* `snapshot()` now detects active Quarto documents across execution engines and active knitr inputs so rendered documents reuse snapshots organized under the document filename instead of `"interactive"`. During Quarto rendering, missing snapshots are created automatically and mismatches stop the render with an error.
+
 # resultcheck 0.2.1
 
 * `snapshot()` now improves script-name detection in non-interactive and test contexts by skipping editor-context lookup there and relying on call-stack source references before falling back to `"interactive"`.

@@ -12,7 +12,9 @@ Character string with the detected script basename (without path).
 \description{
 Tries to identify the script file that is calling snapshot().
 Uses \code{rstudioapi::getSourceEditorContext()$path} when running in RStudio,
-falling back to walking the call stack for source references, and finally
-to \code{"interactive"}.
+then \code{QUARTO_DOCUMENT_FILE} during Quarto execution, followed by
+\code{knitr::current_input()} while a document is being knitted. It falls
+back to walking the call stack for source references, and finally to
+\code{"interactive"}.
 }
 \keyword{internal}

@@ -119,8 +119,10 @@ get_start_path_for_find_root <- function() {
 #'
 #' Tries to identify the script file that is calling snapshot().
 #' Uses \code{rstudioapi::getSourceEditorContext()$path} when running in RStudio,
-#' falling back to walking the call stack for source references, and finally
-#' to \code{"interactive"}.
+#' then \code{QUARTO_DOCUMENT_FILE} during Quarto execution, followed by
+#' \code{knitr::current_input()} while a document is being knitted. It falls
+#' back to walking the call stack for source references, and finally to
+#' \code{"interactive"}.
 #'
 #' @return Character string with the detected script basename (without path).
 #' @keywords internal
@@ -132,6 +134,28 @@ detect_script_name <- function() {
       error = function(e) NULL
     )
     if (is.character(path) && nzchar(path) && path != "") {
+      return(basename(path))
+    }
+  }
+
+  # Quarto exposes the source document name to every execution engine,
+  # including Jupyter.
+  path <- Sys.getenv("QUARTO_DOCUMENT_FILE", unset = "")
+  if (nzchar(path)) {
+    return(basename(path))
+  }
+
+  # Quarto and R Markdown chunks are evaluated by knitr without source
+  # references that identify the input document. Ask knitr for its active input
+  # before falling back to the call stack.
+  if (requireNamespace("knitr", quietly = TRUE)) {
+    path <- tryCatch(knitr::current_input(), error = function(e) NULL)
+    if (
+      is.character(path) &&
+        length(path) == 1L &&
+        !is.na(path) &&
+        nzchar(path)
+    ) {
       return(basename(path))
     }
   }
@@ -189,8 +213,9 @@ detect_script_name <- function() {
 #' @param name Character. The name of the snapshot (without extension).
 #' @param script_name Optional. The name of the script file creating the snapshot.
 #'   If NULL, detects from the active RStudio source editor via
-#'   \code{rstudioapi::getSourceEditorContext()$path}, falling back to the call
-#'   stack, then to \code{"interactive"}.
+#'   \code{rstudioapi::getSourceEditorContext()$path}, then the active Quarto
+#'   document or knitr input, falling back to the call stack and finally
+#'   \code{"interactive"}.
 #' @param ext Character. The file extension for the snapshot file (default: "md").
 #'
 #' @return The full path to the snapshot file.
@@ -1171,6 +1196,20 @@ is_testing <- function() {
   return(in_sandbox)
 }
 
+
+#' Detect Quarto Rendering Context
+#'
+#' Determines whether code is executing as part of a Quarto render. Quarto
+#' exposes the source document name through \code{QUARTO_DOCUMENT_FILE} for
+#' every execution engine.
+#'
+#' @return Logical indicating whether a Quarto document is being rendered.
+#'
+#' @keywords internal
+is_quarto_render <- function() {
+  nzchar(Sys.getenv("QUARTO_DOCUMENT_FILE", unset = ""))
+}
+
 warn_snapshot_write <- function(snapshot_file) {
   if (interactive()) {
     warning(
@@ -1190,8 +1229,10 @@ warn_snapshot_write <- function(snapshot_file) {
 #' On subsequent uses, compares the current object to the saved snapshot.
 #'
 #' In interactive mode (default), prompts the user to update if differences
-#' are found and emits a warning. In testing mode (inside testthat or
-#' run_in_sandbox), throws an error if snapshot doesn't exist or doesn't match.
+#' are found and emits a warning. In testing mode (inside
+#' \code{run_in_sandbox()}), throws an error if a snapshot doesn't exist or
+#' doesn't match. During a Quarto render, missing snapshots are created, while
+#' mismatches throw an error and stop rendering.
 #'
 #' Snapshots are stored under \code{tests/_resultcheck_snaps/} by default,
 #' organized by script name, and configurable via \code{snapshot.dir} in
@@ -1213,7 +1254,9 @@ warn_snapshot_write <- function(snapshot_file) {
 #' @param name Character. A descriptive name for this snapshot.
 #' @param script_name Optional. The name of the script creating the snapshot.
 #'   If NULL, auto-detects via \code{rstudioapi::getSourceEditorContext()$path}
-#'   (in RStudio), falling back to the call stack, then to \code{"interactive"}.
+#'   (in RStudio), then \code{QUARTO_DOCUMENT_FILE} or
+#'   \code{knitr::current_input()}, falling back to the call stack and finally
+#'   \code{"interactive"}.
 #' @param method Optional function or non-empty list of functions used to
 #'   serialize \code{value}. Functions are executed in order and each section
 #'   header is taken from the method expression or list name. If omitted,
@@ -1222,8 +1265,9 @@ warn_snapshot_write <- function(snapshot_file) {
 #'   \code{snapshot.method}, then
 #'   \code{list(print = base::print, str = utils::str)}.
 #'
-#' @return Invisible TRUE if snapshot matches or was updated.
-#'   In testing mode, throws an error if snapshot is missing or doesn't match.
+#' @return Invisible TRUE if the snapshot matches, is created, or is updated.
+#'   In testing mode, throws an error if the snapshot is missing or doesn't
+#'   match. During a Quarto render, throws an error only on mismatch.
 #'
 #' @export
 #'
@@ -1272,8 +1316,11 @@ snapshot <- function(value, name, script_name = NULL, method = NULL) {
     new_text <- round_snapshot_numbers(new_text, as.integer(precision))
   }
 
-  # Detect if we're in testing mode
+  # Detect the execution mode. Quarto is distinct from sandbox testing because
+  # it creates missing snapshots but stops rendering when an existing snapshot
+  # does not match.
   testing_mode <- is_testing()
+  quarto_mode <- is_quarto_render()
 
   # Check if snapshot exists
   if (!file.exists(snapshot_file)) {
@@ -1340,6 +1387,15 @@ snapshot <- function(value, name, script_name = NULL, method = NULL) {
     stop(
       diff_msg,
       "\n\nSnapshot does not match. Run interactively to review and update.",
+      call. = FALSE
+    )
+  }
+
+  if (quarto_mode) {
+    stop(
+      diff_msg,
+      "\n\nSnapshot does not match. Quarto rendering stopped. ",
+      "Review and update the stored snapshot before rendering again.",
       call. = FALSE
     )
   }

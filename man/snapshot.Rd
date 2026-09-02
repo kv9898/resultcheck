@@ -13,7 +13,9 @@ snapshot(value, name, script_name = NULL, method = NULL)
 
 \item{script_name}{Optional. The name of the script creating the snapshot.
 If NULL, auto-detects via \code{rstudioapi::getSourceEditorContext()$path}
-(in RStudio), falling back to the call stack, then to \code{"interactive"}.}
+(in RStudio), then \code{QUARTO_DOCUMENT_FILE} or
+\code{knitr::current_input()}, falling back to the call stack and finally
+\code{"interactive"}.}
 
 \item{method}{Optional function or non-empty list of functions used to
 serialize \code{value}. Functions are executed in order and each section
@@ -24,8 +26,9 @@ method defaults are resolved in this order:
 \code{list(print = base::print, str = utils::str)}.}
 }
 \value{
-Invisible TRUE if snapshot matches or was updated.
-In testing mode, throws an error if snapshot is missing or doesn't match.
+Invisible TRUE if the snapshot matches, is created, or is updated.
+In testing mode, throws an error if the snapshot is missing or doesn't
+match. During a Quarto render, throws an error only on mismatch.
 }
 \description{
 Creates or updates a snapshot of an R object for interactive analysis.
@@ -34,8 +37,10 @@ On subsequent uses, compares the current object to the saved snapshot.
 }
 \details{
 In interactive mode (default), prompts the user to update if differences
-are found and emits a warning. In testing mode (inside testthat or
-run_in_sandbox), throws an error if snapshot doesn't exist or doesn't match.
+are found and emits a warning. In testing mode (inside
+\code{run_in_sandbox()}), throws an error if a snapshot doesn't exist or
+doesn't match. During a Quarto render, missing snapshots are created, while
+mismatches throw an error and stop rendering.
 
 Snapshots are stored under \code{tests/_resultcheck_snaps/} by default,
 organized by script name, and configurable via \code{snapshot.dir} in

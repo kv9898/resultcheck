@@ -11,8 +11,9 @@ get_snapshot_path(name, script_name = NULL, ext = "md")
 
 \item{script_name}{Optional. The name of the script file creating the snapshot.
 If NULL, detects from the active RStudio source editor via
-\code{rstudioapi::getSourceEditorContext()$path}, falling back to the call
-stack, then to \code{"interactive"}.}
+\code{rstudioapi::getSourceEditorContext()$path}, then the active Quarto
+document or knitr input, falling back to the call stack and finally
+\code{"interactive"}.}
 
 \item{ext}{Character. The file extension for the snapshot file (default: "md").}
 }
