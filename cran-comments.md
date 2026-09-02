@@ -2,10 +2,23 @@
 
 0 errors | 0 warnings | 0 notes
 
+## Test environments
+
+* GitHub Actions: Ubuntu (R release and devel)
+* GitHub Actions: macOS (R release)
+* GitHub Actions: Windows (R release)
+* Local: Ubuntu, R 4.6.1
+
 ## Release summary
 
-This is a patch release (0.2.0 → 0.2.1) that fixes a bug in script name detection.
+This minor release adds dedicated support for snapshot checks during Quarto
+rendering and improves snapshot consistency across rendering contexts.
 
-## Key changes since 0.2.0
+## Key changes since 0.2.1
 
-* Fixed a bug in `detect_script_name()` where the script name was not correctly detected in certain calling contexts, causing snapshot files to be written to the wrong location.
+* Quarto documents now use their document filename for snapshot storage instead
+  of falling back to `"interactive"`.
+* Missing snapshots are created automatically during Quarto rendering.
+* Snapshot mismatches stop the Quarto render with an informative error.
+* Snapshot serialization now uses consistent Unicode formatting across
+  interactive sessions and Quarto renders.
