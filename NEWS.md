@@ -1,5 +1,7 @@
 # resultcheck (development version)
 
+* `snapshot()` now detects the active knitr input so Quarto and R Markdown renders reuse snapshots organized under the document filename instead of `"interactive"`.
+
 # resultcheck 0.2.1
 
 * `snapshot()` now improves script-name detection in non-interactive and test contexts by skipping editor-context lookup there and relying on call-stack source references before falling back to `"interactive"`.
