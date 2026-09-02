@@ -1,5 +1,7 @@
 # Changelog
 
+## resultcheck (development version)
+
 ## resultcheck 0.2.1
 
 CRAN release: 2026-05-08
