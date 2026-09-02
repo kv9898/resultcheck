@@ -27,4 +27,4 @@ Suggests:
 URL: https://github.com/kv9898/resultcheck/, https://kv9898.github.io/resultcheck/
 BugReports: https://github.com/kv9898/resultcheck/issues
 VignetteBuilder: knitr
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
