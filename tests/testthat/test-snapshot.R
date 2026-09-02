@@ -152,6 +152,30 @@ test_that("snapshot organizes by script name when specified", {
 })
 
 
+test_that("detect_script_name uses the active knitr input", {
+  skip_if_not_installed("knitr")
+
+  withr::with_tempdir({
+    input <- "quarto-input.qmd"
+    writeLines(
+      c(
+        "```{r}",
+        paste0(
+          "stopifnot(identical(resultcheck:::detect_script_name(), ",
+          "'quarto-input.qmd'))"
+        ),
+        "```"
+      ),
+      input
+    )
+
+    expect_no_error(
+      knitr::knit(input, output = "quarto-input.md", quiet = TRUE)
+    )
+  })
+})
+
+
 test_that("compare_snapshot_text ignores .Environment differences", {
   old_text <- c(
     "# Snapshot: lm",

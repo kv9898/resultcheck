@@ -13,7 +13,8 @@ snapshot(value, name, script_name = NULL, method = NULL)
 
 \item{script_name}{Optional. The name of the script creating the snapshot.
 If NULL, auto-detects via \code{rstudioapi::getSourceEditorContext()$path}
-(in RStudio), falling back to the call stack, then to \code{"interactive"}.}
+(in RStudio), then \code{knitr::current_input()}, falling back to the call
+stack and finally \code{"interactive"}.}
 
 \item{method}{Optional function or non-empty list of functions used to
 serialize \code{value}. Functions are executed in order and each section

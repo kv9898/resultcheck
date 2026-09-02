@@ -119,8 +119,9 @@ get_start_path_for_find_root <- function() {
 #'
 #' Tries to identify the script file that is calling snapshot().
 #' Uses \code{rstudioapi::getSourceEditorContext()$path} when running in RStudio,
-#' falling back to walking the call stack for source references, and finally
-#' to \code{"interactive"}.
+#' then \code{knitr::current_input()} while a document is being knitted,
+#' falling back to walking the call stack for source references, and finally to
+#' \code{"interactive"}.
 #'
 #' @return Character string with the detected script basename (without path).
 #' @keywords internal
@@ -132,6 +133,21 @@ detect_script_name <- function() {
       error = function(e) NULL
     )
     if (is.character(path) && nzchar(path) && path != "") {
+      return(basename(path))
+    }
+  }
+
+  # Quarto and R Markdown chunks are evaluated by knitr without source
+  # references that identify the input document. Ask knitr for its active input
+  # before falling back to the call stack.
+  if (requireNamespace("knitr", quietly = TRUE)) {
+    path <- tryCatch(knitr::current_input(), error = function(e) NULL)
+    if (
+      is.character(path) &&
+        length(path) == 1L &&
+        !is.na(path) &&
+        nzchar(path)
+    ) {
       return(basename(path))
     }
   }
@@ -189,8 +205,8 @@ detect_script_name <- function() {
 #' @param name Character. The name of the snapshot (without extension).
 #' @param script_name Optional. The name of the script file creating the snapshot.
 #'   If NULL, detects from the active RStudio source editor via
-#'   \code{rstudioapi::getSourceEditorContext()$path}, falling back to the call
-#'   stack, then to \code{"interactive"}.
+#'   \code{rstudioapi::getSourceEditorContext()$path}, then the active knitr
+#'   input, falling back to the call stack and finally \code{"interactive"}.
 #' @param ext Character. The file extension for the snapshot file (default: "md").
 #'
 #' @return The full path to the snapshot file.
@@ -1213,7 +1229,8 @@ warn_snapshot_write <- function(snapshot_file) {
 #' @param name Character. A descriptive name for this snapshot.
 #' @param script_name Optional. The name of the script creating the snapshot.
 #'   If NULL, auto-detects via \code{rstudioapi::getSourceEditorContext()$path}
-#'   (in RStudio), falling back to the call stack, then to \code{"interactive"}.
+#'   (in RStudio), then \code{knitr::current_input()}, falling back to the call
+#'   stack and finally \code{"interactive"}.
 #' @param method Optional function or non-empty list of functions used to
 #'   serialize \code{value}. Functions are executed in order and each section
 #'   header is taken from the method expression or list name. If omitted,
