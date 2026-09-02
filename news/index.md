@@ -2,6 +2,8 @@
 
 ## resultcheck 0.2.1
 
+CRAN release: 2026-05-08
+
 - [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
   now improves script-name detection in non-interactive and test
   contexts by skipping editor-context lookup there and relying on
