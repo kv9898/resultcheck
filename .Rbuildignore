@@ -4,6 +4,7 @@
 ^tests/_resultcheck_snaps$
 ^\.github$
 ^AGENTS\.md$
+^DEVELOPMENT\.md$
 ^_resultcheck\.yml$
 ^resultcheck\.yml$
 ^cran-comments\.md$
