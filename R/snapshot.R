@@ -1196,6 +1196,20 @@ is_testing <- function() {
   return(in_sandbox)
 }
 
+
+#' Detect Quarto Rendering Context
+#'
+#' Determines whether code is executing as part of a Quarto render. Quarto
+#' exposes the source document name through \code{QUARTO_DOCUMENT_FILE} for
+#' every execution engine.
+#'
+#' @return Logical indicating whether a Quarto document is being rendered.
+#'
+#' @keywords internal
+is_quarto_render <- function() {
+  nzchar(Sys.getenv("QUARTO_DOCUMENT_FILE", unset = ""))
+}
+
 warn_snapshot_write <- function(snapshot_file) {
   if (interactive()) {
     warning(
@@ -1215,8 +1229,10 @@ warn_snapshot_write <- function(snapshot_file) {
 #' On subsequent uses, compares the current object to the saved snapshot.
 #'
 #' In interactive mode (default), prompts the user to update if differences
-#' are found and emits a warning. In testing mode (inside testthat or
-#' run_in_sandbox), throws an error if snapshot doesn't exist or doesn't match.
+#' are found and emits a warning. In testing mode (inside
+#' \code{run_in_sandbox()}), throws an error if a snapshot doesn't exist or
+#' doesn't match. During a Quarto render, missing snapshots are created, while
+#' mismatches throw an error and stop rendering.
 #'
 #' Snapshots are stored under \code{tests/_resultcheck_snaps/} by default,
 #' organized by script name, and configurable via \code{snapshot.dir} in
@@ -1249,8 +1265,9 @@ warn_snapshot_write <- function(snapshot_file) {
 #'   \code{snapshot.method}, then
 #'   \code{list(print = base::print, str = utils::str)}.
 #'
-#' @return Invisible TRUE if snapshot matches or was updated.
-#'   In testing mode, throws an error if snapshot is missing or doesn't match.
+#' @return Invisible TRUE if the snapshot matches, is created, or is updated.
+#'   In testing mode, throws an error if the snapshot is missing or doesn't
+#'   match. During a Quarto render, throws an error only on mismatch.
 #'
 #' @export
 #'
@@ -1299,8 +1316,11 @@ snapshot <- function(value, name, script_name = NULL, method = NULL) {
     new_text <- round_snapshot_numbers(new_text, as.integer(precision))
   }
 
-  # Detect if we're in testing mode
+  # Detect the execution mode. Quarto is distinct from sandbox testing because
+  # it creates missing snapshots but stops rendering when an existing snapshot
+  # does not match.
   testing_mode <- is_testing()
+  quarto_mode <- is_quarto_render()
 
   # Check if snapshot exists
   if (!file.exists(snapshot_file)) {
@@ -1367,6 +1387,15 @@ snapshot <- function(value, name, script_name = NULL, method = NULL) {
     stop(
       diff_msg,
       "\n\nSnapshot does not match. Run interactively to review and update.",
+      call. = FALSE
+    )
+  }
+
+  if (quarto_mode) {
+    stop(
+      diff_msg,
+      "\n\nSnapshot does not match. Quarto rendering stopped. ",
+      "Review and update the stored snapshot before rendering again.",
       call. = FALSE
     )
   }
