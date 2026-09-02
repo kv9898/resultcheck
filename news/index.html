@@ -48,7 +48,9 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="resultcheck-development-version">resultcheck (development version)<a class="anchor" aria-label="anchor" href="#resultcheck-development-version"></a></h2>
-</div>
+<ul><li>
+<code><a href="../reference/snapshot.html">snapshot()</a></code> now detects active Quarto documents across execution engines and active knitr inputs so rendered documents reuse snapshots organized under the document filename instead of <code>"interactive"</code>. During Quarto rendering, missing snapshots are created automatically and mismatches stop the render with an error.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.1" id="resultcheck-021">resultcheck 0.2.1<a class="anchor" aria-label="anchor" href="#resultcheck-021"></a></h2><p class="text-muted">CRAN release: 2026-05-08</p>
 <ul><li>

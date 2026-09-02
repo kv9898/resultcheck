@@ -77,7 +77,9 @@ On subsequent uses, compares the current object to the saved snapshot.</p>
 <dt id="arg-script-name">script_name<a class="anchor" aria-label="anchor" href="#arg-script-name"></a></dt>
 <dd><p>Optional. The name of the script creating the snapshot.
 If NULL, auto-detects via <code>rstudioapi::getSourceEditorContext()$path</code>
-(in RStudio), falling back to the call stack, then to <code>"interactive"</code>.</p></dd>
+(in RStudio), then <code>QUARTO_DOCUMENT_FILE</code> or
+<code><a href="https://rdrr.io/pkg/knitr/man/current_input.html" class="external-link">knitr::current_input()</a></code>, falling back to the call stack and finally
+<code>"interactive"</code>.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -92,14 +94,17 @@ method defaults are resolved in this order:
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Invisible TRUE if snapshot matches or was updated.
-In testing mode, throws an error if snapshot is missing or doesn't match.</p>
+    <p>Invisible TRUE if the snapshot matches, is created, or is updated.
+In testing mode, throws an error if the snapshot is missing or doesn't
+match. During a Quarto render, throws an error only on mismatch.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>In interactive mode (default), prompts the user to update if differences
-are found and emits a warning. In testing mode (inside testthat or
-run_in_sandbox), throws an error if snapshot doesn't exist or doesn't match.</p>
+are found and emits a warning. In testing mode (inside
+<code><a href="run_in_sandbox.html">run_in_sandbox()</a></code>), throws an error if a snapshot doesn't exist or
+doesn't match. During a Quarto render, missing snapshots are created, while
+mismatches throw an error and stop rendering.</p>
 <p>Snapshots are stored under <code>tests/_resultcheck_snaps/</code> by default,
 organized by script name, and configurable via <code>snapshot.dir</code> in
 <code>_resultcheck.yml</code>. Method defaults can be configured via
