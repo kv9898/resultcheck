@@ -8,6 +8,10 @@
   under the document filename instead of `"interactive"`. During Quarto
   rendering, missing snapshots are created automatically and mismatches
   stop the render with an error.
+- Snapshot serialization now fixes CLI Unicode formatting so
+  presentation-only differences such as `×` versus `x`, `…` versus `~`,
+  and Unicode footnote markers do not vary between interactive sessions
+  and Quarto renders.
 
 ## resultcheck 0.2.1
 
