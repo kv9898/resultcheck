@@ -1,5 +1,7 @@
 # Changelog
 
+## resultcheck (development version)
+
 ## resultcheck 0.3.0
 
 - [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
