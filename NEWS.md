@@ -1,3 +1,5 @@
+# resultcheck (development version)
+
 # resultcheck 0.3.0
 
 * `snapshot()` now detects active Quarto documents across execution engines and active knitr inputs so rendered documents reuse snapshots organized under the document filename instead of `"interactive"`. During Quarto rendering, missing snapshots are created automatically and mismatches stop the render with an error.
