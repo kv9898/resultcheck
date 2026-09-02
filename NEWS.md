@@ -1,6 +1,6 @@
 # resultcheck (development version)
 
-* `snapshot()` now detects the active knitr input so Quarto and R Markdown renders reuse snapshots organized under the document filename instead of `"interactive"`.
+* `snapshot()` now detects active Quarto documents across execution engines and active knitr inputs so rendered documents reuse snapshots organized under the document filename instead of `"interactive"`.
 
 # resultcheck 0.2.1
 

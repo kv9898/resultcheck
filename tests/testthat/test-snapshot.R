@@ -176,6 +176,17 @@ test_that("detect_script_name uses the active knitr input", {
 })
 
 
+test_that("detect_script_name uses the active Quarto document", {
+  withr::with_envvar(
+    c(QUARTO_DOCUMENT_FILE = "/project/jupyter-input.qmd"),
+    expect_identical(
+      resultcheck:::detect_script_name(),
+      "jupyter-input.qmd"
+    )
+  )
+})
+
+
 test_that("compare_snapshot_text ignores .Environment differences", {
   old_text <- c(
     "# Snapshot: lm",
