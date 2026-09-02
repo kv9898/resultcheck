@@ -1056,7 +1056,11 @@ serialize_value <- function(value, methods = NULL, use_class_defaults = TRUE) {
   # Use a fixed large width so that snapshot output is consistent regardless
   # of the R session's console width setting.
   withr::with_options(
-    list(width = SNAPSHOT_OUTPUT_WIDTH, pillar.advice = TRUE),
+    list(
+      width = SNAPSHOT_OUTPUT_WIDTH,
+      pillar.advice = TRUE,
+      cli.unicode = TRUE
+    ),
     {
       first_method <- TRUE
       for (method_def in methods) {

@@ -275,6 +275,29 @@ test_that("serialize_value respects selected methods", {
 })
 
 
+test_that("serialize_value uses stable Unicode formatting", {
+  unicode_sensitive <- function(value) {
+    if (isTRUE(getOption("cli.unicode"))) {
+      cat("Unicode: × … ¹\n")
+    } else {
+      cat("ASCII: x ~ ~1\n")
+    }
+  }
+
+  unicode_output <- withr::with_options(
+    list(cli.unicode = TRUE),
+    resultcheck:::serialize_value(1, methods = unicode_sensitive)
+  )
+  ascii_output <- withr::with_options(
+    list(cli.unicode = FALSE),
+    resultcheck:::serialize_value(1, methods = unicode_sensitive)
+  )
+
+  expect_identical(ascii_output, unicode_output)
+  expect_true(any(grepl("Unicode: × … ¹", unicode_output, fixed = TRUE)))
+})
+
+
 test_that("snapshot respects method parameter", {
   temp_project <- tempfile()
   dir.create(temp_project)
