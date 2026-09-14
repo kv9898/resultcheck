@@ -1074,6 +1074,7 @@ serialize_value <- function(value, methods = NULL, use_class_defaults = TRUE) {
     list(
       width = SNAPSHOT_OUTPUT_WIDTH,
       max.print = as.integer(max_print),
+      useFancyQuotes = FALSE,
       pillar.advice = TRUE,
       cli.unicode = TRUE
     ),

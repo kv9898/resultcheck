@@ -1008,3 +1008,31 @@ test_that("invalid max_print configuration is rejected", {
     )
   }
 })
+
+
+test_that("model summary snapshots are independent of fancy quotes", {
+  value <- list(levels = summary(lm(mpg ~ wt, data = mtcars)))
+  plain <- withr::with_options(
+    list(useFancyQuotes = FALSE),
+    resultcheck:::serialize_value(value, methods = print)
+  )
+  fancy <- withr::with_options(
+    list(useFancyQuotes = TRUE),
+    resultcheck:::serialize_value(value, methods = print)
+  )
+  expect_identical(fancy, plain)
+  expect_true(any(grepl("'***'", fancy, fixed = TRUE)))
+})
+
+test_that("serialization restores fancy quotes after success and failure", {
+  withr::local_options(useFancyQuotes = TRUE)
+  resultcheck:::serialize_value(1, methods = print)
+  expect_true(getOption("useFancyQuotes"))
+  expect_error(
+    resultcheck:::serialize_value(1, methods = function(x) {
+      stop("deliberate failure")
+    }),
+    "deliberate failure"
+  )
+  expect_true(getOption("useFancyQuotes"))
+})
