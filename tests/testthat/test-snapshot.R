@@ -918,3 +918,93 @@ test_that("snapshot labels namespaced methods from expression", {
     expect_true(any(grepl("^## stats::coef$", content)))
   })
 })
+
+
+test_that("base snapshots are complete and independent of max.print when configured", {
+  withr::local_dir(withr::local_tempdir())
+  writeLines(c("snapshot:", "  max_print: 2000"), "_resultcheck.yml")
+  value <- as.data.frame(matrix(seq_len(1400), nrow = 200, ncol = 7))
+  small <- withr::with_options(
+    list(max.print = 1000),
+    resultcheck:::serialize_value(value, methods = print)
+  )
+  large <- withr::with_options(
+    list(max.print = 10000),
+    resultcheck:::serialize_value(value, methods = print)
+  )
+
+  expect_identical(small, large)
+  expect_false(any(grepl("omitted", small, fixed = TRUE)))
+  expect_true(any(grepl("^200[[:space:]]", small)))
+
+  value[200, 7] <- -999
+  changed <- withr::with_options(
+    list(max.print = 1000),
+    resultcheck:::serialize_value(value, methods = print)
+  )
+  expect_false(identical(small, changed))
+})
+
+test_that("serialization restores max.print after success and failure", {
+  withr::local_options(max.print = 37L)
+  resultcheck:::serialize_value(1:100, methods = print)
+  expect_identical(getOption("max.print"), 37L)
+
+  failing_method <- function(x) stop("deliberate failure")
+  expect_error(
+    resultcheck:::serialize_value(1, methods = failing_method),
+    "deliberate failure"
+  )
+  expect_identical(getOption("max.print"), 37L)
+})
+
+test_that("custom methods can still explicitly limit printed output", {
+  limited_print <- function(x) print(x, max = 3L)
+  output <- resultcheck:::serialize_value(1:100, methods = limited_print)
+  expect_true(any(grepl("omitted 97 entries", output, fixed = TRUE)))
+})
+
+
+test_that("max_print defaults to 1000 and supports project configuration", {
+  withr::local_dir(withr::local_tempdir())
+  dir.create(".git")
+  probe <- function(x) cat(getOption("max.print"))
+  expect_true("1000" %in% resultcheck:::serialize_value(1, methods = probe))
+  default_output <- resultcheck:::serialize_value(1:1400, methods = print)
+  expect_true(any(grepl("omitted 400 entries", default_output, fixed = TRUE)))
+  for (filename in c("_resultcheck.yml", "resultcheck.yml")) {
+    writeLines(c("snapshot:", "  max_print: 3"), filename)
+    output <- withr::with_options(
+      list(max.print = 1000),
+      resultcheck:::serialize_value(1:100, methods = print)
+    )
+    expect_true(any(grepl("omitted 97 entries", output, fixed = TRUE)))
+    unlink(filename)
+  }
+})
+
+test_that("invalid max_print configuration is rejected", {
+  withr::local_dir(withr::local_tempdir())
+  dir.create(".git")
+  for (value in c(
+    "0",
+    "-1",
+    "1.5",
+    "2147483648.0",
+    ".inf",
+    ".nan",
+    "true",
+    "'100'",
+    "[1, 2]"
+  )) {
+    writeLines(
+      c("snapshot:", paste0("  max_print: ", value)),
+      "_resultcheck.yml"
+    )
+    expect_error(
+      resultcheck:::serialize_value(1, methods = print),
+      "snapshot.max_print must be a whole number",
+      fixed = TRUE
+    )
+  }
+})
