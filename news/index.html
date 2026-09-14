@@ -48,9 +48,10 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="resultcheck-development-version">resultcheck (development version)<a class="anchor" aria-label="anchor" href="#resultcheck-development-version"></a></h2>
-</div>
+<ul><li>Snapshot serialization now controls <code>max.print</code> locally via <code>snapshot.max_print</code> in <code>_resultcheck.yml</code> (default: 1000 entries), preventing session-dependent truncation of base R printed output. Previously truncated baselines may need to be reviewed and regenerated. Caller options are restored after serialization; class-specific and custom methods can still summarize or explicitly truncate their output.</li>
+</ul></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.3.0" id="resultcheck-030">resultcheck 0.3.0<a class="anchor" aria-label="anchor" href="#resultcheck-030"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.3.0" id="resultcheck-030">resultcheck 0.3.0<a class="anchor" aria-label="anchor" href="#resultcheck-030"></a></h2><p class="text-muted">CRAN release: 2026-09-02</p>
 <ul><li>
 <code><a href="../reference/snapshot.html">snapshot()</a></code> now detects active Quarto documents across execution engines and active knitr inputs so rendered documents reuse snapshots organized under the document filename instead of <code>"interactive"</code>. During Quarto rendering, missing snapshots are created automatically and mismatches stop the render with an error.</li>
 <li>Snapshot serialization now fixes CLI Unicode formatting so presentation-only differences such as <code>×</code> versus <code>x</code>, <code>…</code> versus <code>~</code>, and Unicode footnote markers do not vary between interactive sessions and Quarto renders.</li>

@@ -2,7 +2,17 @@
 
 ## resultcheck (development version)
 
+- Snapshot serialization now controls `max.print` locally via
+  `snapshot.max_print` in `_resultcheck.yml` (default: 1000 entries),
+  preventing session-dependent truncation of base R printed output.
+  Previously truncated baselines may need to be reviewed and
+  regenerated. Caller options are restored after serialization;
+  class-specific and custom methods can still summarize or explicitly
+  truncate their output.
+
 ## resultcheck 0.3.0
+
+CRAN release: 2026-09-02
 
 - [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
   now detects active Quarto documents across execution engines and
