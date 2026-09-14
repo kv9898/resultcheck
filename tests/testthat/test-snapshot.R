@@ -986,11 +986,25 @@ test_that("max_print defaults to 1000 and supports project configuration", {
 test_that("invalid max_print configuration is rejected", {
   withr::local_dir(withr::local_tempdir())
   dir.create(".git")
-  for (value in c("0", "-1", "1.5", "2147483648.0", ".inf", ".nan", "true", "'100'", "[1, 2]")) {
-    writeLines(c("snapshot:", paste0("  max_print: ", value)), "_resultcheck.yml")
+  for (value in c(
+    "0",
+    "-1",
+    "1.5",
+    "2147483648.0",
+    ".inf",
+    ".nan",
+    "true",
+    "'100'",
+    "[1, 2]"
+  )) {
+    writeLines(
+      c("snapshot:", paste0("  max_print: ", value)),
+      "_resultcheck.yml"
+    )
     expect_error(
       resultcheck:::serialize_value(1, methods = print),
-      "snapshot.max_print must be a whole number", fixed = TRUE
+      "snapshot.max_print must be a whole number",
+      fixed = TRUE
     )
   }
 })

@@ -1036,10 +1036,15 @@ serialize_value <- function(value, methods = NULL, use_class_defaults = TRUE) {
   if (is.null(max_print)) {
     max_print <- 1000L
   }
-  if (!is.numeric(max_print) || length(max_print) != 1L ||
-      is.na(max_print) || !is.finite(max_print) ||
-      max_print < 1 || max_print > .Machine$integer.max ||
-      max_print != floor(max_print)) {
+  if (
+    !is.numeric(max_print) ||
+      length(max_print) != 1L ||
+      is.na(max_print) ||
+      !is.finite(max_print) ||
+      max_print < 1 ||
+      max_print > .Machine$integer.max ||
+      max_print != floor(max_print)
+  ) {
     stop(
       "snapshot.max_print must be a whole number between 1 and 2147483647.",
       call. = FALSE
