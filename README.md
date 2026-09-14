@@ -121,6 +121,11 @@ Class-specific methods such as tibble printing can have their own limits, and
 custom methods can explicitly override the print limit. The caller's R options
 are restored afterwards.
 
+Snapshot serialization also temporarily sets `useFancyQuotes = FALSE`, so base R
+quotation marks (including model-summary significance legends) are consistent
+between interactive sessions and Quarto. The caller's setting is restored even
+if a snapshot method fails. Custom methods may explicitly choose other formatting.
+
 The `method` argument controls how the object is serialized:
 
 | Value | Behavior |
