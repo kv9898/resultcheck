@@ -48,7 +48,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="resultcheck-development-version">resultcheck (development version)<a class="anchor" aria-label="anchor" href="#resultcheck-development-version"></a></h2>
-<ul><li>Snapshot serialization now controls <code>max.print</code> locally via <code>snapshot.max_print</code> in <code>_resultcheck.yml</code> (default: 1000 entries), preventing session-dependent truncation of base R printed output. Previously truncated baselines may need to be reviewed and regenerated. Caller options are restored after serialization; class-specific and custom methods can still summarize or explicitly truncate their output.</li>
+<ul><li><p>Snapshot serialization now temporarily disables fancy quotation marks, preventing false differences between interactive R and Quarto model summaries. The caller’s <code>useFancyQuotes</code> option is restored on success and failure.</p></li>
+<li><p>Snapshot serialization now controls <code>max.print</code> locally via <code>snapshot.max_print</code> in <code>_resultcheck.yml</code> (default: 1000 entries), preventing session-dependent truncation of base R printed output. Previously truncated baselines may need to be reviewed and regenerated. Caller options are restored after serialization; class-specific and custom methods can still summarize or explicitly truncate their output.</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="resultcheck-030">resultcheck 0.3.0<a class="anchor" aria-label="anchor" href="#resultcheck-030"></a></h2><p class="text-muted">CRAN release: 2026-09-02</p>

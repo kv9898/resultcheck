@@ -2,6 +2,11 @@
 
 ## resultcheck (development version)
 
+- Snapshot serialization now temporarily disables fancy quotation marks,
+  preventing false differences between interactive R and Quarto model
+  summaries. The caller’s `useFancyQuotes` option is restored on success
+  and failure.
+
 - Snapshot serialization now controls `max.print` locally via
   `snapshot.max_print` in `_resultcheck.yml` (default: 1000 entries),
   preventing session-dependent truncation of base R printed output.
