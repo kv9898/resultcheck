@@ -57,6 +57,22 @@ use broom functions for many statistical model classes. The default method
 is typically broom::tidy, with broom::glance and/or broom::augment
 added where supported (per the broom available-methods table at
 https://broom.tidymodels.org/articles/available-methods.html).
+
+Set \code{snapshot.max_print} in the project's \verb{_resultcheck.yml} (or legacy
+\code{resultcheck.yml}) to control base R printing during serialization. The
+default is 1000 entries per method, independent of session \code{max.print}.
+Values must be whole numbers from 1 to 2147483647; omitted or null values
+use the default. The setting also applies when \code{method} is supplied.
+The caller's options are restored even if a method fails.
+
+Entries are not rows or bytes: a 200-row, seven-column data frame contains
+1400 entries and requires a higher limit, for example \code{max_print: 2000}.
+Base output beyond the limit can be truncated with an omission notice;
+changes in omitted values may not be detected. Increase the limit or
+select an appropriate summary method. Class-specific methods, including
+tibble printing, may use their own limits; custom methods may explicitly
+override this setting. Review and regenerate affected baselines when
+changing the limit or upgrading from session-dependent printing.
 }
 \examples{
 with_example({

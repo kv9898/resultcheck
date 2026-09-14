@@ -1031,11 +1031,21 @@ SNAPSHOT_OUTPUT_WIDTH <- 110L
 #'
 #' @keywords internal
 serialize_value <- function(value, methods = NULL, use_class_defaults = TRUE) {
-  if (is.null(methods) && use_class_defaults) {
-    config <- tryCatch(
-      read_resultcheck_config(),
-      error = function(e) list(snapshot = list())
+  config <- read_resultcheck_config()
+  max_print <- config[["snapshot"]][["max_print"]]
+  if (is.null(max_print)) {
+    max_print <- 1000L
+  }
+  if (!is.numeric(max_print) || length(max_print) != 1L ||
+      is.na(max_print) || !is.finite(max_print) ||
+      max_print < 1 || max_print > .Machine$integer.max ||
+      max_print != floor(max_print)) {
+    stop(
+      "snapshot.max_print must be a whole number between 1 and 2147483647.",
+      call. = FALSE
     )
+  }
+  if (is.null(methods) && use_class_defaults) {
     methods <- resolve_snapshot_methods(
       value = value,
       method = NULL,
@@ -1053,11 +1063,12 @@ serialize_value <- function(value, methods = NULL, use_class_defaults = TRUE) {
   output <- c(output, paste0("# Snapshot: ", class(value)[1]))
   output <- c(output, "")
 
-  # Use a fixed large width so that snapshot output is consistent regardless
-  # of the R session's console width setting.
+  # Fix base printing limits so snapshots do not depend on session options.
+  # Class-specific and custom methods may still intentionally summarize values.
   withr::with_options(
     list(
       width = SNAPSHOT_OUTPUT_WIDTH,
+      max.print = as.integer(max_print),
       pillar.advice = TRUE,
       cli.unicode = TRUE
     ),
@@ -1253,6 +1264,23 @@ warn_snapshot_write <- function(snapshot_file) {
 #' is typically broom::tidy, with broom::glance and/or broom::augment
 #' added where supported (per the broom available-methods table at
 #' https://broom.tidymodels.org/articles/available-methods.html).
+#'
+#' @details
+#' Set `snapshot.max_print` in the project's `_resultcheck.yml` (or legacy
+#' `resultcheck.yml`) to control base R printing during serialization. The
+#' default is 1000 entries per method, independent of session `max.print`.
+#' Values must be whole numbers from 1 to 2147483647; omitted or null values
+#' use the default. The setting also applies when `method` is supplied.
+#' The caller's options are restored even if a method fails.
+#'
+#' Entries are not rows or bytes: a 200-row, seven-column data frame contains
+#' 1400 entries and requires a higher limit, for example `max_print: 2000`.
+#' Base output beyond the limit can be truncated with an omission notice;
+#' changes in omitted values may not be detected. Increase the limit or
+#' select an appropriate summary method. Class-specific methods, including
+#' tibble printing, may use their own limits; custom methods may explicitly
+#' override this setting. Review and regenerate affected baselines when
+#' changing the limit or upgrading from session-dependent printing.
 #'
 #' @param value The R object to snapshot (e.g., plot, table, model output).
 #' @param name Character. A descriptive name for this snapshot.
