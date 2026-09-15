@@ -137,14 +137,25 @@ Inspect the generated filename and its included `DESCRIPTION`; both must show
 the release version, for example `resultcheck_0.3.1.tar.gz` and
 `Version: 0.3.1`.
 
-Follow the remaining tasks in the release issue for submission, CRAN comments,
-tagging, and publication. Do not treat a Git tag, a GitHub Release, and a CRAN
-release as the same operation; verify each one separately.
+Follow this release order:
 
-### 5. After CRAN acceptance
+1. Submit the source archive to CRAN.
+2. Update `CRAN-SUBMISSION` with the submitted version, submission date, and
+   source commit SHA; commit and push the record on the release branch.
+3. Wait for confirmed CRAN acceptance, keeping the release PR open.
+4. Squash merge the release PR into `main`.
+5. Delete the merged release branch both remotely and locally, switching the
+   local checkout to `main` first.
+6. Create and push the release tag (for example, `0.3.1`) on the squash-merge
+   commit in `main`.
 
-Once CRAN acceptance is confirmed, merge the release PR. Then the optional
-usethis helpers are:
+Do not treat a CRAN submission, CRAN acceptance, a Git tag, and a GitHub
+Release as the same operation; verify each one separately.
+
+### 5. After CRAN acceptance and tagging
+
+Complete the squash merge, branch deletion, and tagging in the order above.
+Then the optional usethis helpers are:
 
 ```r
 usethis::use_github_release()
