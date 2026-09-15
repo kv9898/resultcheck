@@ -1,6 +1,6 @@
 # Changelog
 
-## resultcheck (development version)
+## resultcheck 0.3.1
 
 - Snapshot serialization now temporarily disables fancy quotation marks,
   preventing false differences between interactive R and Quarto model

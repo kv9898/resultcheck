@@ -58,11 +58,11 @@ devtools::build()
 
 ### 1. Create the release checklist
 
-For a patch release after `0.2.1`, create the `0.2.2` checklist with:
+For a patch release after `0.3.0`, create the `0.3.1` checklist with:
 
 ``` r
 
-usethis::use_release_issue("0.2.2")
+usethis::use_release_issue("0.3.1")
 ```
 
 This creates a GitHub issue containing the release tasks. It changes
@@ -70,11 +70,11 @@ external GitHub state, so run it only when starting the release process.
 
 ### 2. Prepare the release version
 
-During ordinary development after the `0.2.1` release, `DESCRIPTION`
+During ordinary development after the `0.3.0` release, `DESCRIPTION`
 should use a development version:
 
 ``` text
-Version: 0.2.1.9000
+Version: 0.3.0.9000
 ```
 
 Start that development cycle with `usethis::use_dev_version()` if it has
@@ -92,19 +92,19 @@ When the package is ready for a patch release, run:
 usethis::use_version("patch")
 ```
 
-This changes the package from development version `0.2.1.9000` to
-release version `0.2.2`. `use_version()` updates `DESCRIPTION` and
+This changes the package from development version `0.3.0.9000` to
+release version `0.3.1`. `use_version()` updates `DESCRIPTION` and
 `NEWS.md` and may create a Git commit. Review its proposed actions and
 resulting diff.
 
 Before running the final checks, confirm that `DESCRIPTION` contains:
 
 ``` text
-Version: 0.2.2
+Version: 0.3.1
 ```
 
-The source archive submitted to CRAN must contain `0.2.2`, not `0.2.1`,
-`0.2.1.9000`, or `0.2.2.9000`.
+The source archive submitted to CRAN must contain `0.3.1`, not `0.3.0`,
+`0.3.0.9000`, or `0.3.1.9000`.
 
 ### 3. Run the local release checks
 
@@ -131,6 +131,9 @@ Windows, Ubuntu release, and R-devel.
 
 ### 4. Build and submit
 
+Keep the release pull request open and submit from the release branch.
+Do not merge the release PR until CRAN acceptance is confirmed.
+
 Build the final source package from a clean committed checkout:
 
 ``` r
@@ -139,17 +142,29 @@ devtools::build()
 ```
 
 Inspect the generated filename and its included `DESCRIPTION`; both must
-show the release version, for example `resultcheck_0.2.2.tar.gz` and
-`Version: 0.2.2`.
+show the release version, for example `resultcheck_0.3.1.tar.gz` and
+`Version: 0.3.1`.
 
-Follow the remaining tasks in the release issue for submission, CRAN
-comments, tagging, and publication. Do not treat a Git tag, a GitHub
-Release, and a CRAN release as the same operation; verify each one
-separately.
+Follow this release order:
 
-### 5. After CRAN acceptance
+1.  Submit the source archive to CRAN.
+2.  Update `CRAN-SUBMISSION` with the submitted version, submission
+    date, and source commit SHA; commit and push the record on the
+    release branch.
+3.  Wait for confirmed CRAN acceptance, keeping the release PR open.
+4.  Squash merge the release PR into `main`.
+5.  Delete the merged release branch both remotely and locally,
+    switching the local checkout to `main` first.
+6.  Create and push the release tag (for example, `0.3.1`) on the
+    squash-merge commit in `main`.
 
-Once the release is confirmed on CRAN, the optional usethis helpers are:
+Do not treat a CRAN submission, CRAN acceptance, a Git tag, and a GitHub
+Release as the same operation; verify each one separately.
+
+### 5. After CRAN acceptance and tagging
+
+Complete the squash merge, branch deletion, and tagging in the order
+above. Then the optional usethis helpers are:
 
 ``` r
 
@@ -159,7 +174,7 @@ usethis::use_dev_version()
 
 `use_github_release()` publishes external GitHub state.
 `use_dev_version()` starts the next development cycle, for example by
-changing `0.2.2` to `0.2.2.9000`; it also updates version-control state,
+changing `0.3.1` to `0.3.1.9000`; it also updates version-control state,
 so review its output.
 
 ## Troubleshooting sandbox tests
@@ -169,7 +184,15 @@ searches upward for `_resultcheck.yml`, `resultcheck.yml`, an `.Rproj`
 file, or `.git`. If temporary sandbox tests unexpectedly copy files from
 the wrong location, check whether an ancestor of the temporary directory
 contains one of those markers. In particular, a stray `/tmp/.git` can
-make `/tmp` look like the project root.
+make `/tmp` look like the project root. Use a temporary directory
+outside that ancestor for the R process instead of changing package code
+or deleting the marker:
+
+``` sh
+TMPDIR=/var/tmp R --vanilla -q -e 'testthat::test_local()'
+```
+
+Use the same `TMPDIR` setting for the CRAN-style check if needed.
 
 ## References
 

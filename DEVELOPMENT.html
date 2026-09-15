@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">resultcheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -106,24 +106,24 @@
 <h2 id="preparing-a-cran-release">Preparing a CRAN release<a class="anchor" aria-label="anchor" href="#preparing-a-cran-release"></a></h2>
 <div class="section level3">
 <h3 id="id_1-create-the-release-checklist">1. Create the release checklist<a class="anchor" aria-label="anchor" href="#id_1-create-the-release-checklist"></a></h3>
-<p>For a patch release after <code>0.2.1</code>, create the <code>0.2.2</code> checklist with:</p>
+<p>For a patch release after <code>0.3.0</code>, create the <code>0.3.1</code> checklist with:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_release_issue</span><span class="op">(</span><span class="st">"0.2.2"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_release_issue</span><span class="op">(</span><span class="st">"0.3.1"</span><span class="op">)</span></span></code></pre></div>
 <p>This creates a GitHub issue containing the release tasks. It changes external GitHub state, so run it only when starting the release process.</p>
 </div>
 <div class="section level3">
 <h3 id="id_2-prepare-the-release-version">2. Prepare the release version<a class="anchor" aria-label="anchor" href="#id_2-prepare-the-release-version"></a></h3>
-<p>During ordinary development after the <code>0.2.1</code> release, <code>DESCRIPTION</code> should use a development version:</p>
-<pre class="text"><code>Version: 0.2.1.9000</code></pre>
+<p>During ordinary development after the <code>0.3.0</code> release, <code>DESCRIPTION</code> should use a development version:</p>
+<pre class="text"><code>Version: 0.3.0.9000</code></pre>
 <p>Start that development cycle with <code>usethis::use_dev_version()</code> if it has not already been done. Keep unreleased changes under this heading in <code>NEWS.md</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu"># resultcheck (development version)</span></span></code></pre></div>
 <p>When the package is ready for a patch release, run:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_version</span><span class="op">(</span><span class="st">"patch"</span><span class="op">)</span></span></code></pre></div>
-<p>This changes the package from development version <code>0.2.1.9000</code> to release version <code>0.2.2</code>. <code>use_version()</code> updates <code>DESCRIPTION</code> and <code>NEWS.md</code> and may create a Git commit. Review its proposed actions and resulting diff.</p>
+<p>This changes the package from development version <code>0.3.0.9000</code> to release version <code>0.3.1</code>. <code>use_version()</code> updates <code>DESCRIPTION</code> and <code>NEWS.md</code> and may create a Git commit. Review its proposed actions and resulting diff.</p>
 <p>Before running the final checks, confirm that <code>DESCRIPTION</code> contains:</p>
-<pre class="text"><code>Version: 0.2.2</code></pre>
-<p>The source archive submitted to CRAN must contain <code>0.2.2</code>, not <code>0.2.1</code>, <code>0.2.1.9000</code>, or <code>0.2.2.9000</code>.</p>
+<pre class="text"><code>Version: 0.3.1</code></pre>
+<p>The source archive submitted to CRAN must contain <code>0.3.1</code>, not <code>0.3.0</code>, <code>0.3.0.9000</code>, or <code>0.3.1.9000</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="id_3-run-the-local-release-checks">3. Run the local release checks<a class="anchor" aria-label="anchor" href="#id_3-run-the-local-release-checks"></a></h3>
@@ -146,24 +146,34 @@
 </div>
 <div class="section level3">
 <h3 id="id_4-build-and-submit">4. Build and submit<a class="anchor" aria-label="anchor" href="#id_4-build-and-submit"></a></h3>
+<p>Keep the release pull request open and submit from the release branch. Do not merge the release PR until CRAN acceptance is confirmed.</p>
 <p>Build the final source package from a clean committed checkout:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">build</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>Inspect the generated filename and its included <code>DESCRIPTION</code>; both must show the release version, for example <code>resultcheck_0.2.2.tar.gz</code> and <code>Version: 0.2.2</code>.</p>
-<p>Follow the remaining tasks in the release issue for submission, CRAN comments, tagging, and publication. Do not treat a Git tag, a GitHub Release, and a CRAN release as the same operation; verify each one separately.</p>
+<p>Inspect the generated filename and its included <code>DESCRIPTION</code>; both must show the release version, for example <code>resultcheck_0.3.1.tar.gz</code> and <code>Version: 0.3.1</code>.</p>
+<p>Follow this release order:</p>
+<ol style="list-style-type: decimal"><li>Submit the source archive to CRAN.</li>
+<li>Update <code>CRAN-SUBMISSION</code> with the submitted version, submission date, and source commit SHA; commit and push the record on the release branch.</li>
+<li>Wait for confirmed CRAN acceptance, keeping the release PR open.</li>
+<li>Squash merge the release PR into <code>main</code>.</li>
+<li>Delete the merged release branch both remotely and locally, switching the local checkout to <code>main</code> first.</li>
+<li>Create and push the release tag (for example, <code>0.3.1</code>) on the squash-merge commit in <code>main</code>.</li>
+</ol><p>Do not treat a CRAN submission, CRAN acceptance, a Git tag, and a GitHub Release as the same operation; verify each one separately.</p>
 </div>
 <div class="section level3">
-<h3 id="id_5-after-cran-acceptance">5. After CRAN acceptance<a class="anchor" aria-label="anchor" href="#id_5-after-cran-acceptance"></a></h3>
-<p>Once the release is confirmed on CRAN, the optional usethis helpers are:</p>
+<h3 id="id_5-after-cran-acceptance-and-tagging">5. After CRAN acceptance and tagging<a class="anchor" aria-label="anchor" href="#id_5-after-cran-acceptance-and-tagging"></a></h3>
+<p>Complete the squash merge, branch deletion, and tagging in the order above. Then the optional usethis helpers are:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_github_release</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_dev_version</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><code>use_github_release()</code> publishes external GitHub state. <code>use_dev_version()</code> starts the next development cycle, for example by changing <code>0.2.2</code> to <code>0.2.2.9000</code>; it also updates version-control state, so review its output.</p>
+<p><code>use_github_release()</code> publishes external GitHub state. <code>use_dev_version()</code> starts the next development cycle, for example by changing <code>0.3.1</code> to <code>0.3.1.9000</code>; it also updates version-control state, so review its output.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="troubleshooting-sandbox-tests">Troubleshooting sandbox tests<a class="anchor" aria-label="anchor" href="#troubleshooting-sandbox-tests"></a></h2>
-<p><code><a href="reference/find_root.html">find_root()</a></code> searches upward for <code>_resultcheck.yml</code>, <code>resultcheck.yml</code>, an <code>.Rproj</code> file, or <code>.git</code>. If temporary sandbox tests unexpectedly copy files from the wrong location, check whether an ancestor of the temporary directory contains one of those markers. In particular, a stray <code>/tmp/.git</code> can make <code>/tmp</code> look like the project root.</p>
+<p><code><a href="reference/find_root.html">find_root()</a></code> searches upward for <code>_resultcheck.yml</code>, <code>resultcheck.yml</code>, an <code>.Rproj</code> file, or <code>.git</code>. If temporary sandbox tests unexpectedly copy files from the wrong location, check whether an ancestor of the temporary directory contains one of those markers. In particular, a stray <code>/tmp/.git</code> can make <code>/tmp</code> look like the project root. Use a temporary directory outside that ancestor for the R process instead of changing package code or deleting the marker:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="va">TMPDIR</span><span class="op">=</span>/var/tmp <span class="ex">R</span> <span class="at">--vanilla</span> <span class="at">-q</span> <span class="at">-e</span> <span class="st">'testthat::test_local()'</span></span></code></pre></div>
+<p>Use the same <code>TMPDIR</code> setting for the CRAN-style check if needed.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
