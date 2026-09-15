@@ -15,10 +15,15 @@ warning; the built source package check completed with Status: OK.
 
 * Local: Ubuntu 26.04.1 LTS, R 4.6.1; release version 0.3.1.
 * GitHub Actions: Ubuntu (R release and devel), macOS (R release), and
-  Windows (R release), all successful for commit 2df12d5 before the release
-  metadata changes:
-  https://github.com/kv9898/resultcheck/actions/runs/34873353176
-* CI on the final release commit remains to be run before submission.
+  Windows (R release), all successful for release commit 09644a1:
+  https://github.com/kv9898/resultcheck/actions/runs/34911911172
+
+## Additional full check
+
+The submission archive also passed `R CMD check --as-cran` with PDF manual
+checking enabled: 0 errors, 0 warnings, 1 NOTE. The note only reports that
+HTML manual validation was skipped because the local system has no `tidy`
+command. PDF manual generation passed.
 
 ## Release summary
 

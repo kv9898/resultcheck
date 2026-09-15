@@ -124,6 +124,9 @@ Ubuntu release, and R-devel.
 
 ### 4. Build and submit
 
+Keep the release pull request open and submit from the release branch.
+Do not merge the release PR until CRAN acceptance is confirmed.
+
 Build the final source package from a clean committed checkout:
 
 ```r
@@ -140,7 +143,8 @@ release as the same operation; verify each one separately.
 
 ### 5. After CRAN acceptance
 
-Once the release is confirmed on CRAN, the optional usethis helpers are:
+Once CRAN acceptance is confirmed, merge the release PR. Then the optional
+usethis helpers are:
 
 ```r
 usethis::use_github_release()
