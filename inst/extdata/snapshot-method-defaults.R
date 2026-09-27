@@ -18,14 +18,16 @@ method_by_class <- list(
   lm.beta = "broom::tidy",
   lmodel2 = c("broom::tidy", "broom::glance"),
   biglm = c("broom::tidy", "broom::glance"),
-  speedlm = c("broom::tidy", "broom::glance", "broom::augment"),
+  # Augmentation requires explicit data or a fit with saved fitted values.
+  speedlm = c("broom::tidy", "broom::glance"),
 
   # Robust linear models
   rlm = c("broom::tidy", "broom::glance", "broom::augment"),
   lmrob = c("broom::tidy", "broom::glance", "broom::augment"),
   lmRob = c("broom::tidy", "broom::glance", "broom::augment"),
   glmrob = "broom::tidy",
-  glmRob = c("broom::tidy", "broom::glance", "broom::augment"),
+  # The broom augmentation method is deprecated and always errors.
+  glmRob = c("broom::tidy", "broom::glance"),
 
   # Regularized/glmnet models
   glmnet = c("broom::tidy", "broom::glance"),
@@ -35,12 +37,8 @@ method_by_class <- list(
   nls = c("broom::tidy", "broom::glance", "broom::augment"),
   nlrq = c("broom::tidy", "broom::glance", "broom::augment"),
 
-  # Mixed effects / multilevel
-  lme = c("broom::tidy", "broom::glance"),
-  merMod = c("broom::tidy", "broom::glance"),
-  lmerMod = c("broom::tidy", "broom::glance"),
-  glmerMod = c("broom::tidy", "broom::glance"),
-  nlmerMod = c("broom::tidy", "broom::glance"),
+  # Mixed models (lme/merMod and subclasses) use print + str unless the
+  # user configures methods from a provider such as broom.mixed.
 
   # GAM models
   gam = c("broom::tidy", "broom::glance", "broom::augment"),
@@ -65,16 +63,15 @@ method_by_class <- list(
   ts = "broom::tidy",
   zoo = "broom::tidy",
 
-  # Bayesian models
-  stanfit = c("broom::tidy", "broom::glance"),
-  bamlss = c("broom::tidy", "broom::glance"),
+  # Bayesian classes stanfit and bamlss also have no built-in broom mapping.
 
   # Panel data models
   plm = c("broom::tidy", "broom::glance", "broom::augment"),
 
   # Count / GLM extensions
   negbin = c("broom::tidy", "broom::glance"),
-  speedglm = c("broom::tidy", "broom::glance", "broom::augment"),
+  # The broom augmentation method is an error-only stub.
+  speedglm = c("broom::tidy", "broom::glance"),
 
   # GEE models
   geeglm = c("broom::tidy", "broom::glance"),
@@ -96,13 +93,15 @@ method_by_class <- list(
   crr = c("broom::tidy", "broom::glance"),
 
   # Cluster analysis
-  kmeans = c("broom::tidy", "broom::glance", "broom::augment"),
+  # Requires explicit data for augmentation.
+  kmeans = c("broom::tidy", "broom::glance"),
   Mclust = c("broom::tidy", "broom::glance", "broom::augment"),
   pam = c("broom::tidy", "broom::glance", "broom::augment"),
 
   # PCA / dimension reduction
   prcomp = c("broom::tidy", "broom::augment"),
-  factanal = c("broom::tidy", "broom::glance", "broom::augment"),
+  # Augmentation requires scores, which are not saved by default.
+  factanal = c("broom::tidy", "broom::glance"),
 
   # DEA / stochastic frontier
   felm = c("broom::tidy", "broom::glance", "broom::augment"),
@@ -137,7 +136,8 @@ method_by_class <- list(
   margins = c("broom::tidy", "broom::glance", "broom::augment"),
 
   # Fixest models
-  fixest = c("broom::tidy", "broom::glance", "broom::augment"),
+  # Requires explicit data for augmentation.
+  fixest = c("broom::tidy", "broom::glance"),
 
   # Survey models
   svyglm = c("broom::tidy", "broom::glance"),
@@ -149,7 +149,8 @@ method_by_class <- list(
   mjoint = c("broom::tidy", "broom::glance", "broom::augment"),
 
   # DRM / DRC
-  drc = c("broom::tidy", "broom::glance", "broom::augment"),
+  # Requires explicit data or newdata for augmentation.
+  drc = c("broom::tidy", "broom::glance"),
 
   # GARCH
   garch = c("broom::tidy", "broom::glance"),
@@ -162,7 +163,8 @@ method_by_class <- list(
   coeftest = c("broom::tidy", "broom::glance"),
 
   # Tests and diagnostics
-  htest = c("broom::tidy", "broom::glance", "broom::augment"),
+  # Augmentation only supports chi-squared tests, not general htest objects.
+  htest = c("broom::tidy", "broom::glance"),
   durbinWatsonTest = c("broom::tidy", "broom::glance"),
 
   # Confidence intervals

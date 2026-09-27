@@ -1036,3 +1036,39 @@ test_that("serialization restores fancy quotes after success and failure", {
   )
   expect_true(getOption("useFancyQuotes"))
 })
+
+
+test_that("default snapshots work without augmentation data or saved scores", {
+  skip_if_not_installed("broom")
+
+  withr::with_tempdir({
+    writeLines("snapshot: {}", "_resultcheck.yml")
+    objects <- list(
+      stats::kmeans(iris[, 1:4], centers = as.matrix(iris[c(1, 51, 101), 1:4])),
+      stats::factanal(
+        mtcars[, c("mpg", "disp", "hp", "wt", "qsec")],
+        factors = 1
+      ),
+      stats::t.test(1:10),
+      stats::cor.test(mtcars$mpg, mtcars$wt)
+    )
+
+    for (object in objects) {
+      output <- resultcheck:::serialize_value(object)
+      expect_equal(
+        output[grepl("^## ", output)],
+        c("## broom::tidy", "## broom::glance")
+      )
+    }
+
+    # Users can still opt in when they supply the required data.
+    output <- resultcheck:::serialize_value(
+      objects[[1]],
+      methods = list(augment = function(x) {
+        broom::augment(x, data = iris[, 1:4])
+      })
+    )
+    expect_true("## augment" %in% output)
+    expect_true(any(grepl(".cluster", output, fixed = TRUE)))
+  })
+})
