@@ -1,4 +1,4 @@
-# resultcheck (development version)
+# resultcheck 0.3.2
 
 * Built-in defaults now omit `broom::augment` for `fixest`, `kmeans`, `drc`, `factanal`, `htest`, `speedlm`, `speedglm`, and `glmRob`, where augmentation requires extra inputs, only supports particular fits, or always errors. These classes retain `tidy` and `glance`; supported augmentation can still be requested explicitly. Existing snapshots containing augmentation will need review.
 
