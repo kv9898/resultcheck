@@ -1,0 +1,4 @@
+interface:
+  display_name: "CRAN Release"
+  short_description: "Prepare and complete R package releases on CRAN"
+  default_prompt: "Use $cran-release to prepare and complete this R package’s next CRAN release following its repository workflow."
