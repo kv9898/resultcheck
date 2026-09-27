@@ -31,9 +31,16 @@ local system has no HTML Tidy executable. PDF manual generation passed.
 
 ## Windows remote check
 
-The release candidate was uploaded with devtools::check_win_devel(manual = TRUE,
-webform = TRUE) on 2026-09-27. The emailed win-builder result is still pending;
-we are submitting based on the successful local and GitHub Actions checks.
+The release candidate passed win-builder with Status: OK on 2026-09-27,
+using Windows Server 2022 x64 and R-devel (2026-09-25 r90590 ucrt).
+PDF and HTML manual checks passed.
+Log: https://win-builder.r-project.org/31969dxCoYmT/00check.log
+
+## CRAN acceptance
+
+The maintainer received CRAN's "on its way to CRAN" acceptance email.
+CRAN auto-check results were OK on r-devel-linux-x86_64-debian-gcc and
+r-devel-windows-x86_64. Public availability is not yet verified.
 
 ## Source archive
 
