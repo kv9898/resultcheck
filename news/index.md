@@ -1,6 +1,24 @@
 # Changelog
 
+## resultcheck (development version)
+
+- Built-in defaults now omit
+  [`broom::augment`](https://generics.r-lib.org/reference/augment.html)
+  for `fixest`, `kmeans`, `drc`, `factanal`, `htest`, `speedlm`,
+  `speedglm`, and `glmRob`, where augmentation requires extra inputs,
+  only supports particular fits, or always errors. These classes retain
+  `tidy` and `glance`; supported augmentation can still be requested
+  explicitly. Existing snapshots containing augmentation will need
+  review.
+
+- Removed invalid broom defaults for `lme`, `merMod` and its subclasses,
+  `stanfit`, and `bamlss`. These classes now use the existing `print` +
+  `str` fallback unless users configure suitable methods explicitly; no
+  additional dependency is required.
+
 ## resultcheck 0.3.1
+
+CRAN release: 2026-09-15
 
 - Snapshot serialization now temporarily disables fancy quotation marks,
   preventing false differences between interactive R and Quarto model
