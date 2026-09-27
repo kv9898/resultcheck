@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">resultcheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +47,7 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="resultcheck-development-version">resultcheck (development version)<a class="anchor" aria-label="anchor" href="#resultcheck-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.3.2" id="resultcheck-032">resultcheck 0.3.2<a class="anchor" aria-label="anchor" href="#resultcheck-032"></a></h2>
 <ul><li><p>Built-in defaults now omit <code><a href="https://generics.r-lib.org/reference/augment.html" class="external-link">broom::augment</a></code> for <code>fixest</code>, <code>kmeans</code>, <code>drc</code>, <code>factanal</code>, <code>htest</code>, <code>speedlm</code>, <code>speedglm</code>, and <code>glmRob</code>, where augmentation requires extra inputs, only supports particular fits, or always errors. These classes retain <code>tidy</code> and <code>glance</code>; supported augmentation can still be requested explicitly. Existing snapshots containing augmentation will need review.</p></li>
 <li><p>Removed invalid broom defaults for <code>lme</code>, <code>merMod</code> and its subclasses, <code>stanfit</code>, and <code>bamlss</code>. These classes now use the existing <code>print</code> + <code>str</code> fallback unless users configure suitable methods explicitly; no additional dependency is required.</p></li>
 </ul></div>

@@ -1,6 +1,6 @@
 # Changelog
 
-## resultcheck (development version)
+## resultcheck 0.3.2
 
 - Built-in defaults now omit
   [`broom::augment`](https://generics.r-lib.org/reference/augment.html)
