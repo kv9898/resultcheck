@@ -118,26 +118,15 @@ get_start_path_for_find_root <- function() {
 #' Detect the calling script name
 #'
 #' Tries to identify the script file that is calling snapshot().
-#' Uses \code{rstudioapi::getSourceEditorContext()$path} when running in RStudio,
-#' then \code{QUARTO_DOCUMENT_FILE} during Quarto execution, followed by
-#' \code{knitr::current_input()} while a document is being knitted. It falls
-#' back to walking the call stack for source references, and finally to
-#' \code{"interactive"}.
+#' Uses \code{QUARTO_DOCUMENT_FILE} during Quarto execution, followed by
+#' \code{knitr::current_input()} while a document is being knitted. Otherwise,
+#' uses the innermost active \code{source()} or \code{sys.source()} input,
+#' followed by call-stack source references, the active source editor path,
+#' and finally \code{"interactive"}.
 #'
 #' @return Character string with the detected script basename (without path).
 #' @keywords internal
 detect_script_name <- function() {
-  # RStudio: use the active source editor path
-  if (interactive() && !is_testing()) {
-    path <- tryCatch(
-      rstudioapi::getSourceEditorContext()$path,
-      error = function(e) NULL
-    )
-    if (is.character(path) && nzchar(path) && path != "") {
-      return(basename(path))
-    }
-  }
-
   # Quarto exposes the source document name to every execution engine,
   # including Jupyter.
   path <- Sys.getenv("QUARTO_DOCUMENT_FILE", unset = "")
@@ -155,6 +144,24 @@ detect_script_name <- function() {
         length(path) == 1L &&
         !is.na(path) &&
         nzchar(path)
+    ) {
+      return(basename(path))
+    }
+  }
+
+  # source() retains its input path even when keep.source = FALSE. Inspect
+  # the innermost sourcing frame so nested scripts use their own baselines.
+  for (i in rev(seq_len(sys.nframe()))) {
+    fun <- sys.function(i)
+    path <- if (identical(fun, base::source)) {
+      get0("ofile", envir = sys.frame(i), inherits = FALSE)
+    } else if (identical(fun, base::sys.source)) {
+      get0("file", envir = sys.frame(i), inherits = FALSE)
+    } else {
+      NULL
+    }
+    if (
+      is.character(path) && length(path) == 1L && !is.na(path) && nzchar(path)
     ) {
       return(basename(path))
     }
@@ -200,8 +207,33 @@ detect_script_name <- function() {
     return(basename(srcfile$filename))
   }
 
+  # The editor is a fallback for code submitted directly from a saved script.
+  path <- get_source_editor_path()
+  if (
+    is.character(path) && length(path) == 1L && !is.na(path) && nzchar(path)
+  ) {
+    return(basename(path))
+  }
+
   "interactive"
 }
+
+#' Get the Active Source Editor Path
+#'
+#' Queries the editor only during interactive execution outside a sandbox.
+#'
+#' @return The source editor path, or NULL when unavailable.
+#' @keywords internal
+get_source_editor_path <- function() {
+  if (!interactive() || is_testing()) {
+    return(NULL)
+  }
+  tryCatch(
+    rstudioapi::getSourceEditorContext()$path,
+    error = function(e) NULL
+  )
+}
+
 
 #' Get Snapshot File Path
 #'
@@ -212,10 +244,9 @@ detect_script_name <- function() {
 #'
 #' @param name Character. The name of the snapshot (without extension).
 #' @param script_name Optional. The name of the script file creating the snapshot.
-#'   If NULL, detects from the active RStudio source editor via
-#'   \code{rstudioapi::getSourceEditorContext()$path}, then the active Quarto
-#'   document or knitr input, falling back to the call stack and finally
-#'   \code{"interactive"}.
+#'   If NULL, detects from the active Quarto document or knitr input, then
+#'   the innermost \code{source()} or \code{sys.source()} input, call-stack
+#'   source references, the active source editor, and finally \code{"interactive"}.
 #' @param ext Character. The file extension for the snapshot file (default: "md").
 #'
 #' @return The full path to the snapshot file.
@@ -1293,10 +1324,9 @@ warn_snapshot_write <- function(snapshot_file) {
 #' @param value The R object to snapshot (e.g., plot, table, model output).
 #' @param name Character. A descriptive name for this snapshot.
 #' @param script_name Optional. The name of the script creating the snapshot.
-#'   If NULL, auto-detects via \code{rstudioapi::getSourceEditorContext()$path}
-#'   (in RStudio), then \code{QUARTO_DOCUMENT_FILE} or
-#'   \code{knitr::current_input()}, falling back to the call stack and finally
-#'   \code{"interactive"}.
+#'   If NULL, detects from the active Quarto document or knitr input, then
+#'   the innermost \code{source()} or \code{sys.source()} input, call-stack
+#'   source references, the active source editor, and finally \code{"interactive"}.
 #' @param method Optional function or non-empty list of functions used to
 #'   serialize \code{value}. Functions are executed in order and each section
 #'   header is taken from the method expression or list name. If omitted,

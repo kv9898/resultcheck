@@ -152,7 +152,76 @@ test_that("snapshot organizes by script name when specified", {
 })
 
 
+test_that("sourced scripts use separate baselines regardless of editor or source refs", {
+  testthat::local_mocked_bindings(
+    get_source_editor_path = function() "/project/test-dmlfm.R"
+  )
+
+  with_example({
+    writeLines('resultcheck::snapshot(1, "shared_name")', "financials.R")
+    writeLines('resultcheck::snapshot(2, "shared_name")', "transparency.R")
+
+    for (keep_source in c(FALSE, TRUE)) {
+      source("financials.R", local = new.env(), keep.source = keep_source)
+      source("transparency.R", local = new.env(), keep.source = keep_source)
+    }
+
+    expect_true(file.exists(
+      "tests/_resultcheck_snaps/financials/shared_name.md"
+    ))
+    expect_true(file.exists(
+      "tests/_resultcheck_snaps/transparency/shared_name.md"
+    ))
+    expect_false(dir.exists("tests/_resultcheck_snaps/test-dmlfm"))
+
+    writeLines(
+      'resultcheck::snapshot(1, "explicit", script_name = "manual")',
+      "override.R"
+    )
+    source("override.R", local = new.env(), keep.source = FALSE)
+    expect_true(file.exists("tests/_resultcheck_snaps/manual/explicit.md"))
+    expect_false(dir.exists("tests/_resultcheck_snaps/override"))
+  })
+})
+
+
+test_that("nested source calls use the innermost script", {
+  testthat::local_mocked_bindings(
+    get_source_editor_path = function() "/project/unrelated.R"
+  )
+
+  with_example({
+    writeLines(
+      'source("inner.R", local = TRUE, keep.source = FALSE)',
+      "outer.R"
+    )
+    writeLines('resultcheck::snapshot(1, "nested")', "inner.R")
+    source("outer.R", local = new.env(), keep.source = FALSE)
+
+    expect_true(file.exists("tests/_resultcheck_snaps/inner/nested.md"))
+    expect_false(dir.exists("tests/_resultcheck_snaps/outer"))
+  })
+})
+
+
+test_that("sys.source uses the input script without source references", {
+  testthat::local_mocked_bindings(
+    get_source_editor_path = function() "/project/unrelated.R"
+  )
+
+  with_example({
+    writeLines('resultcheck::snapshot(1, "sourced")', "sys-input.R")
+    sys.source("sys-input.R", envir = new.env(), keep.source = FALSE)
+
+    expect_true(file.exists("tests/_resultcheck_snaps/sys-input/sourced.md"))
+  })
+})
+
+
 test_that("detect_script_name uses the active knitr input", {
+  testthat::local_mocked_bindings(
+    get_source_editor_path = function() "/project/unrelated.R"
+  )
   skip_if_not_installed("knitr")
 
   withr::with_tempdir({
@@ -177,6 +246,9 @@ test_that("detect_script_name uses the active knitr input", {
 
 
 test_that("detect_script_name uses the active Quarto document", {
+  testthat::local_mocked_bindings(
+    get_source_editor_path = function() "/project/unrelated.R"
+  )
   withr::with_envvar(
     c(QUARTO_DOCUMENT_FILE = "/project/jupyter-input.qmd"),
     expect_identical(

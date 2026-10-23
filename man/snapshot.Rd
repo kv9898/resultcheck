@@ -12,10 +12,9 @@ snapshot(value, name, script_name = NULL, method = NULL)
 \item{name}{Character. A descriptive name for this snapshot.}
 
 \item{script_name}{Optional. The name of the script creating the snapshot.
-If NULL, auto-detects via \code{rstudioapi::getSourceEditorContext()$path}
-(in RStudio), then \code{QUARTO_DOCUMENT_FILE} or
-\code{knitr::current_input()}, falling back to the call stack and finally
-\code{"interactive"}.}
+If NULL, detects from the active Quarto document or knitr input, then
+the innermost \code{source()} or \code{sys.source()} input, call-stack
+source references, the active source editor, and finally \code{"interactive"}.}
 
 \item{method}{Optional function or non-empty list of functions used to
 serialize \code{value}. Functions are executed in order and each section
