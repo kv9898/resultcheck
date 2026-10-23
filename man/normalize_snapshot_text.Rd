@@ -15,6 +15,7 @@ Character vector with normalized snapshot lines.
 \description{
 Replaces volatile environment representations (for example memory addresses
 in \code{.Environment} attributes) with a stable placeholder so snapshots remain
-comparable across different execution contexts.
+comparable across different execution contexts. Removes trailing spaces and
+tabs from each line while preserving leading and internal whitespace.
 }
 \keyword{internal}

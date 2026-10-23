@@ -1184,7 +1184,8 @@ compare_snapshot_text <- function(old_text, new_text, precision = NULL) {
 #'
 #' Replaces volatile environment representations (for example memory addresses
 #' in `.Environment` attributes) with a stable placeholder so snapshots remain
-#' comparable across different execution contexts.
+#' comparable across different execution contexts. Removes trailing spaces and
+#' tabs from each line while preserving leading and internal whitespace.
 #'
 #' @param text Character vector with serialized snapshot lines.
 #'
@@ -1192,6 +1193,7 @@ compare_snapshot_text <- function(old_text, new_text, precision = NULL) {
 #'
 #' @keywords internal
 normalize_snapshot_text <- function(text) {
+  text <- sub("[ \t]+$", "", text)
   gsub(
     '(<environment: )[^>]+(>[[:space:]]*)$',
     '\\1<normalized>\\2',
