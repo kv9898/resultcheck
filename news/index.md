@@ -1,6 +1,15 @@
 # Changelog
 
+## resultcheck (development version)
+
+- Snapshot comparisons now ignore trailing spaces and tabs on each line,
+  preventing false mismatches from print padding while preserving
+  leading and internal whitespace. Existing snapshots benefit without
+  regeneration.
+
 ## resultcheck 0.3.2
+
+CRAN release: 2026-09-27
 
 - Built-in defaults now omit
   [`broom::augment`](https://generics.r-lib.org/reference/augment.html)

@@ -2,7 +2,9 @@
 
 Replaces volatile environment representations (for example memory
 addresses in `.Environment` attributes) with a stable placeholder so
-snapshots remain comparable across different execution contexts.
+snapshots remain comparable across different execution contexts. Removes
+trailing spaces and tabs from each line while preserving leading and
+internal whitespace.
 
 ## Usage
 
