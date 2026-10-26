@@ -32,9 +32,11 @@ On Ubuntu 26.04.1 LTS with R 4.6.1, 2026-10-26:
   fresh-process timing measured 0.805 seconds versus 1.141 seconds before.
 
 Candidate CI:
-https://github.com/kv9898/resultcheck/actions/runs/40313149236
-Results are pending; the previous candidate's results are not presented as
-validation of this changed archive.
+https://github.com/kv9898/resultcheck/actions/runs/40313563914
+All platform jobs passed for the same revised package contents: Ubuntu R
+release and devel, macOS R release, and Windows R release. The CI commit
+differs from the archive source commit only in cran-comments.md, which is
+excluded from the package.
 
 ## Revised Windows remote check
 
@@ -46,7 +48,8 @@ retained. A subsequent verified request returned HTTP 200 with an explicit
 application error: access to R-devel/resultcheck_0.3.3.tar.gz was denied,
 possibly because an earlier upload has not been processed yet. The revised
 archive has not been confirmed accepted by win-builder. Windows example
-timing remains unverified for this revision.
+timing remains unverified for this revision. The maintainer has explicitly
+requested resubmission without waiting for that separate result.
 
 ## Revised source archive
 
@@ -56,6 +59,8 @@ SHA-256: 94d264340a1297345245ae901344706f7e9b6c5ac7ecf87d50a91a6f3e449e94
 
 ## Submission status
 
-The revised candidate has not been resubmitted. CRAN-SUBMISSION retains the
-record of the first upload. Acceptance and publication have not occurred;
-the release PR remains unmerged.
+The revised checked archive was resubmitted through CRAN's web form in
+Chrome on 2026-10-26 11:28:11 UTC (upload package ID 360247).
+The form reached Step 3 and confirmed that the maintainer has been sent an
+email. The submission awaits the maintainer's new confirmation link;
+acceptance and publication are pending. The release PR remains unmerged.
