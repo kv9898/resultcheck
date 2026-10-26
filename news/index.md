@@ -1,6 +1,10 @@
 # Changelog
 
-## resultcheck (development version)
+## resultcheck 0.3.3
+
+- Streamlined
+  [`snapshot()`](https://kv9898.github.io/resultcheck/reference/snapshot.md)
+  examples to reduce repeated setup and keep example checks fast.
 
 - Snapshot comparisons now ignore trailing spaces and tabs on each line,
   preventing false mismatches from print padding while preserving

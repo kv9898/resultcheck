@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">resultcheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,8 +47,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="resultcheck-development-version">resultcheck (development version)<a class="anchor" aria-label="anchor" href="#resultcheck-development-version"></a></h2>
-<ul><li><p>Snapshot comparisons now ignore trailing spaces and tabs on each line, preventing false mismatches from print padding while preserving leading and internal whitespace. Existing snapshots benefit without regeneration.</p></li>
+<h2 class="pkg-version" data-toc-text="0.3.3" id="resultcheck-033">resultcheck 0.3.3<a class="anchor" aria-label="anchor" href="#resultcheck-033"></a></h2>
+<ul><li><p>Streamlined <code><a href="../reference/snapshot.html">snapshot()</a></code> examples to reduce repeated setup and keep example checks fast.</p></li>
+<li><p>Snapshot comparisons now ignore trailing spaces and tabs on each line, preventing false mismatches from print padding while preserving leading and internal whitespace. Existing snapshots benefit without regeneration.</p></li>
 <li><p>Snapshot script detection now prefers active Quarto/knitr inputs and the actual sourced script over the active editor tab. Nested <code><a href="https://rdrr.io/r/base/source.html" class="external-link">source()</a></code> calls and <code><a href="https://rdrr.io/r/base/sys.source.html" class="external-link">sys.source()</a></code> are recognized even without source references, preventing snapshots from being redirected to an unrelated editor or temporary console file.</p></li>
 </ul></div>
     <div class="section level2">
