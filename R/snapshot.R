@@ -154,7 +154,13 @@ detect_script_name <- function() {
   for (i in rev(seq_len(sys.nframe()))) {
     fun <- sys.function(i)
     path <- if (identical(fun, base::source)) {
-      get0("ofile", envir = sys.frame(i), inherits = FALSE)
+      path <- get0("ofile", envir = sys.frame(i), inherits = FALSE)
+      # IDEs can wrap source(), retaining file but moving ofile to another frame.
+      if (is.null(path)) {
+        get0("file", envir = sys.frame(i), inherits = FALSE)
+      } else {
+        path
+      }
     } else if (identical(fun, base::sys.source)) {
       get0("file", envir = sys.frame(i), inherits = FALSE)
     } else {

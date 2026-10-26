@@ -185,6 +185,24 @@ test_that("sourced scripts use separate baselines regardless of editor or source
 })
 
 
+test_that("source wrappers retain their input filename", {
+  original_source <- base::source
+  testthat::local_mocked_bindings(
+    source = function(file, ...) original_source(file, ...),
+    .package = "base"
+  )
+
+  with_example({
+    writeLines('resultcheck::snapshot(1, "wrapped")', "wrapped-input.R")
+    source("wrapped-input.R", keep.source = FALSE)
+
+    expect_true(file.exists(
+      "tests/_resultcheck_snaps/wrapped-input/wrapped.md"
+    ))
+  })
+})
+
+
 test_that("nested source calls use the innermost script", {
   testthat::local_mocked_bindings(
     get_source_editor_path = function() "/project/unrelated.R"
