@@ -244,6 +244,43 @@ test_that("compare_snapshot_text ignores .Environment differences", {
 })
 
 
+test_that("snapshot comparison ignores trailing spaces and tabs in either text", {
+  old_text <- c(
+    "Coefficients:  ",
+    "  (Intercept)  app_year",
+    "  1.25         0.50\t",
+    ""
+  )
+  new_text <- c(
+    "Coefficients:",
+    "  (Intercept)  app_year \t",
+    "  1.25         0.50",
+    " \t"
+  )
+
+  expect_null(resultcheck:::compare_snapshot_text(old_text, new_text))
+  expect_null(resultcheck:::compare_snapshot_text(new_text, old_text))
+})
+
+
+test_that("snapshot comparison preserves meaningful text and whitespace changes", {
+  old_text <- c("  value = 1", "a  b", '"value "')
+  changed_texts <- list(
+    c("  value = 2", "a  b", '"value "'),
+    c("value = 1", "a  b", '"value "'),
+    c("  value = 1", "a b", '"value "'),
+    c("  value = 1", "a  b", '"value"')
+  )
+
+  for (new_text in changed_texts) {
+    expect_false(is.null(resultcheck:::compare_snapshot_text(
+      old_text,
+      new_text
+    )))
+  }
+})
+
+
 test_that("serialize_value respects selected methods", {
   val <- list(a = 1:3, b = "hello")
 
