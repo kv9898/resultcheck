@@ -1,49 +1,66 @@
-## Release summary
+## Resubmission summary
 
-This patch release fixes default snapshots that fail for common model and
-statistical-test objects. Built-in augmentation is omitted where it requires
-extra data or saved fit components, only supports particular fits, or always
-errors. Invalid broom mappings now use the existing print + str fallback.
-No new dependencies are introduced.
+The first 0.3.3 submission was archived by CRAN's automatic pretest on
+2026-10-26. All tests passed. Debian checks were OK; Windows R-devel
+reported one timing NOTE because the snapshot examples took 11.36 seconds.
 
-The short interval since 0.3.1 is intentional: these bugs prevent ordinary
-snapshot calls from completing. Users are advised to review affected baselines.
+This revision reduces the snapshot examples from six calls and two
+example projects to three calls in one project. It demonstrates snapshot
+creation, a matching comparison, and a custom method. Duplicate sandbox
+examples were removed from this help topic; sandbox functions retain their
+own examples. Package runtime behavior and dependencies are unchanged.
 
-## R CMD check results
+Previous Windows check:
+https://win-builder.r-project.org/incoming_pretest/resultcheck_0.3.3_20261026_114009/Windows/00check.log
 
-0 errors | 0 warnings | 1 NOTE
+Previous Debian check:
+https://win-builder.r-project.org/incoming_pretest/resultcheck_0.3.3_20261026_114009/Debian/00check.log
 
-The exact submission archive passed R CMD check --as-cran, including PDF
-manual generation, on 2026-09-27 using Ubuntu 26.04.1 LTS and R 4.6.1.
-The only NOTE reports that HTML manual validation was skipped because the
-local system has no HTML Tidy executable. PDF manual generation passed.
+## Validation of the revised candidate
 
-## Additional validation
+On Ubuntu 26.04.1 LTS with R 4.6.1, 2026-10-26:
 
-* Local tests: 169 passing assertions and the known sandbox-cleanup warning.
-* All package URL checks passed.
-* No CRAN reverse dependencies were found.
-* Installed-package smoke tests passed for fixest, kmeans, factanal, t-tests,
-  correlation tests, explicit augmentation, and the mixed-model fallback.
-* GitHub Actions passed for Ubuntu R release and devel, macOS R release,
-  Windows R release, and the pkgdown build at source commit e077818:
-  https://github.com/kv9898/resultcheck/actions/runs/36296461604
+* Full local suite passed with the documented sandbox-cleanup warning.
+* Documentation regeneration, Air formatting, and whitespace checks passed.
+* The revised exact archive passed R CMD check --as-cran with PDF manual
+  generation: 0 errors, 0 warnings, 1 NOTE. The NOTE only reports that
+  HTML validation was skipped because HTML Tidy is not installed locally.
+* snapshot examples took 0.420 seconds in that check, with no timing NOTE.
+* The installed-archive example passed in an isolated temporary library,
+  taking 0.793 seconds in a fresh R process.
+* Instrumentation confirmed 10 configuration reads instead of 20. Separate
+  fresh-process timing measured 0.805 seconds versus 1.141 seconds before.
 
-## Windows remote check
+Candidate CI:
+https://github.com/kv9898/resultcheck/actions/runs/40313563914
+All platform jobs passed for the same revised package contents: Ubuntu R
+release and devel, macOS R release, and Windows R release. The CI commit
+differs from the archive source commit only in cran-comments.md, which is
+excluded from the package.
 
-The release candidate passed win-builder with Status: OK on 2026-09-27,
-using Windows Server 2022 x64 and R-devel (2026-09-25 r90590 ucrt).
-PDF and HTML manual checks passed.
-Log: https://win-builder.r-project.org/31969dxCoYmT/00check.log
+## Revised Windows remote check
 
-## CRAN acceptance
+Windows R-devel validation was requested for source commit
+`a65f45b142501c0183e0b80fb3fb4885df9f0483` on 2026-10-26.
+FTP refused the upload before transfer (550). The first devtools web-form
+request returned without an HTTP error, but its response body was not
+retained. A subsequent verified request returned HTTP 200 with an explicit
+application error: access to R-devel/resultcheck_0.3.3.tar.gz was denied,
+possibly because an earlier upload has not been processed yet. The revised
+archive has not been confirmed accepted by win-builder. Windows example
+timing remains unverified for this revision. The maintainer has explicitly
+requested resubmission without waiting for that separate result.
 
-The maintainer received CRAN's "on its way to CRAN" acceptance email.
-CRAN auto-check results were OK on r-devel-linux-x86_64-debian-gcc and
-r-devel-windows-x86_64. Public availability is not yet verified.
+## Revised source archive
 
-## Source archive
+Source commit: a65f45b142501c0183e0b80fb3fb4885df9f0483
+Archive: resultcheck_0.3.3.tar.gz
+SHA-256: 94d264340a1297345245ae901344706f7e9b6c5ac7ecf87d50a91a6f3e449e94
 
-Source commit: e0778187370bc90438fcabce5ed544fcbf8b7c74
-Archive: resultcheck_0.3.2.tar.gz
-SHA-256: 695cd8ac1057b350b61fcadbd572434da587d9201fb35051c7c1db84cdd08f76
+## Submission status
+
+The revised checked archive was resubmitted through CRAN's web form in
+Chrome on 2026-10-26 11:28:11 UTC (upload package ID 360247).
+The form reached Step 3 and confirmed that the maintainer has been sent an
+email. The submission awaits the maintainer's new confirmation link;
+acceptance and publication are pending. The release PR remains unmerged.

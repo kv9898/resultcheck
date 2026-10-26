@@ -1350,25 +1350,14 @@ warn_snapshot_write <- function(snapshot_file) {
 #' @examples
 #' with_example({
 #'   model <- stats::lm(mpg ~ wt, data = datasets::mtcars)
-#'   snapshot(model, "model_default", script_name = "analysis")
-#'   snapshot(model, "model_multi", script_name = "analysis",
-#'            method = list(summary = summary, print = print))
-#'   snapshot(model, "model_print", script_name = "analysis", method = print)
-#'   snapshot(model, "model_ns", script_name = "analysis", method = stats::coef)
-#'   snapshot(model, "model_length", script_name = "analysis", method = length)
-#' })
 #'
-#' with_example({
-#'   sandbox <- setup_sandbox()
-#'   on.exit(cleanup_sandbox(sandbox), add = TRUE)
-#'   run_in_sandbox("analysis.R", sandbox)
-#' })
+#'   # Create a snapshot, then check that the same result matches.
+#'   snapshot(model, "model", script_name = "analysis")
+#'   snapshot(model, "model", script_name = "analysis")
 #'
-#' if (interactive()) with_example({
-#'   sandbox <- setup_sandbox()
-#'   on.exit(cleanup_sandbox(sandbox), add = TRUE)
-#'   run_in_sandbox("analysis.R", sandbox)
-#' }, mismatch = TRUE)
+#'   # Supply a function to snapshot a particular part of the result.
+#'   snapshot(model, "coefficients", script_name = "analysis", method = stats::coef)
+#' })
 snapshot <- function(value, name, script_name = NULL, method = NULL) {
   # Get snapshot file path (.md extension)
   snapshot_file <- get_snapshot_path(name, script_name, ext = "md")
