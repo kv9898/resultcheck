@@ -40,9 +40,13 @@ validation of this changed archive.
 
 Windows R-devel validation was requested for source commit
 `a65f45b142501c0183e0b80fb3fb4885df9f0483` on 2026-10-26.
-FTP refused the upload before transfer (550); the devtools web-form request
-then completed without an HTTP error. Result email and check logs are
-pending; Windows example timing has not yet been verified for this revision.
+FTP refused the upload before transfer (550). The first devtools web-form
+request returned without an HTTP error, but its response body was not
+retained. A subsequent verified request returned HTTP 200 with an explicit
+application error: access to R-devel/resultcheck_0.3.3.tar.gz was denied,
+possibly because an earlier upload has not been processed yet. The revised
+archive has not been confirmed accepted by win-builder. Windows example
+timing remains unverified for this revision.
 
 ## Revised source archive
 
