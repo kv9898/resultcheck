@@ -75,10 +75,9 @@ organized by script name. This location can be overridden with
 
 <dt id="arg-script-name">script_name<a class="anchor" aria-label="anchor" href="#arg-script-name"></a></dt>
 <dd><p>Optional. The name of the script file creating the snapshot.
-If NULL, detects from the active RStudio source editor via
-<code>rstudioapi::getSourceEditorContext()$path</code>, then the active Quarto
-document or knitr input, falling back to the call stack and finally
-<code>"interactive"</code>.</p></dd>
+If NULL, detects from the active Quarto document or knitr input, then
+the innermost <code><a href="https://rdrr.io/r/base/source.html" class="external-link">source()</a></code> or <code><a href="https://rdrr.io/r/base/sys.source.html" class="external-link">sys.source()</a></code> input, call-stack
+source references, the active source editor, and finally <code>"interactive"</code>.</p></dd>
 
 
 <dt id="arg-ext">ext<a class="anchor" aria-label="anchor" href="#arg-ext"></a></dt>

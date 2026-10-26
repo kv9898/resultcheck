@@ -20,9 +20,10 @@ get_snapshot_path(name, script_name = NULL, ext = "md")
 - script_name:
 
   Optional. The name of the script file creating the snapshot. If NULL,
-  detects from the active RStudio source editor via
-  `rstudioapi::getSourceEditorContext()$path`, then the active Quarto
-  document or knitr input, falling back to the call stack and finally
+  detects from the active Quarto document or knitr input, then the
+  innermost [`source()`](https://rdrr.io/r/base/source.html) or
+  [`sys.source()`](https://rdrr.io/r/base/sys.source.html) input,
+  call-stack source references, the active source editor, and finally
   `"interactive"`.
 
 - ext:

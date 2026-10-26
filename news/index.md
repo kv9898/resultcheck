@@ -7,6 +7,13 @@
   leading and internal whitespace. Existing snapshots benefit without
   regeneration.
 
+- Snapshot script detection now prefers active Quarto/knitr inputs and
+  the actual sourced script over the active editor tab. Nested
+  [`source()`](https://rdrr.io/r/base/source.html) calls and
+  [`sys.source()`](https://rdrr.io/r/base/sys.source.html) are
+  recognized even without source references, preventing snapshots from
+  being redirected to an unrelated editor or temporary console file.
+
 ## resultcheck 0.3.2
 
 CRAN release: 2026-09-27

@@ -48,7 +48,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="resultcheck-development-version">resultcheck (development version)<a class="anchor" aria-label="anchor" href="#resultcheck-development-version"></a></h2>
-<ul><li>Snapshot comparisons now ignore trailing spaces and tabs on each line, preventing false mismatches from print padding while preserving leading and internal whitespace. Existing snapshots benefit without regeneration.</li>
+<ul><li><p>Snapshot comparisons now ignore trailing spaces and tabs on each line, preventing false mismatches from print padding while preserving leading and internal whitespace. Existing snapshots benefit without regeneration.</p></li>
+<li><p>Snapshot script detection now prefers active Quarto/knitr inputs and the actual sourced script over the active editor tab. Nested <code><a href="https://rdrr.io/r/base/source.html" class="external-link">source()</a></code> calls and <code><a href="https://rdrr.io/r/base/sys.source.html" class="external-link">sys.source()</a></code> are recognized even without source references, preventing snapshots from being redirected to an unrelated editor or temporary console file.</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.2" id="resultcheck-032">resultcheck 0.3.2<a class="anchor" aria-label="anchor" href="#resultcheck-032"></a></h2><p class="text-muted">CRAN release: 2026-09-27</p>
