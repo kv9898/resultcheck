@@ -32,8 +32,12 @@ sys.source(), trailing print padding, meaningful numeric mismatches, and
 linear-model snapshots. The archive was installed into an isolated temporary
 library; the user's installed package was not replaced.
 
-Release branch CI is pending:
+GitHub Actions passed for the committed source candidate on Ubuntu R
+release and devel, macOS R release, and Windows R release:
 https://github.com/kv9898/resultcheck/actions/runs/40306893671
+
+Subsequent validation-record changes affect only this file, which is
+excluded from the package archive by .Rbuildignore.
 
 ## Windows remote check
 
