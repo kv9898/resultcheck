@@ -18,9 +18,37 @@ https://win-builder.r-project.org/incoming_pretest/resultcheck_0.3.3_20261026_11
 
 ## Validation of the revised candidate
 
-Documentation, example timing, and package checks are in progress. Results
-and the source/archive record below will be updated from this revision's
-actual checks. The previous archive's results do not validate this revision.
+On Ubuntu 26.04.1 LTS with R 4.6.1, 2026-10-26:
+
+* Full local suite passed with the documented sandbox-cleanup warning.
+* Documentation regeneration, Air formatting, and whitespace checks passed.
+* The revised exact archive passed R CMD check --as-cran with PDF manual
+  generation: 0 errors, 0 warnings, 1 NOTE. The NOTE only reports that
+  HTML validation was skipped because HTML Tidy is not installed locally.
+* snapshot examples took 0.420 seconds in that check, with no timing NOTE.
+* The installed-archive example passed in an isolated temporary library,
+  taking 0.793 seconds in a fresh R process.
+* Instrumentation confirmed 10 configuration reads instead of 20. Separate
+  fresh-process timing measured 0.805 seconds versus 1.141 seconds before.
+
+Candidate CI:
+https://github.com/kv9898/resultcheck/actions/runs/40313149236
+Results are pending; the previous candidate's results are not presented as
+validation of this changed archive.
+
+## Revised Windows remote check
+
+Windows R-devel validation was requested for source commit
+`a65f45b142501c0183e0b80fb3fb4885df9f0483` on 2026-10-26.
+FTP refused the upload before transfer (550); the devtools web-form request
+then completed without an HTTP error. Result email and check logs are
+pending; Windows example timing has not yet been verified for this revision.
+
+## Revised source archive
+
+Source commit: a65f45b142501c0183e0b80fb3fb4885df9f0483
+Archive: resultcheck_0.3.3.tar.gz
+SHA-256: 94d264340a1297345245ae901344706f7e9b6c5ac7ecf87d50a91a6f3e449e94
 
 ## Submission status
 
