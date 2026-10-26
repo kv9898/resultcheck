@@ -45,8 +45,9 @@ The committed 0.3.3 candidate was uploaded with
 `devtools::check_win_devel(manual = TRUE)` on 2026-10-26.
 Tested source commit: eb5b78f7a2c639b9f7a9544202f32c9918c6354b.
 The upload completed successfully; the maintainer result email and check
-logs are pending review. This release will not be submitted to CRAN until
-the results have been reviewed.
+logs are pending review at the time of submission. The maintainer has
+requested submission before those results arrive. Windows R-release and
+Linux R-devel CI have passed as recorded above.
 
 ## Source archive
 
@@ -54,5 +55,12 @@ Source commit: eb5b78f7a2c639b9f7a9544202f32c9918c6354b
 Archive: resultcheck_0.3.3.tar.gz
 SHA-256: 0572b78fa1c54ba6fc2563718b10bfce752b8d808a70acbb2e511f60b7f82e69
 
-CRAN submission has not been performed. CRAN-SUBMISSION retains the record
-of the previous release until a new submission actually occurs.
+Submission status and the submitted source commit are recorded separately
+in CRAN-SUBMISSION after a successful upload.
+
+## Submission status
+
+The exact checked archive was successfully uploaded to CRAN on 2026-10-26 10:38:42 UTC.
+CRAN returned a successful submission response and requested maintainer
+email confirmation. Confirmation, acceptance, and publication are pending;
+the release PR remains unmerged.
