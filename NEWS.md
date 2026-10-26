@@ -1,5 +1,7 @@
 # resultcheck 0.3.3
 
+* Streamlined `snapshot()` examples to reduce repeated setup and keep example checks fast.
+
 * Snapshot comparisons now ignore trailing spaces and tabs on each line, preventing false mismatches from print padding while preserving leading and internal whitespace. Existing snapshots benefit without regeneration.
 
 * Snapshot script detection now prefers active Quarto/knitr inputs and the actual sourced script over the active editor tab. Nested `source()` calls and `sys.source()` are recognized even without source references, preventing snapshots from being redirected to an unrelated editor or temporary console file.
